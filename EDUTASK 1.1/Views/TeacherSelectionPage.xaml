@@ -1,0 +1,36 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+ x:Class="EDUTASK_1._1.Views.TeacherSelectionPage" NavigationPage.HasNavigationBar="False" Shell.NavBarIsVisible="False"
+ BackgroundColor="#99000000" Padding="20">
+ <Border MaximumWidthRequest="460" MaximumHeightRequest="610" HorizontalOptions="Center" VerticalOptions="Center"
+         BackgroundColor="White" Stroke="#D7DCE2" StrokeThickness="1" Padding="0">
+  <Border.StrokeShape><RoundRectangle CornerRadius="14"/></Border.StrokeShape>
+  <Grid RowDefinitions="Auto,Auto,Auto,*,Auto">
+   <Grid Padding="18,14,12,10" ColumnDefinitions="*,Auto">
+    <Label Text="Select Teachers" FontSize="18" FontAttributes="Bold" TextColor="#243447" VerticalOptions="Center"/>
+    <Button Grid.Column="1" Text="×" Clicked="OnCancelClicked" WidthRequest="32" HeightRequest="32" Padding="0" FontSize="20" BackgroundColor="Transparent" TextColor="#4B5563"/>
+   </Grid>
+   <Border Grid.Row="1" Margin="18,6,18,8" HeightRequest="46" Stroke="#D7DCE2" StrokeThickness="1" BackgroundColor="#F9FAFB" Padding="10,0">
+    <Border.StrokeShape><RoundRectangle CornerRadius="9"/></Border.StrokeShape>
+    <Grid ColumnDefinitions="*,Auto"><Entry x:Name="TeacherSearchBar" Placeholder="Search teachers" PlaceholderColor="#9CA3AF" TextColor="#243447" FontSize="12" BackgroundColor="Transparent" TextChanged="OnSearchTextChanged"/><Image Grid.Column="1" Source="search.png" WidthRequest="19" HeightRequest="19" Margin="0,0,4,0" VerticalOptions="Center" InputTransparent="True"/></Grid>
+   </Border>
+   <Grid Grid.Row="2" ColumnDefinitions="*,Auto" Padding="18,2,18,8">
+    <Button Text="Select all" Clicked="OnSelectAllClicked" BackgroundColor="Transparent" TextColor="#5D6D7E" FontSize="11" FontAttributes="Bold" Padding="0" HorizontalOptions="Start"/>
+    <Button Grid.Column="1" Text="Clear" Clicked="OnClearClicked" BackgroundColor="Transparent" TextColor="#5D6D7E" FontSize="11" FontAttributes="Bold" Padding="0"/>
+   </Grid>
+   <CollectionView x:Name="TeachersView" Grid.Row="3" SelectionMode="None" Margin="18,0">
+    <CollectionView.EmptyView><Label Text="No teachers found" TextColor="#7A8491" HorizontalOptions="Center" Margin="0,24"/></CollectionView.EmptyView>
+    <CollectionView.ItemTemplate><DataTemplate>
+     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" HeightRequest="48" Padding="10,4">
+      <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" Color="#687786" VerticalOptions="Center"/>
+      <Label Grid.Column="1" Text="{Binding Teacher.DisplayName}" TextColor="#374151" FontSize="13" VerticalOptions="Center"/>
+     </Grid>
+    </DataTemplate></CollectionView.ItemTemplate>
+   </CollectionView>
+   <Grid Grid.Row="4" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="9" Padding="18,10,18,14" BackgroundColor="White">
+    <Label x:Name="SelectionCountLabel" Text="0 selected" TextColor="#7A8491" FontSize="11" VerticalOptions="Center"/>
+    <Button Grid.Column="1" Text="Cancel" Clicked="OnCancelClicked" BackgroundColor="#E5E7EB" TextColor="#4B5563" FontSize="11" HeightRequest="38" Padding="16,0" CornerRadius="7"/>
+    <Button Grid.Column="2" Text="Done" Clicked="OnDoneClicked" BackgroundColor="#687786" TextColor="White" FontSize="11" FontAttributes="Bold" HeightRequest="38" Padding="18,0" CornerRadius="7"/>
+   </Grid>
+  </Grid>
+ </Border>
+</ContentPage>

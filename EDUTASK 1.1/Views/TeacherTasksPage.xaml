@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="EDUTASK_1._1.Views.TeacherTasksPage"
+             NavigationPage.HasNavigationBar="False"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#F5F7FA">
+    <Grid>
+        <VerticalStackLayout Padding="15" Spacing="15">
+            <VerticalStackLayout Spacing="3">
+                <Label Text="My Tasks" FontSize="24" FontAttributes="Bold" TextColor="#2C3E50" />
+                <Label Text="Review and update your assigned work" FontSize="14" TextColor="#7F8C8D" />
+            </VerticalStackLayout>
+
+            <Border BackgroundColor="White" Stroke="#E1E5EA" StrokeThickness="1" Padding="12,4">
+                <Border.StrokeShape><RoundRectangle CornerRadius="10" /></Border.StrokeShape>
+                <Picker x:Name="TeacherPicker" Title="Select Teacher"
+                        TextColor="#2C3E50" TitleColor="#7F8C8D"
+                        SelectedIndexChanged="OnTeacherSelected" />
+            </Border>
+
+            <ListView x:Name="TaskListView" HasUnevenRows="True"
+                      SeparatorVisibility="None" BackgroundColor="#F5F7FA">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <Border Margin="0,0,0,10" Padding="14" BackgroundColor="White"
+                                    Stroke="#E1E5EA" StrokeThickness="1">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="10" /></Border.StrokeShape>
+                                <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="Auto,*,Auto" RowSpacing="6">
+                                    <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
+                                            WidthRequest="10" HeightRequest="10" VerticalOptions="Start" Margin="0,5,0,0"
+                                            BackgroundColor="{Binding PriorityColor}" StrokeThickness="0">
+                                        <Border.StrokeShape><RoundRectangle CornerRadius="5" /></Border.StrokeShape>
+                                    </Border>
+                                    <Label Grid.Row="0" Grid.Column="1" Margin="10,0"
+                                           Text="{Binding Title}" FontAttributes="Bold" FontSize="14" TextColor="#2C3E50" />
+                                    <Label Grid.Row="0" Grid.Column="2" Text="{Binding Priority}" FontSize="11"
+                                           TextColor="{Binding PriorityColor}" />
+                                    <Label Grid.Row="1" Grid.Column="1" Margin="10,0"
+                                           Text="{Binding Deadline}" FontSize="11" TextColor="#7F8C8D" />
+                                    <Label Grid.Row="1" Grid.Column="2" Text="{Binding Status}" FontSize="11"
+                                           TextColor="{Binding StatusColor}" />
+                                    <HorizontalStackLayout Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"
+                                                           Margin="10,5,0,0" Spacing="8">
+                                        <Button Text="Acknowledge" Command="{Binding AcknowledgeCommand}"
+                                                BackgroundColor="#3498DB" TextColor="White" CornerRadius="8"
+                                                IsVisible="{Binding ShowAcknowledge}" />
+                                    </HorizontalStackLayout>
+                                </Grid>
+                            </Border>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

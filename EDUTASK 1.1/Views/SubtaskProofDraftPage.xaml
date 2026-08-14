@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="EDUTASK_1._1.Views.SubtaskProofDraftPage"
+             BackgroundColor="#99000000"
+             NavigationPage.HasNavigationBar="False">
+    <Grid Padding="16">
+        <Border x:Name="PopupPanel" WidthRequest="560" HeightRequest="330"
+                HorizontalOptions="Center" VerticalOptions="Center"
+                Padding="18" BackgroundColor="#F8FAFC" Stroke="#D8DEE5">
+            <Border.StrokeShape><RoundRectangle CornerRadius="14"/></Border.StrokeShape>
+            <Grid RowDefinitions="Auto,*,Auto" RowSpacing="14">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                        <Label Text="Review file before submission" FontSize="20"
+                               FontAttributes="Bold" TextColor="#202936"/>
+                        <Label Text="{Binding SubtaskTitle}" FontSize="12" TextColor="#687786"
+                               LineBreakMode="TailTruncation"/>
+                    </VerticalStackLayout>
+                    <Button Grid.Column="1" Text="&#x2715;" Clicked="OnCloseClicked"
+                            WidthRequest="36" HeightRequest="36" Padding="0"
+                            FontSize="13" TextColor="#243447"
+                            BackgroundColor="#E2E7EC" CornerRadius="9"
+                            SemanticProperties.Description="Close without submitting"/>
+                </Grid>
+
+                <Border Grid.Row="1" Padding="0" BackgroundColor="White" Stroke="#D8DEE5">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                    <Grid RowDefinitions="Auto,*">
+                        <Grid Padding="12,10" ColumnDefinitions="82,120,*,92" ColumnSpacing="8"
+                              BackgroundColor="#EEF2F6">
+                            <Label Text="Submission" FontSize="10" FontAttributes="Bold" TextColor="#3E4C5E"/>
+                            <Label Grid.Column="1" Text="Date / Time" FontSize="10" FontAttributes="Bold" TextColor="#3E4C5E"/>
+                            <Label Grid.Column="2" Text="Proof File" FontSize="10" FontAttributes="Bold" TextColor="#3E4C5E"/>
+                            <Label Grid.Column="3" Text="Status" FontSize="10" FontAttributes="Bold" TextColor="#3E4C5E"/>
+                        </Grid>
+                        <ScrollView Grid.Row="1">
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Attempts}" Spacing="0">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid RowDefinitions="Auto,1" ColumnDefinitions="82,120,*,92"
+                                              ColumnSpacing="8" Padding="12,10,12,0">
+                                            <Label Text="{Binding AttemptDisplay}" FontSize="10" TextColor="#243447"/>
+                                            <Label Grid.Column="1" Text="{Binding SubmittedAtDisplay}" FontSize="10"
+                                                   TextColor="#596574" LineBreakMode="TailTruncation"/>
+                                            <Label Grid.Column="2" Text="{Binding FileName}" FontSize="10"
+                                                   TextColor="#2563EB" TextDecorations="Underline"
+                                                   LineBreakMode="TailTruncation">
+                                                <Label.GestureRecognizers>
+                                                    <TapGestureRecognizer Tapped="OnViewFileTapped"
+                                                                          CommandParameter="{Binding .}"/>
+                                                </Label.GestureRecognizers>
+                                            </Label>
+                                            <Label Grid.Column="3" Text="{Binding ValidationStatus}" FontSize="10"
+                                                   FontAttributes="Bold" TextColor="{Binding StatusColor}"/>
+                                            <BoxView Grid.Row="1" Grid.ColumnSpan="4" HeightRequest="1"
+                                                     Margin="0,10,0,0" Color="#E1E5EA"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </ScrollView>
+                    </Grid>
+                </Border>
+
+                <HorizontalStackLayout Grid.Row="2" HorizontalOptions="End" Spacing="8">
+                    <ImageButton Source="confirmfile.png" Clicked="OnSubmitClicked"
+                                 WidthRequest="42" HeightRequest="42" Padding="7"
+                                 CornerRadius="9" BackgroundColor="#687786"
+                                 ToolTipProperties.Text="Submit file"
+                                 SemanticProperties.Description="Submit file for review"/>
+                    <Button Text="&#x2715;" Clicked="OnRemoveClicked"
+                            WidthRequest="42" HeightRequest="42" Padding="0"
+                            FontSize="14" FontAttributes="Bold" CornerRadius="9"
+                            BackgroundColor="#687786" TextColor="White"
+                            ToolTipProperties.Text="Remove draft"
+                            SemanticProperties.Description="Remove selected draft"/>
+                </HorizontalStackLayout>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

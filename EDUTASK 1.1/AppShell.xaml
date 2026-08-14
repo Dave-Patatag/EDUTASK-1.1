@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:views="clr-namespace:EDUTASK_1._1.Views"
+       x:Class="EDUTASK_1._1.AppShell"
+       FlyoutBehavior="Flyout"
+       Shell.NavBarIsVisible="False">
+
+    <Shell.FlyoutHeader>
+        <Border BackgroundColor="#1A252F" Padding="20">
+            <VerticalStackLayout Spacing="5">
+                <Label Text="📚 EduTask" FontSize="22" FontAttributes="Bold" TextColor="White"/>
+                <Label Text="Task Management System" FontSize="12" TextColor="#BDC3C7"/>
+            </VerticalStackLayout>
+        </Border>
+    </Shell.FlyoutHeader>
+
+    <!-- Menu Items -->
+    <FlyoutItem Title="Menu">
+        <ShellContent Title="Dashboard" ContentTemplate="{DataTemplate views:DirectorStaffDashboardPage}" />
+        <ShellContent Title="View All Task" ContentTemplate="{DataTemplate views:ViewTasksPage}" />
+        <ShellContent Title="Completed Task" ContentTemplate="{DataTemplate views:CompletedTasksPage}" />
+    </FlyoutItem>
+
+</Shell>

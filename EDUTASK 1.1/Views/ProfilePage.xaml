@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="EDUTASK_1._1.Views.ProfilePage" NavigationPage.HasNavigationBar="False" Shell.NavBarIsVisible="False" BackgroundColor="#F3F6F8">
+    <Grid RowDefinitions="*,Auto">
+        <ScrollView Grid.Row="0">
+            <VerticalStackLayout Padding="16,14,16,24" Spacing="0">
+                <Grid HeightRequest="52" Margin="0,0,0,4">
+                    <Label Text="Profile" FontSize="19" FontAttributes="Bold" TextColor="#15171A" HorizontalOptions="Center" VerticalOptions="Center"/>
+                </Grid>
+                <Label Text="ACCOUNT" FontSize="11" CharacterSpacing="1.4" FontAttributes="Bold" TextColor="#9AA1AA" Margin="2,10,0,10"/>
+                <Border BackgroundColor="White" Stroke="#E7EDF0" StrokeThickness="1" Padding="11,8" Margin="0,0,0,22">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="14"/>
+                    </Border.StrokeShape>
+                    <Grid ColumnDefinitions="48,*,20" ColumnSpacing="10" HeightRequest="48">
+                        <Border WidthRequest="42" HeightRequest="42" BackgroundColor="{Binding AvatarColor}" StrokeThickness="0" VerticalOptions="Center">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="9"/>
+                            </Border.StrokeShape>
+                            <Grid>
+                                <Label Text="{Binding AvatarInitials}" FontSize="16" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" VerticalOptions="Center" IsVisible="{Binding ShowInitials}"/>
+                                <Image Source="{Binding ProfilePhotoPath}" Aspect="AspectFill" IsVisible="{Binding HasProfilePhoto}"/>
+                            </Grid>
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                            <Label Text="{Binding FullName}" FontSize="15" FontAttributes="Bold" TextColor="#374151" LineBreakMode="TailTruncation"/>
+                            <Label Text="{Binding Role}" FontSize="11" TextColor="#8B929D"/>
+                        </VerticalStackLayout>
+                        <Label Grid.Column="2" Text="&#x203A;" FontSize="20" TextColor="#A0A6AE" HorizontalOptions="End" VerticalOptions="Center"/>
+                    </Grid>
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnEditProfileClicked"/>
+                    </Border.GestureRecognizers>
+                </Border>
+                <Label Text="SETTINGS" FontSize="11" CharacterSpacing="1.4" FontAttributes="Bold" TextColor="#9AA1AA" Margin="2,0,0,9"/>
+                <Border BackgroundColor="White" Stroke="#ECEEF2" StrokeThickness="1" Padding="12,5">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="10"/>
+                    </Border.StrokeShape>
+                    <Grid RowDefinitions="58,1,58,1,58">
+                        <Grid Grid.Row="0" ColumnDefinitions="40,*,18" ColumnSpacing="8">
+                            <Border WidthRequest="32" HeightRequest="32" BackgroundColor="#D9FBE8" StrokeThickness="0" VerticalOptions="Center">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="7"/>
+                                </Border.StrokeShape>
+                                <Image Source="editprofile.png" WidthRequest="17" HeightRequest="17"/>
+                            </Border>
+                            <Label Grid.Column="1" Text="Edit Profile" FontSize="14" FontAttributes="Bold" TextColor="#334155" VerticalOptions="Center"/>
+                            <Label Grid.Column="2" Text="&#x203A;" FontSize="21" TextColor="#9CA3AF" VerticalOptions="Center"/>
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnEditProfileClicked"/>
+                            </Grid.GestureRecognizers>
+                        </Grid>
+                        <BoxView Grid.Row="1" Color="#EEF0F3" HeightRequest="1"/>
+                        <Grid Grid.Row="2" ColumnDefinitions="40,*,Auto,18" ColumnSpacing="8">
+                            <Border WidthRequest="32" HeightRequest="32" BackgroundColor="#D9FBE8" StrokeThickness="0" VerticalOptions="Center">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="7"/>
+                                </Border.StrokeShape>
+                                <Image Source="colormode.png" WidthRequest="17" HeightRequest="17"/>
+                            </Border>
+                            <Label Grid.Column="1" Text="Appearance" FontSize="14" FontAttributes="Bold" TextColor="#334155" VerticalOptions="Center"/>
+                            <Label Grid.Column="2" Text="Light" FontSize="11" TextColor="#A0A7B2" VerticalOptions="Center"/>
+                            <Label Grid.Column="3" Text="&#x203A;" FontSize="21" TextColor="#9CA3AF" VerticalOptions="Center"/>
+                        </Grid>
+                        <BoxView Grid.Row="3" Color="#EEF0F3" HeightRequest="1"/>
+                        <Grid Grid.Row="4" ColumnDefinitions="40,*,Auto,18" ColumnSpacing="8">
+                            <Border WidthRequest="32" HeightRequest="32" BackgroundColor="#D9FBE8" StrokeThickness="0" VerticalOptions="Center">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="7"/>
+                                </Border.StrokeShape>
+                                <Image Source="notificationsettings.png" WidthRequest="17" HeightRequest="17"/>
+                            </Border>
+                            <Label Grid.Column="1" Text="Push Notification" FontSize="14" FontAttributes="Bold" TextColor="#334155" VerticalOptions="Center"/>
+                            <Label Grid.Column="2" Text="Turned off" FontSize="11" TextColor="#A0A7B2" VerticalOptions="Center"/>
+                            <Label Grid.Column="3" Text="&#x203A;" FontSize="21" TextColor="#9CA3AF" VerticalOptions="Center"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+        <Grid Grid.Row="1" ColumnDefinitions="*,*,*" Padding="0,14,0,12" BackgroundColor="#FFFFFF">
+            <Grid.Resources>
+                <Style TargetType="Image">
+                    <Setter Property="WidthRequest" Value="22"/>
+                    <Setter Property="HeightRequest" Value="22"/>
+                    <Setter Property="HorizontalOptions" Value="Center"/>
+                </Style>
+            </Grid.Resources>
+            <BoxView Grid.ColumnSpan="3" HeightRequest="1" Color="#F3D0D0" VerticalOptions="Start"/>
+            <Image Grid.Column="0" Source="task.png" Margin="0,8,0,0"/>
+            <Image Grid.Column="1" Source="notificationbell.png" Margin="0,8,0,0"/>
+            <Image Grid.Column="2" Source="personicon.png" Margin="0,8,0,0"/>
+        </Grid>
+    </Grid>
+</ContentPage>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="EDUTASK_1._1.Views.NotificationsPage"
+             NavigationPage.HasNavigationBar="False"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#F5F7FA">
+    <Grid>
+        <VerticalStackLayout Padding="20" Spacing="15">
+
+            <Label Text="🔔 Notifications" FontSize="24" FontAttributes="Bold" TextColor="#2C3E50" HorizontalOptions="Center"/>
+            <Label Text="Stay updated with your tasks" FontSize="14" TextColor="Gray" HorizontalOptions="Center"/>
+
+        </VerticalStackLayout>
+
+        <!-- Empty state centered using Grid -->
+        <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center" Spacing="15">
+            <Label Text="📭" FontSize="48" HorizontalOptions="Center"/>
+            <Label Text="No notifications yet" FontSize="16" TextColor="Gray" HorizontalOptions="Center"/>
+            <Label Text="When tasks are assigned or updated, you'll see them here" FontSize="12" TextColor="LightGray" HorizontalOptions="Center"/>
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

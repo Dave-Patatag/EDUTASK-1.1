@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="EDUTASK_1._1.Views.LandingPage"
+             NavigationPage.HasNavigationBar="False"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="White">
+    
+    <VerticalStackLayout Spacing="30" Padding="30" VerticalOptions="Center">
+
+        <Label Text="EduTask" FontSize="36" FontAttributes="Bold" HorizontalOptions="Center" TextColor="#2C3E50"/>
+      
+        <Border StrokeThickness="0" Padding="20" Margin="0,20" BackgroundColor="White">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="15"/>
+            </Border.StrokeShape>
+            <VerticalStackLayout Spacing="15">
+
+                <Button Text="Director" 
+                        Clicked="OnDirectorClicked" 
+                        BackgroundColor="#5D6D7E" 
+                        TextColor="White"
+                        CornerRadius="10"
+                        HeightRequest="60"/>
+
+                <Button Text="Staff"
+                        Clicked="OnStaffClicked"
+                        BackgroundColor="#5D6D7E"
+                        TextColor="White"
+                        CornerRadius="10"
+                        HeightRequest="60"/>
+
+                <Button Text="Teacher" 
+                        Clicked="OnTeacherClicked" 
+                        BackgroundColor="#5D6D7E"     
+                        TextColor="White"
+                        CornerRadius="10"
+                        HeightRequest="60"/>
+            </VerticalStackLayout>
+        </Border>
+
+    </VerticalStackLayout>
+</ContentPage>

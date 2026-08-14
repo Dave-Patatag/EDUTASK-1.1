@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="EDUTASK_1._1.Views.FlyoutMenuPage"
+             NavigationPage.HasNavigationBar="False"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#D5D8DC">
+
+    <Grid RowDefinitions="Auto,*">
+
+        <!-- Header -->
+        <Border Grid.Row="0" Padding="20,15" BackgroundColor="#5D6D7E" StrokeThickness="0">
+            <VerticalStackLayout Spacing="10">
+                <!-- Back arrow -->
+<ImageButton Source="backicon.png" Clicked="OnBackTapped" WidthRequest="34" HeightRequest="34" Padding="7" CornerRadius="17" BackgroundColor="White" HorizontalOptions="Start" SemanticProperties.Description="Close menu"/>
+                <Label Text="EduTask" FontSize="28" FontAttributes="Bold" TextColor="White"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Menu Items -->
+        <ScrollView Grid.Row="1" BackgroundColor="#D5D8DC">
+            <VerticalStackLayout Padding="10,20" Spacing="5">
+                <Grid Padding="15,14" ColumnDefinitions="40,*">
+                    <Image Grid.Column="0" Source="viewtask.png" WidthRequest="22" HeightRequest="22" VerticalOptions="Center"/>
+                    <Label Grid.Column="1" Text="Tasks" FontSize="16" TextColor="#2C3E50" VerticalOptions="Center"/>
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnTasksTapped"/>
+                    </Grid.GestureRecognizers>
+                </Grid>
+
+                <Grid x:Name="TaskSummaryMenuItem" Padding="15,14" ColumnDefinitions="40,*">
+                    <Image Grid.Column="0" Source="summaryreport.png" WidthRequest="22" HeightRequest="22" VerticalOptions="Center"/>
+                    <Label Grid.Column="1" Text="Task Summary" FontSize="16" TextColor="#2C3E50" VerticalOptions="Center"/>
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnTaskSummaryTapped"/>
+                    </Grid.GestureRecognizers>
+                </Grid>
+
+                <Grid Padding="15,14" ColumnDefinitions="40,*">
+                    <Image Grid.Column="0" Source="calendartab.png" WidthRequest="22" HeightRequest="22" VerticalOptions="Center"/>
+                    <Label Grid.Column="1" Text="Calendar" FontSize="16" TextColor="#2C3E50" VerticalOptions="Center"/>
+                </Grid>
+
+                <Grid Padding="15,14" ColumnDefinitions="40,*">
+                    <Image Grid.Column="0" Source="settings.png" WidthRequest="25" HeightRequest="25" VerticalOptions="Center"/>
+                    <Label Grid.Column="1" Text="Settings" FontSize="16" TextColor="#2C3E50" VerticalOptions="Center"/>
+                </Grid>
+
+                <Grid Padding="15,14" ColumnDefinitions="40,*">
+                    <Image Grid.Column="0" Source="landingpage.png" WidthRequest="25" HeightRequest="25" VerticalOptions="Center"/>
+                    <Label Grid.Column="1" Text="Landing Page" FontSize="16" TextColor="#2C3E50" VerticalOptions="Center"/>
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnLandingPageTapped"/>
+                    </Grid.GestureRecognizers>
+                </Grid>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
