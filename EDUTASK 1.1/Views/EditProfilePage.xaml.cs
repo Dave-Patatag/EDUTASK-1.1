@@ -1,11 +1,13 @@
 using EDUTASK_1._1.Models;
+using EDUTASK_1._1.Helpers;
+using EDUTASK_1._1.Views.Base;
 using EDUTASK_1._1.Services;
 using EDUTASK_1._1.ViewModels;
 using System.Net.Mail;
 
 namespace EDUTASK_1._1.Views
 {
-    public partial class EditProfilePage : ContentPage
+    public partial class EditProfilePage : EduTaskPage
     {
         private readonly EditProfileViewModel _viewModel;
         private readonly DatabaseService _database = new();
@@ -21,9 +23,9 @@ namespace EDUTASK_1._1.Views
                 user.ContactNumber,
                 user.Email,
                 user.Username,
-                user.Birthdate,
                 user.ProfilePhotoPath,
-                $"user-{user.UserID}");
+                $"user-{user.UserID}",
+                user.Bio);
         }
 
         public EditProfilePage(Teachers teacher) : this()
@@ -35,9 +37,9 @@ namespace EDUTASK_1._1.Views
                 teacher.ContactNumber,
                 teacher.Email,
                 teacher.Username,
-                teacher.Birthdate,
                 teacher.ProfilePhotoPath,
-                $"teacher-{teacher.TeacherID}");
+                $"teacher-{teacher.TeacherID}",
+                teacher.Bio);
         }
 
         private EditProfilePage()
@@ -59,28 +61,46 @@ namespace EDUTASK_1._1.Views
                 PhoneEntry.Text = digitsOnly;
         }
 
+        private static void OnClearEntryClicked(object? sender, EventArgs e)
+        {
+            if (sender is Button { CommandParameter: Entry entry })
+                entry.Text = string.Empty;
+        }
+
         private void PopulateForm(
             string firstName,
             string lastName,
             string contactNumber,
             string email,
             string username,
-            DateTime? birthdate,
             string profilePhotoPath,
-            string avatarSeed)
+            string avatarSeed,
+            string bio)
         {
             _viewModel.AvatarSeed = avatarSeed;
             _viewModel.FullName = $"{firstName} {lastName}".Trim();
             _viewModel.ContactNumber = contactNumber;
             _viewModel.Email = email;
             _viewModel.Username = username;
-            _viewModel.Birthdate = birthdate ?? DateTime.Today.AddYears(-18);
             _viewModel.ProfilePhotoPath = profilePhotoPath;
+            _viewModel.Bio = bio;
+        }
+
+        private void OnEditProfileBackPressed(object sender, EventArgs e)
+        {
+            EditProfileBackButton.BackgroundColor = AppColors.TextSecondary;
+            EditProfileBackButton.Source = "whitebackicon.png";
+        }
+
+        private void OnEditProfileBackReleased(object sender, EventArgs e)
+        {
+            EditProfileBackButton.BackgroundColor = AppColors.SurfaceBase;
+            EditProfileBackButton.Source = "backicon.png";
         }
 
         private async void OnBackClicked(object sender, EventArgs e)
         {
-            await Navigation.PopAsync();
+            await Navigation.PopModalAsync(false);
         }
 
         private async void OnChangePhotoTapped(object sender, EventArgs e)
@@ -137,8 +157,8 @@ namespace EDUTASK_1._1.Views
                         _viewModel.ContactNumber,
                         _viewModel.Email,
                         _viewModel.Username,
-                        _viewModel.Birthdate,
-                        _viewModel.ProfilePhotoPath);
+                        _viewModel.ProfilePhotoPath,
+                        _viewModel.Bio);
                 }
                 else if (_user is not null)
                 {
@@ -148,8 +168,8 @@ namespace EDUTASK_1._1.Views
                         _viewModel.ContactNumber,
                         _viewModel.Email,
                         _viewModel.Username,
-                        _viewModel.Birthdate,
-                        _viewModel.ProfilePhotoPath);
+                        _viewModel.ProfilePhotoPath,
+                        _viewModel.Bio);
 
                     var refreshedUser = await _database.GetUserByIdAsync(_user.UserID);
                     if (refreshedUser is not null)
@@ -164,7 +184,7 @@ namespace EDUTASK_1._1.Views
                     throw new InvalidOperationException("The account no longer exists.");
 
                 await UiAlertService.ShowAsync(this, "Profile updated", "Your changes have been saved.", "OK");
-                await Navigation.PopAsync();
+                await Navigation.PopModalAsync(false);
             }
             catch (FormatException)
             {
@@ -201,8 +221,6 @@ namespace EDUTASK_1._1.Views
                 throw new ArgumentException("Username is required.");
             if (!_viewModel.Username.Trim().StartsWith('@'))
                 throw new ArgumentException("Username must start with @.");
-            if (_viewModel.Birthdate.Date >= DateTime.Today)
-                throw new ArgumentException("Please select a valid birthdate.");
         }
     }
 }

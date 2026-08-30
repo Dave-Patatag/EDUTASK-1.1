@@ -1,3 +1,5 @@
+using EDUTASK_1._1.Helpers;
+
 namespace EDUTASK_1._1.Services;
 
 public static class UiAlertService
@@ -12,9 +14,10 @@ public static class UiAlertService
         string title,
         string message,
         string acceptText,
-        string cancelText)
+        string cancelText,
+        bool stackedButtons = false)
     {
-        return await ShowCoreAsync(owner, title, message, acceptText, cancelText);
+        return await ShowCoreAsync(owner, title, message, acceptText, cancelText, stackedButtons);
     }
 
     public static async Task<string?> PromptAsync(
@@ -26,8 +29,8 @@ public static class UiAlertService
         int maxLength = 500)
     {
         var completion = new TaskCompletionSource<string?>();
-        var accent = Color.FromArgb("#DC2626");
-        var themePrimary = Color.FromArgb("#5D6D7E");
+        var accent = AppColors.StatusDanger;
+        var themePrimary = AppColors.Brand800;
 
         var modal = new ContentPage
         {
@@ -35,23 +38,13 @@ public static class UiAlertService
             Padding = 0
         };
 
-        var iconCircle = new Border
+        var iconCircle = new Image
         {
-            WidthRequest = 42,
-            HeightRequest = 42,
-            BackgroundColor = Color.FromArgb("#FEF2F2"),
-            StrokeThickness = 0,
+            Source = "warningicon.png",
+            WidthRequest = 58,
+            HeightRequest = 58,
             HorizontalOptions = LayoutOptions.Center,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 21 },
-            Content = new Label
-            {
-                Text = "!",
-                TextColor = accent,
-                FontSize = 20,
-                FontAttributes = FontAttributes.Bold,
-                HorizontalTextAlignment = TextAlignment.Center,
-                VerticalTextAlignment = TextAlignment.Center
-            }
+            Aspect = Aspect.AspectFit
         };
 
         var editor = new Editor
@@ -61,16 +54,16 @@ public static class UiAlertService
             HeightRequest = 96,
             AutoSize = EditorAutoSizeOption.Disabled,
             BackgroundColor = Colors.Transparent,
-            TextColor = Color.FromArgb("#111827"),
-            PlaceholderColor = Color.FromArgb("#9CA3AF"),
-            FontSize = 14,
+            TextColor = AppColors.TextPrimary,
+            PlaceholderColor = AppColors.TextDisabled,
+            FontSize = AppTypography.Body,
             Margin = new Thickness(4, 1)
         };
 
         var inputBorder = new Border
         {
-            BackgroundColor = Color.FromArgb("#F9FAFB"),
-            Stroke = Color.FromArgb("#D1D5DB"),
+            BackgroundColor = AppColors.SurfaceMuted,
+            Stroke = AppColors.BorderStrong,
             StrokeThickness = 1,
             Padding = new Thickness(8, 4),
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 9 },
@@ -80,15 +73,15 @@ public static class UiAlertService
         var errorLabel = new Label
         {
             Text = "A reason is required.",
-            FontSize = 11,
+            FontSize = AppTypography.Label,
             TextColor = accent,
             IsVisible = false
         };
 
-        var primaryButton = CreateButton(primaryText, themePrimary, Colors.White);
-        primaryButton.FontSize = 12;
+        var primaryButton = CreateButton(primaryText, themePrimary, AppColors.TextInverse);
+        primaryButton.FontSize = AppTypography.Caption;
         primaryButton.Padding = new Thickness(8, 0);
-        var cancelButton = CreateButton(cancelText, Color.FromArgb("#E5E7EB"), Color.FromArgb("#111827"));
+        var cancelButton = CreateSecondaryButton(cancelText);
         primaryButton.IsEnabled = false;
 
         bool isClosing = false;
@@ -112,7 +105,7 @@ public static class UiAlertService
             bool hasReason = !string.IsNullOrWhiteSpace(editor.Text);
             primaryButton.IsEnabled = hasReason;
             errorLabel.IsVisible = false;
-            inputBorder.Stroke = hasReason ? Color.FromArgb("#D1D5DB") : inputBorder.Stroke;
+            inputBorder.Stroke = hasReason ? AppColors.BorderStrong : inputBorder.Stroke;
         };
         primaryButton.Clicked += async (_, _) =>
         {
@@ -127,22 +120,17 @@ public static class UiAlertService
             await CloseAsync(reason);
         };
         cancelButton.Clicked += async (_, _) => await CloseAsync(null);
-        var promptBackdrop = new BoxView { Color = Color.FromArgb("#80000000") };
+        var promptBackdrop = new BoxView { Color = AppColors.Scrim };
         var promptBackdropTap = new TapGestureRecognizer();
         promptBackdropTap.Tapped += async (_, _) => await CloseAsync(null);
         promptBackdrop.GestureRecognizers.Add(promptBackdropTap);
 
-        var buttons = new Grid
+        var buttons = new VerticalStackLayout
         {
-            ColumnSpacing = 10,
-            ColumnDefinitions =
-            {
-                new ColumnDefinition(new GridLength(0.9, GridUnitType.Star)),
-                new ColumnDefinition(new GridLength(1.1, GridUnitType.Star))
-            }
+            Spacing = 10,
+            Children = { primaryButton, cancelButton }
         };
-        buttons.Add(cancelButton);
-        buttons.Add(primaryButton, 1);
+        ApplyPrimaryButtonStyle(primaryButton);
 
         modal.Content = new Grid
         {
@@ -154,8 +142,8 @@ public static class UiAlertService
                 {
                     MaximumWidthRequest = 420,
                     Padding = new Thickness(22),
-                    BackgroundColor = Colors.White,
-                    Stroke = Color.FromArgb("#FEE2E2"),
+                    BackgroundColor = AppColors.SurfaceBase,
+                    Stroke = AppColors.StatusDangerSurface,
                     StrokeThickness = 1,
                     HorizontalOptions = LayoutOptions.Fill,
                     StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 16 },
@@ -168,16 +156,16 @@ public static class UiAlertService
                             new Label
                             {
                                 Text = title,
-                                FontSize = 18,
+                                FontSize = AppTypography.Heading,
                                 FontAttributes = FontAttributes.Bold,
-                                TextColor = Color.FromArgb("#111827"),
+                                TextColor = AppColors.TextPrimary,
                                 HorizontalTextAlignment = TextAlignment.Center
                             },
                             new Label
                             {
                                 Text = message,
-                                FontSize = 13,
-                                TextColor = Color.FromArgb("#4B5563"),
+                                FontSize = AppTypography.BodySmall,
+                                TextColor = AppColors.TextSecondary,
                                 HorizontalTextAlignment = TextAlignment.Center
                             },
                             inputBorder,
@@ -190,104 +178,48 @@ public static class UiAlertService
         };
 
         modal.Disappearing += (_, _) => completion.TrySetResult(closingResult);
-        await owner.Navigation.PushModalAsync(modal);
+        await owner.Navigation.PushModalAsync(modal, false);
         editor.Focus();
         return await completion.Task;
     }
     public static async Task<bool> ShowTaskReminderAsync(Page owner, IReadOnlyList<(string Title, string Priority)> dueToday, IReadOnlyList<(string Title, string Priority)> dueTomorrow, DateTime today)
     {
-var completion = new TaskCompletionSource<bool>();
-        var overlay = new Grid { BackgroundColor = Color.FromArgb("#99000000"), Padding = new Thickness(20), ZIndex = 1000 };
+        var completion = new TaskCompletionSource<bool>();
+        var overlay = new Grid { BackgroundColor = Colors.Transparent, ZIndex = 1000 };
+        bool isClosing = false;
 
-        var icon = new Border
+        string title = dueToday.Count > 0 && dueTomorrow.Count > 0
+            ? "Tasks due soon"
+            : dueToday.Count > 0 ? "Tasks due today" : "Tasks due tomorrow";
+        string message = dueToday.Count > 0 && dueTomorrow.Count > 0
+            ? $"You have {dueToday.Count} task{(dueToday.Count == 1 ? string.Empty : "s")} due today and {dueTomorrow.Count} due tomorrow."
+            : dueToday.Count > 0
+                ? $"You have {dueToday.Count} task{(dueToday.Count == 1 ? string.Empty : "s")} due today."
+                : $"You have {dueTomorrow.Count} task{(dueTomorrow.Count == 1 ? string.Empty : "s")} due tomorrow.";
+
+        var sheetContent = new VerticalStackLayout
         {
-            WidthRequest = 42, HeightRequest = 42, BackgroundColor = Color.FromArgb("#EEF4FF"), StrokeThickness = 0,
-            HorizontalOptions = LayoutOptions.Center,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 21 },
-            Content = new Label { Text = "!", FontSize = 20, FontAttributes = FontAttributes.Bold, TextColor = Color.FromArgb("#2563EB"), HorizontalTextAlignment = TextAlignment.Center, VerticalTextAlignment = TextAlignment.Center }
-        };
-        var header = new VerticalStackLayout
-        {
-            Spacing = 5, HorizontalOptions = LayoutOptions.Center,
+            Spacing = 8,
+            Padding = new Thickness(28, 0, 28, 26),
             Children =
             {
-                icon,
-                new Label { Text = "Task reminder", FontSize = 19, FontAttributes = FontAttributes.Bold, TextColor = Color.FromArgb("#243447"), HorizontalTextAlignment = TextAlignment.Center }
+                new Image { Source = "tasknodue.png", WidthRequest = 110, HeightRequest = 90, Aspect = Aspect.AspectFit, HorizontalOptions = LayoutOptions.Center, Margin = new Thickness(0, 4, 0, 2) },
+                new Label { Text = title, FontSize = AppTypography.Heading, FontAttributes = FontAttributes.Bold, TextColor = AppColors.TextPrimary, HorizontalTextAlignment = TextAlignment.Center },
+                new Label { Text = message, FontSize = AppTypography.Body, TextColor = AppColors.TextSecondary, HorizontalTextAlignment = TextAlignment.Center, LineBreakMode = LineBreakMode.WordWrap },
             }
         };
-        var taskContent = new VerticalStackLayout { Spacing = 10 };
 
-        void AddSection(IReadOnlyList<(string Title, string Priority)> tasks, bool isToday)
-        {
-            if (tasks.Count == 0) return;
-            DateTime date = isToday ? today : today.AddDays(1);
-            taskContent.Children.Add(new Label
-            {
-                Text = date.ToString("MMMM d, yyyy"), FontSize = 15, FontAttributes = FontAttributes.Bold,
-                TextColor = Color.FromArgb("#526273"), Margin = new Thickness(0, 2, 0, 2)
-            });
-            foreach (var task in tasks)
-            {
-                string priority = string.IsNullOrWhiteSpace(task.Priority) ? "Unassigned" : task.Priority;
-                Color priorityColor = priority.ToLowerInvariant() switch
-                {
-                    "high" => Color.FromArgb("#DC2626"),
-                    "medium" => Color.FromArgb("#D97706"),
-                    "low" => Color.FromArgb("#16803A"),
-                    _ => Color.FromArgb("#687786")
-                };
-                var row = new Grid { ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) }, ColumnSpacing = 8 };
-                row.Add(new VerticalStackLayout
-                {
-                    Spacing = 2,
-                    Children =
-                    {
-                        new Label { Text = task.Title, FontSize = 14, FontAttributes = FontAttributes.Bold, TextColor = Color.FromArgb("#243447") },
-                        new Label { Text = isToday ? "Due today" : "Due tomorrow", FontSize = 11, TextColor = isToday ? Color.FromArgb("#B42318") : Color.FromArgb("#687786") }
-                    }
-                });
-                row.Add(new Border
-                {
-                    Padding = new Thickness(8, 3), BackgroundColor = Colors.Transparent, Stroke = priorityColor, StrokeThickness = 1,
-                    VerticalOptions = LayoutOptions.Center,
-                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
-                    Content = new Label { Text = priority, FontSize = 10, FontAttributes = FontAttributes.Bold, TextColor = priorityColor }
-                }, 1);
-                taskContent.Children.Add(new Border
-                {
-                    BackgroundColor = Color.FromArgb("#F7F9FC"), Stroke = Color.FromArgb("#DCE4ED"), StrokeThickness = 1,
-                    Padding = new Thickness(12, 11), StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 }, Content = row
-                });
-            }
-        }
-
-        AddSection(dueToday, true);
-        AddSection(dueTomorrow, false);
-        bool isClosing = false;
-        var viewTasksButton = CreateButton("View tasks", Color.FromArgb("#5D6D7E"), Colors.White);
-        viewTasksButton.WidthRequest = 170;
-        viewTasksButton.Margin = new Thickness(0, 14, 0, 0);
-        viewTasksButton.HorizontalOptions = LayoutOptions.Center;
-        viewTasksButton.Clicked += (_, _) =>
+        var gotItButton = CreateButton("Got it", AppColors.Accent500, AppColors.TextInverse);
+        ApplySingleActionButtonStyle(gotItButton);
+        gotItButton.Margin = new Thickness(0, 14, 0, 0);
+        gotItButton.Clicked += (_, _) =>
         {
             if (isClosing) return;
             isClosing = true;
-
-            completion.TrySetResult(true);
+            completion.TrySetResult(false);
         };
+        sheetContent.Children.Add(gotItButton);
 
-        var dialogLayout = new Grid
-        {
-            RowSpacing = 12,
-            RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star), new RowDefinition(GridLength.Auto) }
-        };
-        dialogLayout.Add(header);
-        dialogLayout.Add(new ScrollView { Content = taskContent }, 0, 1);
-        dialogLayout.Add(viewTasksButton, 0, 2);
-
-        int taskCount = dueToday.Count + dueTomorrow.Count;
-        int sectionCount = (dueToday.Count > 0 ? 1 : 0) + (dueTomorrow.Count > 0 ? 1 : 0);
-        double desiredHeight = Math.Min(378, 198 + Math.Min(taskCount, 2) * 72 + sectionCount * 28);
         var reminderBackdrop = new BoxView { Color = Colors.Transparent };
         var reminderBackdropTap = new TapGestureRecognizer();
         reminderBackdropTap.Tapped += (_, _) =>
@@ -298,18 +230,19 @@ var completion = new TaskCompletionSource<bool>();
             completion.TrySetResult(false);
         };
         reminderBackdrop.GestureRecognizers.Add(reminderBackdropTap);
-        overlay.BackgroundColor = Colors.Transparent;
         overlay.Children.Add(reminderBackdrop);
         overlay.Children.Add(new Border
         {
-            WidthRequest = Math.Min(360, Math.Max(300, owner.Width - 40)), MaximumWidthRequest = 360, HeightRequest = Math.Min(desiredHeight, Math.Max(260, owner.Height - 48)), MaximumHeightRequest = 378,
-            Padding = new Thickness(20), BackgroundColor = Colors.White, StrokeThickness = 0,
-            HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 14 }, Content = dialogLayout
+            WidthRequest = Math.Min(420, Math.Max(300, owner.Width)),
+            MaximumWidthRequest = 480,
+            BackgroundColor = AppColors.SurfaceBase, StrokeThickness = 0,
+            HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.End,
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(24, 24, 0, 0) },
+            Content = sheetContent
         });
         var modal = new ContentPage
         {
-            BackgroundColor = Color.FromArgb("#99000000"),
+            BackgroundColor = AppColors.Scrim,
             Padding = 0,
             Content = overlay
         };
@@ -330,20 +263,29 @@ var completion = new TaskCompletionSource<bool>();
         }
         return result;
     }
+
     private static async Task<bool> ShowCoreAsync(
         Page owner,
         string title,
         string message,
         string primaryText,
-        string? secondaryText)
+        string? secondaryText,
+        bool stackedButtons = false)
     {
         var completion = new TaskCompletionSource<bool>();
         bool isProblem = IsProblem(title);
         bool isSuccess = !isProblem && IsSuccess(title);
         bool isDestructive = IsDestructive(title);
-        Color themePrimary = Color.FromArgb("#5D6D7E");
-        Color accent = Color.FromArgb(isSuccess ? "#27AE60" : isDestructive || isProblem ? "#EF4444" : "#5D6D7E");
-        Color softAccent = Color.FromArgb(isSuccess ? "#ECFDF5" : isDestructive || isProblem ? "#FEF2F2" : "#EEF1F4");
+        // A dialog's confirm button is the primary action on screen, so it wears
+        // the brand rather than the muted grey it used to. The accent pair is
+        // the status token and its own tinted surface.
+        Color themePrimary = AppColors.Brand800;
+        Color accent = isSuccess ? AppColors.StatusSuccess
+            : isDestructive || isProblem ? AppColors.StatusDanger
+            : AppColors.StatusNeutral;
+        Color softAccent = isSuccess ? AppColors.StatusSuccessSurface
+            : isDestructive || isProblem ? AppColors.StatusDangerSurface
+            : AppColors.StatusNeutralSurface;
 
         var modal = new ContentPage
         {
@@ -354,8 +296,8 @@ var completion = new TaskCompletionSource<bool>();
         var icon = new Label
         {
             Text = isSuccess ? "\u2713" : isDestructive || isProblem ? "!" : "i",
-            TextColor = Colors.White,
-            FontSize = 18,
+            TextColor = AppColors.SurfaceBase,
+            FontSize = AppTypography.Heading,
             FontAttributes = FontAttributes.Bold,
             HorizontalTextAlignment = TextAlignment.Center,
             VerticalTextAlignment = TextAlignment.Center
@@ -363,37 +305,44 @@ var completion = new TaskCompletionSource<bool>();
 
         var iconCircle = new Border
         {
-            WidthRequest = 42,
-            HeightRequest = 42,
-            BackgroundColor = accent,
+            WidthRequest = 62,
+            HeightRequest = 62,
+            BackgroundColor = Colors.Transparent,
             StrokeThickness = 0,
             HorizontalOptions = LayoutOptions.Center,
-            Content = icon,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 21 }
+            Content = new Image
+            {
+                Source = isSuccess ? "approveicon.png" : isDestructive ? "areyousureicon.png" : isProblem ? "warningicon.png" : "remindericon.png",
+                WidthRequest = 62,
+                HeightRequest = 62,
+                Aspect = Aspect.AspectFit
+            },
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 31 }
         };
 
         var titleLabel = new Label
         {
             Text = title,
-            FontSize = 18,
+            FontSize = AppTypography.Heading,
             FontAttributes = FontAttributes.Bold,
-            TextColor = Color.FromArgb("#111827"),
+            TextColor = AppColors.TextPrimary,
             HorizontalTextAlignment = TextAlignment.Center
         };
 
         var messageLabel = new Label
         {
             Text = message,
-            FontSize = 14,
-            TextColor = Color.FromArgb("#4B5563"),
+            FontSize = AppTypography.BodySmall,
+            TextColor = AppColors.TextSecondary,
             HorizontalTextAlignment = TextAlignment.Center,
-            LineBreakMode = LineBreakMode.WordWrap
+            LineBreakMode = LineBreakMode.WordWrap,
+            MaxLines = 3
         };
 
-        var primaryButton = CreateButton(primaryText, isDestructive ? accent : themePrimary, Colors.White);
+        var primaryButton = CreateButton(primaryText, isDestructive ? accent : themePrimary, AppColors.TextInverse);
         var secondaryButton = secondaryText is null
             ? null
-            : CreateButton(secondaryText, Color.FromArgb("#E5E7EB"), Color.FromArgb("#111827"));
+            : CreateSecondaryButton(secondaryText);
 
         bool isClosing = false;
         bool? closingResult = null;
@@ -411,7 +360,8 @@ var completion = new TaskCompletionSource<bool>();
 
             try
             {
-                await modal.Navigation.PopModalAsync(false);
+                if (owner.Navigation.ModalStack.Contains(modal))
+                    await owner.Navigation.PopModalAsync(false);
                 completion.TrySetResult(result);
             }
             catch
@@ -428,7 +378,7 @@ var completion = new TaskCompletionSource<bool>();
         primaryButton.Clicked += async (_, _) => await CloseAsync(true);
         var alertBackdrop = new BoxView
         {
-            Color = Color.FromArgb("#80000000"),
+            Color = AppColors.Scrim,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Fill
         };
@@ -438,30 +388,35 @@ var completion = new TaskCompletionSource<bool>();
         if (secondaryButton is not null)
             secondaryButton.Clicked += async (_, _) => await CloseAsync(false);
 
-        var buttons = new Grid
+        ApplyPrimaryButtonStyle(primaryButton);
+        View buttons;
+        if (secondaryButton is not null)
         {
-            ColumnSpacing = 10,
-            ColumnDefinitions =
+            // Dialog actions are intentionally stacked so the primary action
+            // reads first and the secondary action remains clearly separate.
+            buttons = new VerticalStackLayout
             {
-                new ColumnDefinition(GridLength.Star),
-                new ColumnDefinition(GridLength.Star)
-            }
-        };
-
-        if (secondaryButton is null)
-        {
-            buttons.ColumnDefinitions.RemoveAt(1);
-            buttons.Add(primaryButton);
+                Spacing = 10,
+                HorizontalOptions = LayoutOptions.Fill,
+                Children = { primaryButton, secondaryButton }
+            };
         }
         else
         {
-            buttons.Add(secondaryButton);
-            buttons.Add(primaryButton, 1);
+            ApplySingleActionButtonStyle(primaryButton);
+            buttons = primaryButton;
         }
 
+        if (stackedButtons)
+        {
+            titleLabel.Margin = new Thickness(0, 4, 0, 2);
+            messageLabel.Margin = new Thickness(12, 0, 12, 8);
+            messageLabel.LineHeight = 1.3;
+        }
         var content = new VerticalStackLayout
         {
-            Spacing = 14,
+            Spacing = 16,
+            Margin = new Thickness(0, 8, 0, 0),
             Children =
             {
                 iconCircle,
@@ -482,20 +437,21 @@ var completion = new TaskCompletionSource<bool>();
                 {
                     MaximumWidthRequest = 420,
                     Margin = new Thickness(24),
-                    Padding = new Thickness(22),
-                    BackgroundColor = Colors.White,
+                    Padding = new Thickness(28, 24, 28, 28),
+                    BackgroundColor = AppColors.SurfaceBase,
                     Stroke = softAccent,
                     StrokeThickness = 1,
-                    HorizontalOptions = LayoutOptions.Center,
+                    HorizontalOptions = LayoutOptions.Fill,
                     VerticalOptions = LayoutOptions.Center,
-                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 16 },
+                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 22 },
+                    Shadow = new Shadow { Brush = AppColors.ShadowOverlay, Offset = new Point(0, 5), Radius = 12, Opacity = 0.35f },
                     Content = content
                 }
             }
         };
 
         modal.Disappearing += (_, _) => completion.TrySetResult(closingResult ?? false);
-        await owner.Navigation.PushModalAsync(modal);
+        await owner.Navigation.PushModalAsync(modal, false);
         return await completion.Task;
     }
 
@@ -504,13 +460,51 @@ var completion = new TaskCompletionSource<bool>();
         return new Button
         {
             Text = text,
-            HeightRequest = 46,
-            CornerRadius = 9,
-            FontSize = 14,
+            HeightRequest = 50,
+            MinimumHeightRequest = 50,
+            CornerRadius = 8,
+            FontSize = AppTypography.Body,
             FontAttributes = FontAttributes.Bold,
             BackgroundColor = background,
             TextColor = foreground
         };
+    }
+
+    private static Button CreateSecondaryButton(string text)
+    {
+        var button = CreateButton(text, AppColors.SurfaceBase, AppColors.Brand800);
+        button.BorderColor = AppColors.Brand800;
+        button.BorderWidth = 1;
+        return button;
+    }
+
+    private static void ApplyPrimaryButtonStyle(Button button)
+    {
+        button.HeightRequest = 50;
+        button.MinimumHeightRequest = 50;
+        button.CornerRadius = 8;
+        button.Padding = new Thickness(18, 0);
+        button.BackgroundColor = AppColors.Brand800;
+        button.TextColor = AppColors.TextInverse;
+        button.BorderWidth = 0;
+        button.HorizontalOptions = LayoutOptions.Fill;
+    }
+
+    /// <summary>
+    /// Single-action dialogs use one strong, unmistakable dismissal action.
+    /// The label is supplied by each caller; this method changes only the
+    /// button's visual treatment.
+    /// </summary>
+    private static void ApplySingleActionButtonStyle(Button button)
+    {
+        button.HeightRequest = 50;
+        button.MinimumHeightRequest = 50;
+        button.CornerRadius = 8;
+        button.Padding = new Thickness(18, 0);
+        button.BackgroundColor = AppColors.Brand800;
+        button.TextColor = AppColors.TextInverse;
+        button.BorderWidth = 0;
+        button.HorizontalOptions = LayoutOptions.Fill;
     }
 
     private static bool IsSuccess(string title)

@@ -1,5 +1,7 @@
-using EDUTASK_1._1.Services;
+﻿using EDUTASK_1._1.Services;
 using System.Data;
+using EDUTASK_1._1.Helpers;
+using EDUTASK_1._1.Views.Base;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -10,7 +12,9 @@ using EDUTASK_1._1.ViewModels;
 
 namespace EDUTASK_1._1.Views
 {
-    public partial class DirectorStaffDashboardPage : ContentPage
+    // Shares ~65% of its code-behind with TeacherDashboardPage. See
+    // DASHBOARD-DUPLICATION.md in this folder for what overlaps and what does not.
+    public partial class DirectorStaffDashboardPage : EduTaskPage
     {
         private DatabaseService _db = new DatabaseService();
         private UserDashboardViewModel _viewModel;
@@ -27,9 +31,21 @@ namespace EDUTASK_1._1.Views
         public DirectorStaffDashboardPage()
         {
             InitializeComponent();
+            UpdateGreeting();
             _viewModel = new UserDashboardViewModel();
             BindingContext = _viewModel;
             WireProfileIcon();
+
+        }
+
+        private void UpdateGreeting()
+        {
+            int hour = DateTime.Now.Hour;
+            GreetingLabel.Text = hour < 12
+                ? "Good morning"
+                : hour < 18
+                    ? "Good afternoon"
+                    : "Good evening";
         }
 
         private void WireProfileIcon()
@@ -44,7 +60,7 @@ namespace EDUTASK_1._1.Views
             var profileIcon = bottomNavigation?.Children
                 .OfType<Image>()
                 .FirstOrDefault(image => image.Source is FileImageSource source &&
-                                         string.Equals(source.File, "personicon.png", StringComparison.OrdinalIgnoreCase));
+                                         string.Equals(source.File, "defaultprofile.png", StringComparison.OrdinalIgnoreCase));
 
             if (profileIcon is null)
                 return;
@@ -65,7 +81,7 @@ namespace EDUTASK_1._1.Views
                     return;
                 }
 
-                DashboardFlyoutPage.Current?.ShowDetail(new ProfilePage(user));
+                DashboardFlyoutPage.Current?.ShowProfile(user);
             }
             catch (SqlException ex)
             {
@@ -76,9 +92,14 @@ namespace EDUTASK_1._1.Views
             }
         }
 
+        private void OnNotificationIconTapped(object? sender, TappedEventArgs e)
+        {
+            DashboardFlyoutPage.Current?.ShowNotification(UserSessionService.CurrentUser);
+        }
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+            UpdateGreeting();
             await LoadDashboardDataAsync();
             StartProgressMonitoring();
         }
@@ -152,6 +173,14 @@ namespace EDUTASK_1._1.Views
         {
             try
             {
+                if (await UserSessionService.GetCurrentUserAsync() is { } currentUser)
+                {
+                    string role = string.IsNullOrWhiteSpace(currentUser.RoleName)
+                        ? "Staff"
+                        : currentUser.RoleName.Trim();
+                    DashboardUserNameLabel.Text = $"{role} {currentUser.FirstName}".Trim();
+                }
+
                 _viewModel.TotalTasks = Convert.ToInt32(
                     await _db.ExecuteScalarAsync("SELECT COUNT(DISTINCT TaskID) FROM TaskAssignment"));
 
@@ -185,6 +214,9 @@ namespace EDUTASK_1._1.Views
                 var dt = await _db.GetAllTasksWithTeachersAsync();
                 _loadedTasks.Clear();
 
+                int[] taskIDs = dt.AsEnumerable().Select(row => row.Field<int>("TaskID")).Distinct().ToArray();
+                Dictionary<int, System.Threading.Tasks.Task<List<EDUTASK_1._1.Models.SubtaskDisplayItem>>> subtaskLoads =
+                    taskIDs.ToDictionary(taskID => taskID, taskID => _db.GetTaskSubtasksAsync(taskID));
                 foreach (IGrouping<int, DataRow> taskGroup in dt.AsEnumerable().GroupBy(row => row.Field<int>("TaskID")))
                 {
                     DataRow[] rows = taskGroup.ToArray();
@@ -197,7 +229,7 @@ namespace EDUTASK_1._1.Views
                         .OrderByDescending(status => status switch
                         {
                             "Completed" => 4,
-                            "Returned" => 3,
+                            "Needs Revision" => 3,
                             "For Validation" => 2,
                             _ => 1
                         })
@@ -219,22 +251,24 @@ namespace EDUTASK_1._1.Views
                     List<EDUTASK_1._1.Models.SubtaskDisplayItem> subtasks;
                     try
                     {
-                        subtasks = await _db.GetTaskSubtasksAsync(taskID);
+                        subtasks = await subtaskLoads[taskID];
                         bool reviewIsAvailable = UserSessionService.CanReviewSubtaskProof &&
                                                  completion != "Completed";
-                        foreach (EDUTASK_1._1.Models.SubtaskDisplayItem subtask in subtasks)
+                        Dictionary<int, int> unreadCounts;
+                        try
+                        {
+                            unreadCounts = await _db.GetUnreadTaskCommentCountsAsync(
+                                subtasks.Select(subtask => subtask.SubtaskID), "User", UserSessionService.CurrentUserId);
+                        }
+                        catch (Exception discussionException)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Unread discussion counts failed for task {taskID}: {discussionException}");
+                            unreadCounts = [];
+                        }
+                        foreach (var subtask in subtasks)
                         {
                             subtask.ReviewIsAvailable = reviewIsAvailable;
-                            try
-                            {
-                                subtask.UnreadDiscussionCount = await _db.GetUnreadTaskCommentCountAsync(
-                                    subtask.SubtaskID, "User", UserSessionService.CurrentUserId);
-                            }
-                            catch (Exception discussionException)
-                            {
-                                System.Diagnostics.Debug.WriteLine($"Unread discussion count failed for subtask {subtask.SubtaskID}: {discussionException}");
-                                subtask.UnreadDiscussionCount = 0;
-                            }
+                            subtask.UnreadDiscussionCount = unreadCounts.GetValueOrDefault(subtask.SubtaskID);
                         }
                     }
                     catch (Exception subtaskException)
@@ -244,7 +278,7 @@ namespace EDUTASK_1._1.Views
                     }
                     int submittedProgressItems = subtasks.Count(subtask => subtask.IsProofPending || subtask.IsProofApproved);
                     int verifiedProgressItems = subtasks.Count(subtask => subtask.IsProofApproved);
-                    bool needsRevision = completion == "Returned" || subtasks.Any(subtask => subtask.IsProofReturned);
+                    bool needsRevision = completion == "Needs Revision" || subtasks.Any(subtask => subtask.IsProofReturned);
                     string status = completion == "Completed"
                         ? "Completed"
                         : needsRevision
@@ -267,16 +301,9 @@ namespace EDUTASK_1._1.Views
                         TeacherName = teacherSummary,
                         DeadlineDisplay = deadline?.ToString("MMM dd, yyyy") ?? "No deadline",
                         Priority = displayRow["Priority"]?.ToString() ?? "Unassigned",
-                        PriorityColor = GetPriorityColor(displayRow["Priority"]?.ToString() ?? string.Empty),
+                        PriorityColor = TaskPalette.PriorityColor(displayRow["Priority"]?.ToString() ?? string.Empty),
                         Status = status,
-                        StatusColor = status switch
-                        {
-                            "Completed" => Color.FromArgb("#16803A"),
-                            "Needs Revision" => Color.FromArgb("#DC2626"),
-                            "For Validation" => Color.FromArgb("#6554C0"),
-                            "Acknowledged" => Color.FromArgb("#2563EB"),
-                            _ => Color.FromArgb("#D97706")
-                        },
+                        StatusColor = TaskPalette.StatusColor(status),
                         Deadline = deadline,
                         CompletedAt = rows.Where(row => !row.IsNull("CompletedAt"))
                             .Select(row => row.Field<DateTime>("CompletedAt"))
@@ -350,44 +377,35 @@ namespace EDUTASK_1._1.Views
             ApplyTaskFilters();
         }
 
-        private Color GetPriorityColor(string priority)
-        {
-            return priority switch
-            {
-                "High" => Color.FromArgb("#DC2626"),
-                "Medium" => Color.FromArgb("#EAB308"),
-                "Low" => Color.FromArgb("#22A447"),
-                _ => Colors.Gray
-            };
-        }
 
-        private static int GetPriorityRank(string? priority) => priority?.Trim().ToUpperInvariant() switch
-        {
-            "HIGH" => 0,
-            "MEDIUM" => 1,
-            "LOW" => 2,
-            _ => 3
-        };
 
         private void UpdateFilterChipStyles()
         {
-            Color normal = Color.FromArgb("#F3F4F6");
-            Color selected = Color.FromArgb("#DBEAFE");
             bool dateIsActive = _deadlineFilter.Kind != DeadlineFilterKind.AnyDate;
 
-            AllFilterBorder.BackgroundColor = !dateIsActive && _currentFilter == "All" ? selected : normal;
-            TodayFilterBorder.BackgroundColor = !dateIsActive && _currentFilter == "Today" ? selected : normal;
-            OverdueFilterBorder.BackgroundColor = !dateIsActive && _currentFilter == "Overdue" ? selected : normal;
-            DateFilterBorder.BackgroundColor = dateIsActive ? selected : normal;
+            FilterButtonState.Apply(AllFilterBorder, !dateIsActive && _currentFilter == "All", AllFilterLabel);
+            FilterButtonState.Apply(TodayFilterBorder, !dateIsActive && _currentFilter == "Today", TodayFilterLabel);
+            FilterButtonState.Apply(OverdueFilterBorder, !dateIsActive && _currentFilter == "Overdue", OverdueFilterLabel);
+            StyleTaskToolsButton(dateIsActive);
         }
 
         private void ShowDateFilterPressedState()
         {
-            Color normal = Color.FromArgb("#F3F4F6");
-            AllFilterBorder.BackgroundColor = normal;
-            TodayFilterBorder.BackgroundColor = normal;
-            OverdueFilterBorder.BackgroundColor = normal;
-            DateFilterBorder.BackgroundColor = Color.FromArgb("#DBEAFE");
+            FilterButtonState.Apply(AllFilterBorder, false, AllFilterLabel);
+            FilterButtonState.Apply(TodayFilterBorder, false, TodayFilterLabel);
+            FilterButtonState.Apply(OverdueFilterBorder, false, OverdueFilterLabel);
+            StyleTaskToolsButton(active: true);
+        }
+
+        private void StyleTaskToolsButton(bool active)
+        {
+            DateFilterBorder.WidthRequest = 42;
+            DateFilterBorder.HeightRequest = 42;
+            DateFilterBorder.MinimumHeightRequest = 42;
+            DateFilterBorder.BackgroundColor = Colors.Transparent;
+            DateFilterBorder.Stroke = Colors.Transparent;
+            DateFilterBorder.StrokeThickness = 0;
+            DateFilterIcon.Source = "blackfiltericon.png";
         }
         private async void OnDateFilterClicked(object sender, EventArgs e)
         {
@@ -400,8 +418,28 @@ namespace EDUTASK_1._1.Views
             }
 
             _deadlineFilter = selected;
+            if (_deadlineFilter.Kind != DeadlineFilterKind.AnyDate)
+                _currentFilter = "All";
             UpdateFilterChipStyles();
             ApplyTaskFilters();
+        }
+
+        private void OnTaskToolsClicked(object sender, EventArgs e) =>
+            OnDateFilterClicked(sender, e);
+
+        private void OnTaskToolsDismissClicked(object sender, EventArgs e) =>
+            TaskToolsOverlay.IsVisible = false;
+
+        private void OnTaskToolsDateFilterClicked(object sender, EventArgs e)
+        {
+            TaskToolsOverlay.IsVisible = false;
+            OnDateFilterClicked(sender, e);
+        }
+
+        private void OnTaskToolsHistoryClicked(object sender, EventArgs e)
+        {
+            TaskToolsOverlay.IsVisible = false;
+            OnCompletionHistoryClicked(sender, e);
         }
         private async Task SelectStatusFilterAsync(string filter)
         {
@@ -458,7 +496,7 @@ namespace EDUTASK_1._1.Views
                 var previewPage = new ContentPage
                 {
                     Title = proof.Value.FileName,
-                    BackgroundColor = Colors.Black,
+                    BackgroundColor = AppColors.TextPrimary,
                     Content = new Grid
                     {
                         RowDefinitions = { new RowDefinition(GridLength.Star), new RowDefinition(GridLength.Auto) },
@@ -467,8 +505,8 @@ namespace EDUTASK_1._1.Views
                     }
                 };
                 Grid.SetRow(closeButton, 1);
-                closeButton.Clicked += async (_, _) => await Navigation.PopModalAsync();
-                await Navigation.PushModalAsync(previewPage);
+                closeButton.Clicked += async (_, _) => await Navigation.PopModalAsync(false);
+                await Navigation.PushModalAsync(previewPage, false);
             }
             catch
             {
@@ -611,18 +649,18 @@ namespace EDUTASK_1._1.Views
 private ObservableCollection<DeadlineTaskGroup> BuildDeadlineGroups(IEnumerable<DashboardTaskItem> tasks)
         {
             return new ObservableCollection<DeadlineTaskGroup>(tasks
-                .OrderBy(task => GetPriorityRank(task.Priority))
+                .OrderBy(task => TaskPalette.PriorityRank(task.Priority))
                 .ThenBy(task => task.Deadline?.Date ?? DateTime.MaxValue)
                 .ThenBy(task => task.Title)
                 .Select(task => new DeadlineTaskGroup
                 {
                     Deadline = task.Deadline?.Date,
                     DeadlineDisplay = task.Deadline.HasValue
-                        ? FormatDeadlineGroupHeader(task.Deadline.Value)
+                        ? DeadlineTaskGroup.FormatHeader(task.Deadline.Value)
                         : "No deadline",
                     TeacherSummary = task.TeacherName,
                     Tasks = [task],
-                    IsExpanded = _expandedTaskGroups.Contains(task.TaskID),
+                        IsExpanded = _expandedTaskGroups.Contains(task.TaskID),
                     PriorityColor = task.PriorityColor
                 }));
         }
@@ -643,19 +681,7 @@ private ObservableCollection<DeadlineTaskGroup> BuildDeadlineGroups(IEnumerable<
             };
         }
 
-        private static string FormatDeadlineGroupHeader(DateTime deadline)
-        {
-            DateTime today = DateTime.Today;
-            int daysSinceMonday = ((int)today.DayOfWeek + 6) % 7;
-            DateTime currentWeekStart = today.AddDays(-daysSinceMonday);
-            DateTime nextWeekStart = currentWeekStart.AddDays(7);
-
-            return deadline.Date >= currentWeekStart && deadline.Date < nextWeekStart
-                ? deadline.ToString("dddd")
-                : deadline.ToString("dddd, MMMM d");
-        }
-
-private void OnDeadlineGroupTapped(object sender, TappedEventArgs e)
+        private void OnDeadlineGroupTapped(object sender, TappedEventArgs e)
         {
             if (e.Parameter is not DeadlineTaskGroup group || group.Tasks.FirstOrDefault() is not { } task)
                 return;
@@ -667,17 +693,49 @@ private void OnDeadlineGroupTapped(object sender, TappedEventArgs e)
                 _expandedTaskGroups.Remove(task.TaskID);
         }
 
+        public void ExpandTask(int taskID)
+        {
+            _expandedTaskGroups.Add(taskID);
+            DashboardTaskItem? task = _loadedTasks.FirstOrDefault(item => item.TaskID == taskID);
+            if (task is null)
+                return;
+
+            task.IsExpanded = true;
+            ApplyTaskFilters();
+        }
+
+        public async Task FocusTaskAsync(int taskID)
+        {
+            ExpandTask(taskID);
+            for (int attempt = 0; attempt < 8; attempt++)
+            {
+                await Task.Delay(50);
+                Element? target = TodayTasksView.Children.OfType<Element>().FirstOrDefault(child =>
+                    child.BindingContext is DeadlineTaskGroup group &&
+                    group.Tasks.Any(task => task.TaskID == taskID));
+                if (target is null)
+                    target = CompletedTodayTasksView.Children.OfType<Element>().FirstOrDefault(child =>
+                        child.BindingContext is DeadlineTaskGroup group &&
+                        group.Tasks.Any(task => task.TaskID == taskID));
+                if (target is null)
+                    continue;
+
+                await TasksScrollView.ScrollToAsync(target, ScrollToPosition.Center, true);
+                return;
+            }
+        }
+
         private void OnTodayToggleClicked(object sender, EventArgs e)
         {
             _isTodayExpanded = !_isTodayExpanded;
-            TodayToggleArrow.Text = _isTodayExpanded ? "\u25BC" : "\u25B2";
+            TodayToggleArrow.Source = _isTodayExpanded ? "collapse.png" : "uncollapse.png";
             UpdateTodayTasksVisibility();
         }
 
         private void OnCompletedTodayToggleClicked(object sender, EventArgs e)
         {
             _isCompletedTodayExpanded = !_isCompletedTodayExpanded;
-            CompletedTodayToggleArrow.Text = _isCompletedTodayExpanded ? "\u25BC" : "\u25B2";
+            CompletedTodayToggleArrow.Source = _isCompletedTodayExpanded ? "collapse.png" : "uncollapse.png";
             UpdateCompletedTodayTasksVisibility();
         }
 
@@ -725,8 +783,12 @@ private void OnDeadlineGroupTapped(object sender, TappedEventArgs e)
                 UserSessionService.CurrentUserId,
                 authorName,
                 task?.IsCompleted ?? false);
-            discussionPage.Disappearing += (_, _) => subtask.UnreadDiscussionCount = 0;
-            await Navigation.PushAsync(discussionPage);
+            discussionPage.Disappearing += (_, _) =>
+            {
+                subtask.UnreadDiscussionCount = 0;
+                ApplyTaskFilters();
+            };
+            await Navigation.PushModalAsync(discussionPage, false);
         }
 
         private async void OnAdminEditTapped(object sender, TappedEventArgs e)
@@ -744,33 +806,90 @@ private void OnDeadlineGroupTapped(object sender, TappedEventArgs e)
 
         private void PopulateTodayAndCompletedSections(IEnumerable<DashboardTaskItem> visibleTasks)
         {
+            bool dateFilterActive = _deadlineFilter.Kind != DeadlineFilterKind.AnyDate;
             var todayTasks = visibleTasks.Where(task => !task.IsCompleted).ToList();
-            var completedTodayTasks = visibleTasks.Where(task => task.IsCompleted && task.CompletedAt?.Date == DateTime.Today).ToList();
+            var completedTodayTasks = visibleTasks
+                .Where(task => task.IsCompleted && (dateFilterActive || task.CompletedAt?.Date == DateTime.Today))
+                .ToList();
 
             TodayHeaderLabel.Text = $"Active Tasks ({todayTasks.Count})";
-            CompletedTodayHeaderLabel.Text = $"Completed Today ({completedTodayTasks.Count})";
+            CompletedTodayHeaderLabel.Text = dateFilterActive
+                ? $"Completed Tasks ({completedTodayTasks.Count})"
+                : $"Completed Today ({completedTodayTasks.Count})";
 
             BindableLayout.SetItemsSource(TodayTasksView, BuildDeadlineGroups(todayTasks));
             BindableLayout.SetItemsSource(CompletedTodayTasksView, BuildDeadlineGroups(completedTodayTasks));
 
             bool hasTodayTasks = todayTasks.Count > 0;
             bool hasCompletedTasks = completedTodayTasks.Count > 0;
+            bool hasAnyTasks = hasTodayTasks || hasCompletedTasks;
             TodaySection.IsVisible = hasTodayTasks;
-            bool showsCompletionArea = _currentFilter is "All" or "Today";
-            CompletedTodaySection.IsVisible = showsCompletionArea;
-            CompletedTodaySectionHeader.IsVisible = _currentFilter == "All" || (_currentFilter == "Today" && hasCompletedTasks);
-            CompletedTodayTasksView.IsVisible = showsCompletionArea && hasCompletedTasks && _isCompletedTodayExpanded;
-            CompletionHistoryLink.IsVisible = _currentFilter == "All" || (_currentFilter == "Today" && hasCompletedTasks);
-            NoTodayTasksLabel.IsVisible = !hasTodayTasks && !hasCompletedTasks;
+            CompletedTodaySection.IsVisible = true;
+            CompletedTodaySectionHeader.IsVisible = true;
+            CompletedTodayTasksView.IsVisible = hasCompletedTasks && _isCompletedTodayExpanded;
+            CompletionHistoryLink.IsVisible = true;
+            NoTodayTasksLabel.IsVisible = !hasAnyTasks;
+            int overdueCount = _loadedTasks.Count(task => !task.IsCompleted && task.Deadline?.Date < DateTime.Today);
+            bool hasSearch = !string.IsNullOrWhiteSpace(TaskSearchBar?.Text);
+            bool cleanEmptyState = !hasAnyTasks && !hasSearch
+                && _deadlineFilter.Kind == DeadlineFilterKind.AnyDate
+                && (_currentFilter is "All" or "Today");
+            NoTasksTitleLabel.IsVisible = true;
+            NoTasksMessageLabel.IsVisible = true;
+            if (hasSearch)
+            {
+                NoTasksTitleLabel.Text = "No matching tasks";
+                NoTasksMessageLabel.Text = "Try a different search term or filter.";
+            }
+            else if (_deadlineFilter.Kind != DeadlineFilterKind.AnyDate)
+            {
+                NoTasksTitleLabel.Text = "No tasks for these dates";
+                NoTasksMessageLabel.Text = "Try another date range.";
+            }
+            else if (_currentFilter == "Today")
+            {
+                // The illustration already communicates the empty state; keep
+                // this view quieter by omitting the redundant heading.
+                NoTasksTitleLabel.IsVisible = false;
+                NoTasksMessageLabel.Text = overdueCount > 0
+                    ? $"You're clear for today. You still have {overdueCount} overdue {(overdueCount == 1 ? "task" : "tasks")}."
+                    : "You're clear for today.";
+            }
+            else if (_currentFilter == "Overdue")
+            {
+                NoTasksTitleLabel.Text = "No overdue tasks";
+                NoTasksMessageLabel.Text = "Everything is up to date.";
+            }
+            else
+            {
+                NoTasksTitleLabel.Text = "No tasks yet";
+                NoTasksMessageLabel.Text = "Create a task to get started.";
+            }
+            ViewOverdueEmptyLink.IsVisible = _currentFilter == "Today" && overdueCount > 0 && !hasSearch
+                && _deadlineFilter.Kind == DeadlineFilterKind.AnyDate;
         }
+        private async void OnEmptyViewOverdueClicked(object sender, EventArgs e) => await SelectStatusFilterAsync("Overdue");
         private async void OnCompletionHistoryClicked(object sender, EventArgs e)
+        {
+            var history = CreateCompletionHistoryPage();
+
+            if (DashboardFlyoutPage.Current is { } flyout)
+            {
+                flyout.ShowDetail(history);
+                return;
+            }
+
+            await Navigation.PushModalAsync(history, false);
+        }
+
+        internal CompletionHistoryPage CreateCompletionHistoryPage()
         {
             var history = _loadedTasks
                 .Where(task => task.IsCompleted && task.CompletedAt?.Date < DateTime.Today)
                 .OrderByDescending(task => task.CompletedAt)
                 .ToList();
-            await Navigation.PushAsync(new CompletionHistoryPage(history, showTeacherFilter: true));
+            return new CompletionHistoryPage(history, showTeacherFilter: true);
         }
+
     }
 }
-

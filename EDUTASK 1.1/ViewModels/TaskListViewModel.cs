@@ -1,3 +1,4 @@
+using EDUTASK_1._1.Helpers;
 using EDUTASK_1._1.Services;
 using System.Collections.ObjectModel;
 using System.Data;
@@ -47,11 +48,12 @@ public sealed class TaskListViewModel
                     TeacherName = string.IsNullOrWhiteSpace(row.Field<string>("TeacherName"))
                         ? "Unassigned"
                         : row.Field<string>("TeacherName")!,
-                    DeadlineDisplay = deadline?.ToString("MMM dd, yyyy") ?? "No deadline",
+                    Deadline = deadline,
+                    DeadlineDisplay = deadline?.ToString("MMM d, yyyy") ?? "No deadline",
                     Priority = priority,
                     Status = status,
                     PriorityColor = PriorityColor(priority),
-                    StatusColor = status == "Completed" ? Colors.Green : acknowledged ? Colors.Blue : Colors.Orange
+                    StatusColor = StatusColor(status)
                 });
             }
         }
@@ -90,11 +92,12 @@ public sealed class TaskListViewModel
         }
     }
 
-    private static Color PriorityColor(string priority) => priority switch
-    {
-        "High" => Colors.Red,
-        "Medium" => Colors.Orange,
-        "Low" => Colors.Blue,
-        _ => Colors.Gray
-    };
+    // One mapping for the whole app — see TaskPalette.
+    //
+    // This copy had fallen behind: it knew only Completed and Acknowledged, so a
+    // task needing revision was drawn amber here and red on every dashboard, and
+    // one awaiting validation was amber here and purple there.
+    private static Color PriorityColor(string priority) => TaskPalette.PriorityColor(priority);
+
+    private static Color StatusColor(string status) => TaskPalette.StatusColor(status);
 }

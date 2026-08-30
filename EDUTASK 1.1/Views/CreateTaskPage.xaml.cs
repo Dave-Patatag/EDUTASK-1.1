@@ -1,4 +1,6 @@
 using EDUTASK_1._1.Services;
+using EDUTASK_1._1.Helpers;
+using EDUTASK_1._1.Views.Base;
 using EDUTASK_1._1.ViewModels;
 using System.Collections.ObjectModel;
 using SubtaskDraft = EDUTASK_1._1.Models.SubtaskDraft;
@@ -6,12 +8,13 @@ using TeacherOption = EDUTASK_1._1.Models.TeacherOption;
 
 namespace EDUTASK_1._1.Views;
 
-public partial class CreateTaskPage : ContentPage
+public partial class CreateTaskPage : EduTaskPage
 {
     private readonly TaskFormViewModel _viewModel;
     private bool _teachersLoaded;
     private List<TeacherOption> _teachers = [];
     private string _selectedPriority = string.Empty;
+    private DateTime? _selectedDueDate;
     private List<TeacherOption> _selectedTeachers = [];
     private bool _createIndividualTasks = true;
     public ObservableCollection<SubtaskDraft> Subtasks { get; } = [];
@@ -21,11 +24,7 @@ public partial class CreateTaskPage : ContentPage
         InitializeComponent();
         _viewModel = new TaskFormViewModel(this);
         BindingContext = this;
-
-        DateTime defaultDeadline = DateTime.Today.AddDays(1);
-        DueDatePicker.Date = defaultDeadline.Date;
-        DueDateDisplayLabel.Text = defaultDeadline.ToString("MMM dd, yyyy");
-        PriorityPicker.SelectedIndex = 1;
+        PriorityPicker.SelectedIndex = 0;
     }
 
     protected override async void OnAppearing()
@@ -46,10 +45,19 @@ public partial class CreateTaskPage : ContentPage
         else
             await Navigation.PopAsync(false);
     }
-    private void OnDueDateSelected(object sender, DateChangedEventArgs e)
+    private async void OnDueDateTapped(object sender, TappedEventArgs e)
     {
-        DueDateDisplayLabel.Text = e.NewDate.ToString("MMM dd, yyyy");
+        var picker = new DueDateSelectionPage(_selectedDueDate);
+        DateTime? selected = await picker.ShowAsync(Navigation);
+        if (selected is null)
+            return;
+
+        _selectedDueDate = selected;
+        DueDateDisplayLabel.Text = selected.Value.ToString("MMM dd, yyyy");
+        DueDateDisplayLabel.TextColor = AppColors.TextSecondary;
+        FormFieldValidation.ClearFieldError(DueDateBorder, DueDateErrorLabel);
     }
+
     private async void OnBackTapped(object sender, EventArgs e)
     {
         await ClosePageAsync();
@@ -74,7 +82,16 @@ public partial class CreateTaskPage : ContentPage
         UpdateSubtaskVisibility();
     }
 
+    private void OnSubtaskTextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (Subtasks.Any(subtask => !string.IsNullOrWhiteSpace(subtask.Title)))
+            FormFieldValidation.ClearFieldError(SubtasksBorder, SubtasksErrorLabel);
+    }
+
     private void UpdateSubtaskVisibility() => NoSubtasksLabel.IsVisible = Subtasks.Count == 0;
+
+    private void OnTitleChanged(object sender, TextChangedEventArgs e) =>
+        FormFieldValidation.ClearFieldError(TitleBorder, TitleErrorLabel);
 
     private async void OnSelectTeachersClicked(object sender, EventArgs e)
     {
@@ -87,6 +104,39 @@ public partial class CreateTaskPage : ContentPage
         SelectedTeachersLabel.Text = _selectedTeachers.Count == 0
             ? "No teachers selected"
             : string.Join(", ", _selectedTeachers.Select(teacher => teacher.DisplayName));
+        if (_selectedTeachers.Count > 0)
+            FormFieldValidation.ClearFieldError(TeachersBorder, TeachersErrorLabel);
+    }
+
+    private bool ValidateFields()
+    {
+        FormFieldValidation.ClearFieldError(TitleBorder, TitleErrorLabel);
+        FormFieldValidation.ClearFieldError(TeachersBorder, TeachersErrorLabel);
+        FormFieldValidation.ClearFieldError(DueDateBorder, DueDateErrorLabel);
+        FormFieldValidation.ClearFieldError(SubtasksBorder, SubtasksErrorLabel);
+
+        bool valid = true;
+        if (string.IsNullOrWhiteSpace(TitleEntry.Text))
+        {
+            FormFieldValidation.SetFieldError(TitleBorder, TitleErrorLabel, "Enter a task title.");
+            valid = false;
+        }
+        if (!Subtasks.Any(subtask => !string.IsNullOrWhiteSpace(subtask.Title)))
+        {
+            FormFieldValidation.SetFieldError(SubtasksBorder, SubtasksErrorLabel, "Add at least one subtask.");
+            valid = false;
+        }
+        if (_selectedDueDate is null)
+        {
+            FormFieldValidation.SetFieldError(DueDateBorder, DueDateErrorLabel, "Select a due date.");
+            valid = false;
+        }
+        if (_selectedTeachers.Count == 0)
+        {
+            FormFieldValidation.SetFieldError(TeachersBorder, TeachersErrorLabel, "Select at least one teacher.");
+            valid = false;
+        }
+        return valid;
     }
 
     private void OnPrioritySelected(object sender, EventArgs e)
@@ -96,10 +146,13 @@ public partial class CreateTaskPage : ContentPage
 
     private async void OnCreateTaskClicked(object sender, EventArgs e)
     {
-        CreateButton.IsEnabled = false; 
+        if (!ValidateFields())
+            return;
+
+        CreateButton.IsEnabled = false;
         try
         {
-            DateTime deadline = DueDatePicker.Date;
+            DateTime deadline = _selectedDueDate!.Value;
             bool created = await _viewModel.CreateAsync(
                 TitleEntry.Text ?? string.Empty,
                 DescriptionEditor.Text,

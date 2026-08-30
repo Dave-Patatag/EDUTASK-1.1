@@ -90,6 +90,8 @@ public sealed class TaskFormViewModel
             List<SubtaskDraft> validSubtasks = subtasks
                 .Where(subtask => !string.IsNullOrWhiteSpace(subtask.Title))
                 .ToList();
+            if (validSubtasks.Count == 0)
+                throw new ArgumentException("Add at least one subtask so proof can be reviewed before completion.");
             if (validSubtasks.Any(subtask => subtask.Title.Trim().Length > 200))
                 throw new ArgumentException("Subtask titles cannot exceed 200 characters.");
 

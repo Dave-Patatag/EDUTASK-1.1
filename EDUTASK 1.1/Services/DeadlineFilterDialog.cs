@@ -1,3 +1,5 @@
+using EDUTASK_1._1.Helpers;
+
 namespace EDUTASK_1._1.Services;
 
 public enum DeadlineFilterKind
@@ -16,9 +18,6 @@ public sealed record DeadlineFilterSelection(
     public static DeadlineFilterSelection AnyDate { get; } =
         new(DeadlineFilterKind.AnyDate, null, null, "Date");
 
-    public static DeadlineFilterSelection NoDeadline { get; } =
-        new(DeadlineFilterKind.NoDeadline, null, null, "No Deadline");
-
     public static DeadlineFilterSelection ForRange(DateTime start, DateTime end, string label) =>
         new(DeadlineFilterKind.DateRange, start.Date, end.Date, label);
 
@@ -35,11 +34,11 @@ public sealed record DeadlineFilterSelection(
 
 public static class DeadlineFilterDialog
 {
-    private static readonly Color Accent = Color.FromArgb("#2563EB");
-    private static readonly Color SelectedDate = Color.FromArgb("#5D6D7E");
-    private static readonly Color Muted = Color.FromArgb("#F3F4F6");
-    private static readonly Color Text = Color.FromArgb("#111827");
-    private static readonly Color SubtleText = Color.FromArgb("#6B7280");
+    private static readonly Color Accent = AppColors.Accent500;
+    private static readonly Color SelectedDate = AppColors.CalendarAccent;
+    private static readonly Color Muted = AppColors.SurfaceSubtle;
+    private static readonly Color Text = AppColors.TextPrimary;
+    private static readonly Color SubtleText = AppColors.TextTertiary;
 
     public static async Task<DeadlineFilterSelection?> ShowAsync(
         Page owner,
@@ -55,21 +54,24 @@ public static class DeadlineFilterDialog
         int displayedYear = displayedMonth.Year;
         DeadlineFilterSelection pending = current;
         var taskDates = (tasks ?? [])
-            .Where(task => task.Deadline.HasValue)
+            .Where(task => task.Deadline.HasValue && !task.IsCompleted)
             .GroupBy(task => task.Deadline!.Value.Date)
             .ToDictionary(group => group.Key, group => group.ToList());
 
         var modal = new ContentPage
         {
-            BackgroundColor = Colors.White,
+            // Keep the page behind the sheet visible through a scrim. The
+            // actual filter surface is attached to the bottom below.
+            BackgroundColor = AppColors.ScrimLight,
             Padding = 0
         };
 
         var yearLabel = HeaderLabel();
-        yearLabel.FontSize = 30;
+        yearLabel.FontSize = AppTypography.Display;
         yearLabel.FontAttributes = FontAttributes.Bold;
         var monthLabel = HeaderLabel();
-        var monthBackButton = NavigationButton(string.Empty, 86);
+        monthLabel.FontSize = AppTypography.Heading;
+        var monthBackButton = NavigationButton(string.Empty, 40);
         var yearGrid = new Grid { ColumnSpacing = 12, RowSpacing = 16 };
         for (int column = 0; column < 3; column++)
             yearGrid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
@@ -80,11 +82,21 @@ public static class DeadlineFilterDialog
         for (int column = 0; column < 7; column++)
             daysGrid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
         for (int row = 0; row < 6; row++)
-            daysGrid.RowDefinitions.Add(new RowDefinition(new GridLength(42)));
+            daysGrid.RowDefinitions.Add(new RowDefinition(new GridLength(38)));
 
-        var presetButtons = new Dictionary<string, Button>(StringComparer.Ordinal);
-        var yearView = new VerticalStackLayout { Spacing = 14 };
+        var yearView = new VerticalStackLayout { Spacing = 14, HorizontalOptions = LayoutOptions.Fill };
         var monthView = new VerticalStackLayout { Spacing = 12, IsVisible = false };
+        var selectionSummaryLabel = new Label
+        {
+            Text = current.StartDate.HasValue
+                ? current.EndDate.HasValue
+                    ? $"{current.StartDate:dd MMM yyyy} – {current.EndDate:dd MMM yyyy}"
+                    : current.StartDate.Value.ToString("dd MMM yyyy")
+                : "Choose a date or range",
+            FontSize = AppTypography.Caption,
+            TextColor = SubtleText,
+            VerticalTextAlignment = TextAlignment.Center
+        };
         Action<bool> setQuickFilterVisibility = _ => { };
         Action<bool> setApplyVisibility = _ => { };
 
@@ -98,22 +110,12 @@ public static class DeadlineFilterDialog
 
             var colors = new List<Color>(3);
             if (datedTasks.Any(task => string.Equals(task.Priority, "High", StringComparison.OrdinalIgnoreCase)))
-                colors.Add(Color.FromArgb("#DC2626"));
+                colors.Add(AppColors.StatusDanger);
             if (datedTasks.Any(task => string.Equals(task.Priority, "Medium", StringComparison.OrdinalIgnoreCase)))
-                colors.Add(Color.FromArgb("#D97706"));
+                colors.Add(AppColors.StatusWarning);
             if (datedTasks.Any(task => string.Equals(task.Priority, "Low", StringComparison.OrdinalIgnoreCase)))
-                colors.Add(Color.FromArgb("#16803A"));
+                colors.Add(AppColors.StatusSuccess);
             return colors;
-        }
-
-        void ShowYearView()
-        {
-            displayedYear = displayedMonth.Year;
-            yearView.IsVisible = true;
-            monthView.IsVisible = false;
-            setQuickFilterVisibility(true);
-            setApplyVisibility(false);
-            RenderYear();
         }
 
         void ShowMonthView(DateTime month)
@@ -122,7 +124,7 @@ public static class DeadlineFilterDialog
             displayedYear = displayedMonth.Year;
             yearView.IsVisible = false;
             monthView.IsVisible = true;
-            setQuickFilterVisibility(false);
+            setQuickFilterVisibility(true);
             setApplyVisibility(true);
             RenderMonth();
         }
@@ -139,27 +141,22 @@ public static class DeadlineFilterDialog
                 "Next Week" => Range(weekStart.AddDays(7), weekStart.AddDays(13), "Next Week"),
                 "This Month" => Range(monthStart, monthStart.AddMonths(1).AddDays(-1), "This Month"),
                 "Next Month" => Range(monthStart.AddMonths(1), monthStart.AddMonths(2).AddDays(-1), "Next Month"),
+                "This Year" => Range(new DateTime(today.Year, 1, 1), new DateTime(today.Year, 12, 31), "This Year"),
                 _ => DeadlineFilterSelection.AnyDate
             };
             selectedStart = pending.StartDate;
             selectedEnd = pending.EndDate;
-            UpdatePresetStyles(name);
+            selectionSummaryLabel.Text = pending.StartDate.HasValue
+                ? pending.EndDate.HasValue
+                    ? $"{pending.StartDate:dd MMM yyyy} – {pending.EndDate:dd MMM yyyy}"
+                    : pending.StartDate.Value.ToString("dd MMM yyyy")
+                : "Choose a date or range";
             if (selectedStart.HasValue)
                 ShowMonthView(selectedStart.Value);
             else
             {
                 RenderYear();
                 RenderMonth();
-            }
-        }
-
-        void UpdatePresetStyles(string? selectedName)
-        {
-            foreach ((string name, Button button) in presetButtons)
-            {
-                bool selected = string.Equals(name, selectedName, StringComparison.Ordinal);
-                button.BackgroundColor = selected ? SelectedDate : Muted;
-                button.TextColor = selected ? Colors.White : Color.FromArgb("#374151");
             }
         }
 
@@ -185,7 +182,9 @@ public static class DeadlineFilterDialog
                 ? selectedStart.Value.ToString("MMM d")
                 : $"{selectedStart.Value:MMM d} - {end:MMM d}";
             pending = Range(selectedStart.Value, end, label);
-            UpdatePresetStyles(null);
+            selectionSummaryLabel.Text = selectedEnd.HasValue
+                ? $"{selectedStart:dd MMM yyyy} – {selectedEnd:dd MMM yyyy}"
+                : selectedStart.Value.ToString("dd MMM yyyy");
             RenderMonth();
             RenderYear();
         }
@@ -202,7 +201,7 @@ public static class DeadlineFilterDialog
             var monthName = new Label
             {
                 Text = month.ToString("MMM"),
-                FontSize = 13,
+                FontSize = AppTypography.BodySmall,
                 FontAttributes = monthNumber == DateTime.Today.Month && displayedYear == DateTime.Today.Year
                     ? FontAttributes.Bold : FontAttributes.None,
                 TextColor = monthNumber == DateTime.Today.Month && displayedYear == DateTime.Today.Year
@@ -212,7 +211,7 @@ public static class DeadlineFilterDialog
             {
                 IsVisible = monthTaskCount > 0,
                 Text = $"({monthTaskCount})",
-                FontSize = 8,
+                FontSize = AppTypography.Micro,
                 TextColor = SubtleText,
                 VerticalTextAlignment = TextAlignment.Center
             };
@@ -238,8 +237,8 @@ public static class DeadlineFilterDialog
                 miniDays.Add(new Label
                 {
                     Text = day.ToString(),
-                    FontSize = 7,
-                    TextColor = selected ? Colors.White : Text,
+                    FontSize = AppTypography.Micro,
+                    TextColor = selected ? AppColors.TextInverse : Text,
                     BackgroundColor = selected ? SelectedDate : Colors.Transparent,
                     HorizontalTextAlignment = TextAlignment.Center,
                     VerticalTextAlignment = TextAlignment.Center
@@ -269,11 +268,40 @@ public static class DeadlineFilterDialog
 
         void RenderMonth()
         {
-            monthLabel.Text = displayedMonth.ToString("MMMM");
-            monthBackButton.Text = $"\u2039 {displayedMonth:yyyy}";
+            monthLabel.Text = displayedMonth.ToString("MMMM yyyy");
+            monthBackButton.Text = "\u2039";
             daysGrid.Children.Clear();
             int offset = ((int)displayedMonth.DayOfWeek + 6) % 7;
             int count = DateTime.DaysInMonth(displayedMonth.Year, displayedMonth.Month);
+
+            void AddAdjacentMonthDate(DateTime date, int cell)
+            {
+                var dateLabel = new Label
+                {
+                    Text = date.Day.ToString(),
+                    FontSize = AppTypography.Caption,
+                    HeightRequest = 34,
+                    TextColor = AppColors.TextDisabled,
+                    HorizontalTextAlignment = TextAlignment.Center,
+                    VerticalTextAlignment = TextAlignment.Center
+                };
+                var dateTap = new TapGestureRecognizer { CommandParameter = date };
+                dateTap.Tapped += (_, e) =>
+                {
+                    DateTime selectedDate = (DateTime)e.Parameter!;
+                    displayedMonth = new DateTime(selectedDate.Year, selectedDate.Month, 1);
+                    SelectCalendarDate(selectedDate);
+                };
+                dateLabel.GestureRecognizers.Add(dateTap);
+                SemanticProperties.SetDescription(dateLabel, $"{date:MMMM d}, outside the displayed month");
+                daysGrid.Add(dateLabel, cell % 7, cell / 7);
+            }
+
+            for (int cell = 0; cell < offset; cell++)
+                AddAdjacentMonthDate(displayedMonth.AddDays(cell - offset), cell);
+            for (int cell = offset + count; cell < 42; cell++)
+                AddAdjacentMonthDate(displayedMonth.AddDays(cell - offset), cell);
+
             if (selectedStart.HasValue)
             {
                 DateTime visibleRangeStart = selectedStart.Value.Date;
@@ -294,7 +322,7 @@ public static class DeadlineFilterDialog
                     int lastColumn = selectedCells.Max();
                     var rangeBar = new Border
                     {
-                        HeightRequest = 36,
+                        HeightRequest = 34,
                         BackgroundColor = SelectedDate,
                         StrokeThickness = 0,
                         StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 18 },
@@ -317,9 +345,9 @@ public static class DeadlineFilterDialog
                 var dateLabel = new Label
                 {
                     Text = day.ToString(),
-                    FontSize = 12,
-                    HeightRequest = 36,
-                    TextColor = inRange || isToday ? Colors.White : Text,
+                    FontSize = AppTypography.Caption,
+                    HeightRequest = 34,
+                    TextColor = inRange || isToday ? AppColors.TextInverse : Text,
                     HorizontalTextAlignment = TextAlignment.Center,
                     VerticalTextAlignment = TextAlignment.Center
                 };
@@ -333,7 +361,7 @@ public static class DeadlineFilterDialog
                     cellGrid.Add(new Border
                     {
                         WidthRequest = 36,
-                        HeightRequest = 36,
+                        HeightRequest = 34,
                         StrokeThickness = 0,
                         BackgroundColor = SelectedDate,
                         StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 18 },
@@ -350,7 +378,7 @@ public static class DeadlineFilterDialog
                         WidthRequest = 14,
                         HeightRequest = 14,
                         Padding = 0,
-                        BackgroundColor = Accent,
+                        BackgroundColor = AppColors.Accent500,
                         StrokeThickness = 0,
                         StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 7 },
                         HorizontalOptions = LayoutOptions.End,
@@ -360,9 +388,9 @@ public static class DeadlineFilterDialog
                         Content = new Label
                         {
                             Text = dateTaskCount > 9 ? "9+" : dateTaskCount.ToString(),
-                            FontSize = 7,
+                            FontSize = AppTypography.Micro,
                             FontAttributes = FontAttributes.Bold,
-                            TextColor = Colors.White,
+                            TextColor = AppColors.SurfaceBase,
                             HorizontalTextAlignment = TextAlignment.Center,
                             VerticalTextAlignment = TextAlignment.Center,
                             InputTransparent = true
@@ -408,64 +436,78 @@ public static class DeadlineFilterDialog
             await modal.Navigation.PopModalAsync(false);
             completion.TrySetResult(result);
         }
-        Button PresetButton(string label)
+        void SetCircularIconState(
+            ImageButton button,
+            bool active,
+            string restingIcon,
+            string activeIcon)
         {
-            var button = new Button
-            {
-                Text = label,
-                FontSize = 10,
-                Padding = new Thickness(7, 3),
-                HeightRequest = 34,
-                MinimumHeightRequest = 34,
-                CornerRadius = 10,
-                BackgroundColor = Muted,
-                TextColor = Color.FromArgb("#374151")
-            };
-            button.Clicked += async (_, _) =>
-            {
-                await SelectPresetAsync(label);
-                await CloseAsync(pending);
-            };
-            presetButtons[label] = button;
-            return button;
+            button.BackgroundColor = active ? SelectedDate : AppColors.SurfaceBase;
+            button.Source = active ? activeIcon : restingIcon;
         }
 
-        var quickFilterButton = new Button
+        void AddCircularPressFeedback(
+            ImageButton button,
+            string restingIcon,
+            string activeIcon)
         {
-            Text = "Today",
-            FontSize = 11,
-            Padding = new Thickness(18, 5),
-            WidthRequest = 96,
-            HeightRequest = 40,
-            MinimumHeightRequest = 40,
-            CornerRadius = 20,
-            BackgroundColor = SelectedDate,
-            TextColor = Colors.White,
-            HorizontalOptions = LayoutOptions.End
+            button.Pressed += (_, _) => SetCircularIconState(button, true, restingIcon, activeIcon);
+            button.Released += (_, _) => SetCircularIconState(button, false, restingIcon, activeIcon);
+        }
+
+        var quickMenuButton = new ImageButton
+        {
+            Source = "blackfiltericon.png",
+            Padding = 12,
+            WidthRequest = 48,
+            HeightRequest = 48,
+            CornerRadius = 24,
+            BackgroundColor = AppColors.SurfaceBase,
+            BorderWidth = 0,
+            HorizontalOptions = LayoutOptions.Start,
+            IsVisible = true
         };
-        setQuickFilterVisibility = isVisible => quickFilterButton.IsVisible = isVisible;
+        SemanticProperties.SetDescription(quickMenuButton, "Open quick date filters");
+        AddCircularPressFeedback(quickMenuButton, "blackfiltericon.png", "whitefiltericon.png");
+        // Keep this sheet focused on one primary action. Preset selection is
+        // still supported by the existing logic, but its extra trigger is
+        // intentionally hidden from the compact date surface.
+        setQuickFilterVisibility = _ => quickMenuButton.IsVisible = false;
         var applyButton = new Button
         {
-            Text = "Apply",
-            FontSize = 11,
+            Text = "✓",
+            FontSize = 24,
             FontAttributes = FontAttributes.Bold,
-            Padding = new Thickness(18, 5),
-            WidthRequest = 96,
-            HeightRequest = 40,
-            MinimumHeightRequest = 40,
-            CornerRadius = 20,
-            BackgroundColor = SelectedDate,
-            TextColor = Colors.White,
+            Padding = 0,
+            WidthRequest = 48,
+            HeightRequest = 48,
+            MinimumHeightRequest = 48,
+            CornerRadius = 24,
+            BackgroundColor = AppColors.SurfaceBase,
+            TextColor = AppColors.TextPrimary,
             HorizontalOptions = LayoutOptions.End
         };
+        applyButton.Text = "Set";
+        applyButton.FontSize = AppTypography.BodySmall;
+        applyButton.WidthRequest = -1;
+        // Keep the primary action compact while preserving a comfortable
+        // Android touch target for the bottom sheet.
+        applyButton.HeightRequest = 50;
+        applyButton.MinimumHeightRequest = 50;
+        applyButton.CornerRadius = 8;
+        applyButton.BackgroundColor = AppColors.Brand800;
+        applyButton.TextColor = AppColors.TextInverse;
+        applyButton.BorderWidth = 0;
+        applyButton.HorizontalOptions = LayoutOptions.Fill;
+        SemanticProperties.SetDescription(applyButton, "Apply date filter");
         setApplyVisibility = isVisible => applyButton.IsVisible = isVisible;
-        applyButton.IsVisible = false;
+        applyButton.IsVisible = true;
         applyButton.Clicked += async (_, _) => await CloseAsync(pending);
         var yearPickerCard = new Border
         {
             WidthRequest = 210,
             Padding = new Thickness(14, 9),
-            BackgroundColor = Color.FromArgb("#F3F4F6"),
+            BackgroundColor = AppColors.SurfaceSubtle,
             Stroke = Accent,
             StrokeThickness = 1,
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
@@ -479,7 +521,7 @@ public static class DeadlineFilterDialog
             IsVisible = false,
             BackgroundColor = Colors.Transparent
         };
-        var yearPickerBackdrop = new BoxView { Color = Color.FromArgb("#44000000") };
+        var yearPickerBackdrop = new BoxView { Color = AppColors.ScrimLight };
         yearPickerOverlay.Add(yearPickerBackdrop);
         yearPickerOverlay.Add(yearPickerCard);
 
@@ -508,9 +550,9 @@ public static class DeadlineFilterDialog
         var nextYearOption = YearOption(17);
         var yearOptions = new VerticalStackLayout { Spacing = 0 };
         yearOptions.Children.Add(previousYearOption);
-        yearOptions.Children.Add(new BoxView { HeightRequest = 1, Color = Color.FromArgb("#9CA3AF") });
+        yearOptions.Children.Add(new BoxView { HeightRequest = 1, Color = AppColors.TextDisabled });
         yearOptions.Children.Add(currentYearOption);
-        yearOptions.Children.Add(new BoxView { HeightRequest = 1, Color = Color.FromArgb("#9CA3AF") });
+        yearOptions.Children.Add(new BoxView { HeightRequest = 1, Color = AppColors.TextDisabled });
         yearOptions.Children.Add(nextYearOption);
         yearPickerCard.Content = yearOptions;
 
@@ -548,29 +590,92 @@ public static class DeadlineFilterDialog
         yearLabel.GestureRecognizers.Add(yearTap);
         yearLabel.HorizontalTextAlignment = TextAlignment.Start;
         yearLabel.HorizontalOptions = LayoutOptions.Start;
-        var yearTitle = new VerticalStackLayout { Spacing = 5 };
-        yearTitle.Children.Add(yearLabel);
+        var nextYearButton = new ImageButton
+        {
+            Source = "uncollapse.png",
+            WidthRequest = 24,
+            HeightRequest = 16,
+            Padding = 0,
+            BackgroundColor = Colors.Transparent,
+            HorizontalOptions = LayoutOptions.Center
+        };
+        var previousYearButton = new ImageButton
+        {
+            Source = "collapse.png",
+            WidthRequest = 24,
+            HeightRequest = 16,
+            Padding = 0,
+            BackgroundColor = Colors.Transparent,
+            HorizontalOptions = LayoutOptions.Center
+        };
+        nextYearButton.Clicked += (_, _) =>
+        {
+            displayedYear++;
+            displayedMonth = new DateTime(displayedYear, displayedMonth.Month, 1);
+            RenderYear();
+        };
+        previousYearButton.Clicked += (_, _) =>
+        {
+            displayedYear--;
+            displayedMonth = new DateTime(displayedYear, displayedMonth.Month, 1);
+            RenderYear();
+        };
+        SemanticProperties.SetDescription(nextYearButton, "Next year");
+        SemanticProperties.SetDescription(previousYearButton, "Previous year");
+        var yearNavigation = new VerticalStackLayout
+        {
+            Spacing = 0,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+            Children = { nextYearButton, previousYearButton }
+        };
+        var yearHeader = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition(GridLength.Auto),
+                new ColumnDefinition(GridLength.Auto),
+                new ColumnDefinition(GridLength.Star)
+            },
+            ColumnSpacing = 10,
+            HorizontalOptions = LayoutOptions.Fill
+        };
+        yearHeader.Add(yearLabel, 0);
+        yearHeader.Add(yearNavigation, 1);
+        var yearTitle = new VerticalStackLayout { Spacing = 5, HorizontalOptions = LayoutOptions.Fill };
+        yearTitle.Children.Add(yearHeader);
         yearTitle.Children.Add(new BoxView
         {
             HeightRequest = 1,
-            Color = Color.FromArgb("#D1D5DB"),
+            Color = AppColors.BorderStrong,
             HorizontalOptions = LayoutOptions.Fill
         });
         yearView.Children.Add(yearTitle);        yearView.Children.Add(new ScrollView { Content = yearGrid });
 
         var previousMonth = NavigationButton("\u2039", 40);
         var nextMonth = NavigationButton("\u203A", 40);
-        monthBackButton.Clicked += (_, _) => ShowYearView();
-        previousMonth.Clicked += (_, _) => ShowMonthView(displayedMonth.AddMonths(-1));
+        monthBackButton.Text = "\u2039";
+        monthBackButton.Clicked += (_, _) => ShowMonthView(displayedMonth.AddMonths(-1));
         nextMonth.Clicked += (_, _) => ShowMonthView(displayedMonth.AddMonths(1));
         var monthHeader = new Grid
         {
-            ColumnDefinitions = { new(GridLength.Auto), new(GridLength.Star), new(GridLength.Auto), new(GridLength.Auto) }
+            HeightRequest = 38,
+            VerticalOptions = LayoutOptions.Center,
+            ColumnSpacing = 4,
+            ColumnDefinitions = { new(GridLength.Auto), new(GridLength.Star), new(GridLength.Auto) }
         };
+        monthBackButton.VerticalOptions = LayoutOptions.Center;
+        monthLabel.HeightRequest = 38;
+        monthLabel.VerticalOptions = LayoutOptions.Center;
         monthHeader.Add(monthBackButton, 0);
         monthHeader.Add(monthLabel, 1);
-        monthHeader.Add(previousMonth, 2);
-        monthHeader.Add(nextMonth, 3);
+        monthHeader.Add(nextMonth, 2);
+        var monthDivider = new BoxView
+        {
+            HeightRequest = 1,
+            Color = AppColors.BorderDefault,
+            Margin = new Thickness(0, 0, 0, 2)
+        };
         var weekdays = new Grid { ColumnSpacing = 4 };
         string[] weekdayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
         for (int column = 0; column < 7; column++)
@@ -578,64 +683,80 @@ public static class DeadlineFilterDialog
             weekdays.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
             weekdays.Add(new Label
             {
-                Text = weekdayNames[column], FontSize = 9, TextColor = SubtleText,
+                Text = weekdayNames[column], FontSize = AppTypography.Micro, TextColor = SubtleText,
                 HorizontalTextAlignment = TextAlignment.Center
             }, column);
         }
         monthView.Children.Add(monthHeader);
+        monthView.Children.Add(monthDivider);
         monthView.Children.Add(weekdays);
         monthView.Children.Add(daysGrid);
+        var monthScroll = new ScrollView
+        {
+            Content = monthView,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Never
+        };
 
         var quickPickerCard = new Border
         {
-            WidthRequest = 210,
-            Padding = new Thickness(14, 9),
-            BackgroundColor = Color.FromArgb("#F3F4F6"),
-            Stroke = Accent,
-            StrokeThickness = 1,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
-            HorizontalOptions = LayoutOptions.Center,
-            VerticalOptions = LayoutOptions.Center,
-            Opacity = 0,
-            Scale = 0.88
+            Padding = new Thickness(0, 10, 0, 18),
+            BackgroundColor = AppColors.SurfaceBase,
+            Stroke = Colors.Transparent,
+            StrokeThickness = 0,
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle
+            {
+                CornerRadius = new CornerRadius(24, 24, 0, 0)
+            },
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.End,
+            Opacity = 1,
+            TranslationY = 220
         };
         var quickPickerOverlay = new Grid
         {
             IsVisible = false,
             BackgroundColor = Colors.Transparent
         };
-        var quickPickerBackdrop = new BoxView { Color = Color.FromArgb("#44000000") };
+        var quickPickerBackdrop = new BoxView { Color = AppColors.ScrimLight };
         quickPickerOverlay.Add(quickPickerBackdrop);
         quickPickerOverlay.Add(quickPickerCard);
 
         async Task HideQuickPickerAsync()
         {
             await Task.WhenAll(
-                quickPickerCard.FadeTo(0, 130),
-                quickPickerCard.ScaleTo(0.92, 130, Easing.CubicIn));
+                quickPickerBackdrop.FadeTo(0, Motion.Fast, Motion.Exit),
+                quickPickerCard.TranslateTo(0, 220, Motion.Fast, Motion.Exit));
             quickPickerOverlay.IsVisible = false;
+            quickPickerBackdrop.Opacity = 1;
+            quickPickerCard.TranslationY = 220;
+            SetCircularIconState(quickMenuButton, false, "blackfiltericon.png", "whitefiltericon.png");
         }
 
         var quickBackdropTap = new TapGestureRecognizer();
         quickBackdropTap.Tapped += async (_, _) => await HideQuickPickerAsync();
         quickPickerBackdrop.GestureRecognizers.Add(quickBackdropTap);
 
-        Label QuickOption(string text, string preset, double fontSize, FontAttributes attributes = FontAttributes.None)
+        Border QuickOption(string text, string preset)
         {
-            var option = new Label
+            var label = new Label
             {
                 Text = text,
-                FontSize = fontSize,
-                FontAttributes = attributes,
+                FontSize = AppTypography.Body,
+                FontAttributes = FontAttributes.Bold,
                 TextColor = Text,
-                HorizontalTextAlignment = TextAlignment.Center,
-                VerticalTextAlignment = TextAlignment.Center,
-                Padding = new Thickness(0, 5)
+                VerticalTextAlignment = TextAlignment.Center
+            };
+            var option = new Border
+            {
+                HeightRequest = 46,
+                Padding = new Thickness(28, 0),
+                BackgroundColor = Colors.Transparent,
+                StrokeThickness = 0,
+                Content = label
             };
             var tap = new TapGestureRecognizer();
             tap.Tapped += async (_, _) =>
             {
-                quickFilterButton.Text = text;
                 await SelectPresetAsync(preset);
                 await HideQuickPickerAsync();
             };
@@ -644,29 +765,56 @@ public static class DeadlineFilterDialog
         }
 
         var quickOptions = new VerticalStackLayout { Spacing = 0 };
-        quickOptions.Children.Add(QuickOption("Today", "Today", 18));
-        quickOptions.Children.Add(new BoxView { HeightRequest = 1, Color = Color.FromArgb("#9CA3AF") });
-        quickOptions.Children.Add(QuickOption("Week", "This Week", 18));
-        quickOptions.Children.Add(new BoxView { HeightRequest = 1, Color = Color.FromArgb("#9CA3AF") });
-        quickOptions.Children.Add(QuickOption("Month", "This Month", 18));
+        quickOptions.Children.Add(new BoxView
+        {
+            WidthRequest = 42,
+            HeightRequest = 4,
+            CornerRadius = 2,
+            Color = AppColors.Slate200,
+            HorizontalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 8)
+        });
+        quickOptions.Children.Add(QuickOption("Today", "Today"));
+        quickOptions.Children.Add(new BoxView { HeightRequest = 1, Color = AppColors.BorderDefault });
+        quickOptions.Children.Add(QuickOption("This Week", "This Week"));
+        quickOptions.Children.Add(new BoxView { HeightRequest = 1, Color = AppColors.BorderDefault });
+        quickOptions.Children.Add(QuickOption("Next Week", "Next Week"));
+        quickOptions.Children.Add(new BoxView { HeightRequest = 1, Color = AppColors.BorderDefault });
+        quickOptions.Children.Add(QuickOption("This Month", "This Month"));
+        quickOptions.Children.Add(new BoxView { HeightRequest = 1, Color = AppColors.BorderDefault });
+        quickOptions.Children.Add(QuickOption("Next Month", "Next Month"));
+        quickOptions.Children.Add(new BoxView { HeightRequest = 1, Color = AppColors.BorderDefault });
+        quickOptions.Children.Add(QuickOption("This Year", "This Year"));
         quickPickerCard.Content = quickOptions;
 
-        quickFilterButton.Clicked += async (_, _) =>
+        quickMenuButton.Clicked += async (_, _) =>
         {
+            SetCircularIconState(quickMenuButton, true, "blackfiltericon.png", "whitefiltericon.png");
             quickPickerOverlay.IsVisible = true;
-            quickPickerCard.Opacity = 0;
-            quickPickerCard.Scale = 0.88;
-            await Task.WhenAll(quickPickerCard.FadeTo(1, 180), quickPickerCard.ScaleTo(1, 180, Easing.CubicOut));
+            quickPickerBackdrop.Opacity = Motion.ReduceMotion ? 1 : 0;
+            quickPickerCard.TranslationY = Motion.ReduceMotion ? 0 : 220;
+            if (!Motion.ReduceMotion)
+            {
+                await Task.WhenAll(
+                    quickPickerBackdrop.FadeTo(1, Motion.Fast, Motion.Enter),
+                    quickPickerCard.TranslateTo(0, 0, Motion.Base, Motion.Emphasis));
+            }
         };
-        var closeButton = NavigationButton("\u2190", 38);
-        closeButton.BackgroundColor = Colors.Transparent;
-        closeButton.TextColor = SelectedDate;
-        closeButton.FontSize = 24;
+        var closeButton = new ImageButton
+        {
+            Source = "backicon.png",
+            WidthRequest = 42,
+            HeightRequest = 38,
+            Padding = 10,
+            CornerRadius = 12,
+            BackgroundColor = AppColors.SurfaceBase,
+            BorderWidth = 0
+        };
+        SemanticProperties.SetDescription(closeButton, "Close calendar filter");
+        AddCircularPressFeedback(closeButton, "backicon.png", "whitebackicon.png");
         closeButton.Clicked += async (_, _) => await CloseAsync(null);
 
-        var titleRow = new Grid { HorizontalOptions = LayoutOptions.Start };
-        titleRow.Add(closeButton);
-        var quickPanel = new Grid
+        var titleRow = new Grid
         {
             HorizontalOptions = LayoutOptions.Fill,
             ColumnDefinitions =
@@ -676,43 +824,125 @@ public static class DeadlineFilterDialog
                 new ColumnDefinition(GridLength.Auto)
             }
         };
-        quickPanel.Add(quickFilterButton, 2);
-        quickPanel.Add(applyButton, 2);
+        titleRow.Add(closeButton, 0);
+        var whenTitle = new VerticalStackLayout
+        {
+            Spacing = 2,
+            VerticalOptions = LayoutOptions.Center,
+            Children =
+            {
+                new Label
+                {
+                    Text = "When",
+                    FontSize = AppTypography.Title,
+                    FontAttributes = FontAttributes.Bold,
+                    TextColor = Text
+                },
+                selectionSummaryLabel
+            }
+        };
+        titleRow.Add(whenTitle, 1);
+        var titleBlock = new VerticalStackLayout
+        {
+            Spacing = 12,
+            Children =
+            {
+                titleRow,
+                new BoxView
+                {
+                    HeightRequest = 1,
+                    Color = AppColors.BorderDefault
+                }
+            }
+        };
+        var quickPanel = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            ColumnDefinitions =
+            {
+                new ColumnDefinition(GridLength.Star)
+            }
+        };
+        quickPanel.Add(applyButton, 0);
         var calendarHost = new Grid();
         calendarHost.Add(yearView);
-        calendarHost.Add(monthView);
+        calendarHost.Add(monthScroll);
         var root = new Grid
         {
             RowDefinitions =
             {
                 new RowDefinition(GridLength.Auto),
-                new RowDefinition(GridLength.Star),
                 new RowDefinition(GridLength.Auto)
             },
-            RowSpacing = 12,
-            Margin = new Thickness(18, 14)
+            RowSpacing = 8,
+            Margin = new Thickness(12, 6)
         };
-        root.Add(titleRow, 0, 0);
-        root.Add(calendarHost, 0, 1);
-        root.Add(quickPanel, 0, 2);
+        // Keep the sheet focused on the calendar itself. The previous
+        // “When / selected range” block consumed valuable vertical space on
+        // Android without adding information that the calendar does not show.
+        root.Add(calendarHost, 0, 0);
+        root.Add(quickPanel, 0, 1);
+        var sheetHandle = new BoxView
+        {
+            WidthRequest = 42,
+            HeightRequest = 4,
+            CornerRadius = 2,
+            Color = AppColors.Slate200,
+            HorizontalOptions = LayoutOptions.Center,
+            Margin = new Thickness(0, 0, 0, 6)
+        };
+        var sheetContent = new Grid
+        {
+            RowDefinitions =
+            {
+                new RowDefinition(GridLength.Auto),
+                new RowDefinition(GridLength.Auto)
+            }
+        };
+        sheetContent.Add(sheetHandle, 0, 0);
+        sheetContent.Add(root, 0, 1);
+        sheetContent.Add(yearPickerOverlay, 0, 1);
+        sheetContent.Add(quickPickerOverlay, 0, 1);
+
+        var sheet = new Border
+        {
+            BackgroundColor = AppColors.SurfaceBase,
+            Stroke = Colors.Transparent,
+            StrokeThickness = 0,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.End,
+            // Android gives a ScrollView inside an auto row all remaining
+            // height. Fix the sheet viewport to the calendar's real content
+            // height so no blank band is inserted above the Set button.
+            HeightRequest = 470,
+            MaximumHeightRequest = 470,
+            Padding = new Thickness(0, 8, 0, 8),
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle
+            {
+                CornerRadius = new CornerRadius(24, 24, 0, 0)
+            },
+            Content = sheetContent
+        };
+        var modalBackdrop = new BoxView { Color = Colors.Transparent };
+        var modalBackdropTap = new TapGestureRecognizer();
+        modalBackdropTap.Tapped += async (_, _) => await CloseAsync(null);
+        modalBackdrop.GestureRecognizers.Add(modalBackdropTap);
+
         var modalHost = new Grid();
-        modalHost.Add(root);
-        modalHost.Add(yearPickerOverlay);
-        modalHost.Add(quickPickerOverlay);
+        modalHost.Add(modalBackdrop);
+        modalHost.Add(sheet);
         modal.Content = modalHost;
 
         string? currentPreset = current.Label is "Today" or "This Week" or "This Month"
             ? current.Label : null;
-        UpdatePresetStyles(currentPreset);
-        RenderYear();
-        RenderMonth();
+        ShowMonthView(displayedMonth);
         await owner.Navigation.PushModalAsync(modal, false);
         return await completion.Task;
     }
 
     private static Label HeaderLabel() => new()
     {
-        FontSize = 18,
+        FontSize = AppTypography.Heading,
         FontAttributes = FontAttributes.Bold,
         TextColor = Text,
         HorizontalTextAlignment = TextAlignment.Center,
@@ -728,14 +958,16 @@ public static class DeadlineFilterDialog
         HeightRequest = 38,
         MinimumHeightRequest = 38,
         CornerRadius = 18,
-        BackgroundColor = Muted,
-        TextColor = Text
+        BackgroundColor = Colors.Transparent,
+        TextColor = Text,
+        HorizontalOptions = LayoutOptions.Center,
+        VerticalOptions = LayoutOptions.Center
     };
 
     private static Button ActionButton(string label, Color background, Color foreground) => new()
     {
         Text = label,
-        FontSize = 13,
+        FontSize = AppTypography.BodySmall,
         FontAttributes = FontAttributes.Bold,
         HeightRequest = 44,
         MinimumHeightRequest = 44,
@@ -744,6 +976,3 @@ public static class DeadlineFilterDialog
         TextColor = foreground
     };
 }
-
-
-

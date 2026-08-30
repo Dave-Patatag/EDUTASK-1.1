@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+    The EduTask mark, for use inside the app on navy surfaces (flyout header,
+    auth screens). Same geometry as the launcher icon in Resources/AppIcon.
+
+    loginlogo.png is not usable on navy: it is the full lockup on an opaque white
+    background, and its wordmark ink is the same navy as the header behind it.
+    This is the mark alone, on transparency.
+-->
+<svg width="456" height="456" viewBox="0 0 456 456" version="1.1"
+     xmlns="http://www.w3.org/2000/svg">
+
+    <!-- Clipboard board -->
+    <rect x="86" y="99" width="196" height="232" rx="24" fill="#FFFFFF"/>
+
+    <!-- Clip at the top -->
+    <rect x="144" y="67" width="80" height="52" rx="16" fill="#FFFFFF"/>
+    <rect x="160" y="83" width="48" height="20" rx="10" fill="#111C3A"/>
+
+    <!-- Task rows -->
+    <rect x="118" y="155" width="98" height="18" rx="9" fill="#111C3A" opacity="0.25"/>
+    <rect x="118" y="199" width="98" height="18" rx="9" fill="#111C3A" opacity="0.25"/>
+    <rect x="118" y="243" width="64" height="18" rx="9" fill="#111C3A" opacity="0.25"/>
+
+    <!-- Completion badge -->
+    <circle cx="284" cy="303" r="86" fill="#111C3A"/>
+    <circle cx="284" cy="303" r="68" fill="#00FF36"/>
+    <path d="M252 303 l24 24 44 -50"
+          fill="none" stroke="#111C3A" stroke-width="20"
+          stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

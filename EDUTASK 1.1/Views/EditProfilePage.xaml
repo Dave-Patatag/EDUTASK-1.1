@@ -1,55 +1,209 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:sys="clr-namespace:System;assembly=System.Runtime" x:Class="EDUTASK_1._1.Views.EditProfilePage" NavigationPage.HasNavigationBar="False" Shell.NavBarIsVisible="False" BackgroundColor="White">
- <ScrollView>
-  <VerticalStackLayout Padding="17,18,17,30" Spacing="0">
-   <Grid ColumnDefinitions="40,*,40" HeightRequest="38">
-    <ImageButton Source="backicon.png" Clicked="OnBackClicked" WidthRequest="32" HeightRequest="32" Padding="5" BackgroundColor="Transparent" VerticalOptions="Center" SemanticProperties.Description="Go back"/>
-    <Label Grid.Column="1" Text="Edit profile" FontSize="16" FontAttributes="Bold" TextColor="#202124" HorizontalOptions="Center" VerticalOptions="Center"/>
-   </Grid>
+<base:EduTaskPage xmlns:base="clr-namespace:EDUTASK_1._1.Views.Base"
+                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                  x:Class="EDUTASK_1._1.Views.EditProfilePage"
+                  NavigationPage.HasNavigationBar="False"
+                  Shell.NavBarIsVisible="False"
+                  BackgroundColor="{StaticResource SurfaceMuted}">
 
-   <VerticalStackLayout Spacing="12" Margin="0,24,0,26">
-    <Border WidthRequest="94" HeightRequest="94" BackgroundColor="{Binding AvatarColor}" Stroke="#E2C34F" StrokeThickness="1" HorizontalOptions="Center">
-     <Border.StrokeShape><RoundRectangle CornerRadius="47"/></Border.StrokeShape>
-     <Grid>
-      <Label Text="{Binding AvatarInitials}" FontSize="31" TextColor="#202124" HorizontalOptions="Center" VerticalOptions="Center" IsVisible="{Binding ShowInitials}"/>
-      <Image Source="{Binding ProfilePhotoPath}" Aspect="AspectFill" IsVisible="{Binding HasProfilePhoto}"/>
-     </Grid>
-    </Border>
-    <Border Stroke="#E5E7EB" StrokeThickness="1" BackgroundColor="White" Padding="13,8" HorizontalOptions="Center">
-     <Border.StrokeShape><RoundRectangle CornerRadius="9"/></Border.StrokeShape>
-     <HorizontalStackLayout Spacing="7"><Image Source="camera.png" WidthRequest="17" HeightRequest="17"/><Label Text="Edit photo" FontSize="13" FontAttributes="Bold" TextColor="#30343B"/></HorizontalStackLayout>
-     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnChangePhotoTapped"/></Border.GestureRecognizers>
-    </Border>
-   </VerticalStackLayout>
+    <Grid RowDefinitions="Auto,*,Auto">
 
-   <VerticalStackLayout Spacing="15">
-    <VerticalStackLayout Spacing="7">
-     <Label Text="Full name" FontSize="14" FontAttributes="Bold" TextColor="#202124"/>
-     <Border Stroke="#E1E3E7" StrokeThickness="1" BackgroundColor="White" Padding="13,1" HeightRequest="50"><Border.StrokeShape><RoundRectangle CornerRadius="7"/></Border.StrokeShape><Entry x:Name="FullNameEntry" Text="{Binding FullName}" FontSize="13" TextColor="#4B4F56" BackgroundColor="Transparent" Margin="-2,0"/></Border>
-    </VerticalStackLayout>
-    <VerticalStackLayout Spacing="7">
-     <Label Text="Phone number" FontSize="14" FontAttributes="Bold" TextColor="#202124"/>
-     <Border Stroke="#E1E3E7" StrokeThickness="1" BackgroundColor="White" Padding="13,1" HeightRequest="50"><Border.StrokeShape><RoundRectangle CornerRadius="7"/></Border.StrokeShape><Entry x:Name="PhoneEntry" Text="{Binding ContactNumber}" Keyboard="Telephone" MaxLength="11" FontSize="13" TextColor="#4B4F56" BackgroundColor="Transparent" Margin="-2,0"/></Border>
-    </VerticalStackLayout>
-    <VerticalStackLayout Spacing="7">
-     <Label Text="Email" FontSize="14" FontAttributes="Bold" TextColor="#202124"/>
-     <Border Stroke="#E1E3E7" StrokeThickness="1" BackgroundColor="White" Padding="13,1" HeightRequest="50"><Border.StrokeShape><RoundRectangle CornerRadius="7"/></Border.StrokeShape><Entry x:Name="EmailEntry" Text="{Binding Email}" Keyboard="Email" FontSize="13" TextColor="#4B4F56" BackgroundColor="Transparent" Margin="-2,0"/></Border>
-    </VerticalStackLayout>
-    <VerticalStackLayout Spacing="7">
-     <Label Text="Username" FontSize="14" FontAttributes="Bold" TextColor="#202124"/>
-     <Border Stroke="#E1E3E7" StrokeThickness="1" BackgroundColor="White" Padding="13,1" HeightRequest="50"><Border.StrokeShape><RoundRectangle CornerRadius="7"/></Border.StrokeShape><Entry x:Name="UsernameEntry" Text="{Binding Username}" FontSize="13" TextColor="#4B4F56" BackgroundColor="Transparent" Margin="-2,0"/></Border>
-    </VerticalStackLayout>
-    <VerticalStackLayout Spacing="7">
-     <Label Text="Date of birth" FontSize="14" FontAttributes="Bold" TextColor="#202124"/>
-     <Border Stroke="#E1E3E7" StrokeThickness="1" BackgroundColor="White" Padding="13,1" HeightRequest="50"><Border.StrokeShape><RoundRectangle CornerRadius="7"/></Border.StrokeShape><DatePicker x:Name="BirthdatePicker" Date="{Binding Birthdate}" MaximumDate="{x:Static sys:DateTime.Today}" Format="dd/MM/yyyy" FontSize="13" TextColor="#4B4F56" BackgroundColor="Transparent" Margin="-10,0"/></Border>
-    </VerticalStackLayout>
-   </VerticalStackLayout>
+        <!-- Light app bar, matching Profile and Summary Report. -->
+        <Grid Grid.Row="0" Padding="16,8" ColumnDefinitions="44,*,44"
+              BackgroundColor="{StaticResource SurfaceMuted}">
+            <ImageButton x:Name="EditProfileBackButton"
+                         Source="backicon.png" Clicked="OnBackClicked"
+                         Pressed="OnEditProfileBackPressed" Released="OnEditProfileBackReleased"
+                         WidthRequest="42" HeightRequest="42" Padding="10"
+                         CornerRadius="12" BackgroundColor="{StaticResource SurfaceBase}"
+                         BorderWidth="0"
+                         HorizontalOptions="Start" VerticalOptions="Center"
+                         SemanticProperties.Description="Go back"/>
+            <Label Grid.Column="1" Text="Edit Profile"
+                   FontSize="{StaticResource FontHeading}" FontAttributes="Bold"
+                   TextColor="{StaticResource TextPrimary}"
+                   HorizontalTextAlignment="Center" VerticalTextAlignment="Center"
+                   SemanticProperties.HeadingLevel="Level1"/>
+        </Grid>
 
-   <Border StrokeThickness="0" BackgroundColor="#292A70" Padding="0" Margin="0,24,0,8" WidthRequest="235" HorizontalOptions="Center">
-    <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
-    <Label Text="Save changes" FontSize="14" FontAttributes="Bold" TextColor="White" HorizontalOptions="Center" Padding="0,14"/>
-    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnSaveChangesClicked"/></Border.GestureRecognizers>
-   </Border>
-  </VerticalStackLayout>
- </ScrollView>
-</ContentPage>
+        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout Padding="20,6,20,20" Spacing="0">
+
+                <!-- Profile photo -->
+                <VerticalStackLayout HorizontalOptions="Center" Spacing="4" Margin="0,0,0,0">
+                    <Grid WidthRequest="96" HeightRequest="84"
+                          SemanticProperties.Description="Change profile photo">
+                        <Border WidthRequest="80" HeightRequest="80"
+                                BackgroundColor="{Binding AvatarColor}"
+                                Stroke="{StaticResource SurfaceBase}" StrokeThickness="3"
+                                HorizontalOptions="Center" VerticalOptions="Start">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="40"/>
+                            </Border.StrokeShape>
+                            <Grid>
+                                <Label Text="{Binding AvatarInitials}"
+                                FontSize="{StaticResource FontHeading}" FontAttributes="Bold"
+                                       TextColor="{StaticResource TextInverse}"
+                                       HorizontalOptions="Center" VerticalOptions="Center"
+                                       IsVisible="{Binding ShowInitials}"/>
+                                <Image Source="{Binding ProfilePhotoPath}"
+                                       Aspect="AspectFill"
+                                       IsVisible="{Binding HasProfilePhoto}"/>
+                            </Grid>
+                        </Border>
+
+                        <Border WidthRequest="28" HeightRequest="28" Padding="6"
+                                BackgroundColor="{StaticResource Brand800}"
+                                Stroke="{StaticResource SurfaceBase}" StrokeThickness="2"
+                                HorizontalOptions="End" VerticalOptions="End"
+                                Margin="0,0,2,2">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="14"/>
+                            </Border.StrokeShape>
+                            <Image Source="camera.png" Aspect="AspectFit"/>
+                        </Border>
+
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnChangePhotoTapped"/>
+                        </Grid.GestureRecognizers>
+                    </Grid>
+
+                    <Label Text="Change profile photo"
+                           Style="{StaticResource LinkLabel}"
+                           HorizontalTextAlignment="Center">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnChangePhotoTapped"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                </VerticalStackLayout>
+
+                <Label Text="Personal information"
+                       Style="{StaticResource ReportSectionHeading}"
+                       Margin="0,16,0,8"/>
+
+                <VerticalStackLayout Spacing="10">
+
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="Full name" Style="{StaticResource FieldLabel}" Margin="2,0"/>
+                        <Border Style="{StaticResource FieldBorder}" HeightRequest="52">
+                            <Grid ColumnDefinitions="40,*,32" ColumnSpacing="8">
+                                <Border Padding="7" BackgroundColor="{StaticResource SurfaceSunken}" StrokeThickness="0"
+                                        HorizontalOptions="Start" VerticalOptions="Center">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                                    <Image Source="loginusername.png" WidthRequest="18" HeightRequest="18" Aspect="AspectFit"/>
+                                </Border>
+                                <Entry x:Name="FullNameEntry" Grid.Column="1"
+                                       Text="{Binding FullName}"
+                                       Style="{StaticResource FieldEntry}"
+                                       VerticalOptions="Fill"
+                                       SemanticProperties.Description="Full name"/>
+                                <Button Grid.Column="2" Text="×" Clicked="OnClearEntryClicked"
+                                        CommandParameter="{x:Reference FullNameEntry}" WidthRequest="32"
+                                        HeightRequest="32" Padding="0" FontSize="20"
+                                        BackgroundColor="Transparent" TextColor="{StaticResource TextTertiary}"/>
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="Phone number" Style="{StaticResource FieldLabel}" Margin="2,0"/>
+                        <Border Style="{StaticResource FieldBorder}" HeightRequest="52">
+                            <Grid ColumnDefinitions="40,*,32" ColumnSpacing="8">
+                                <Border Padding="7" BackgroundColor="{StaticResource SurfaceSunken}" StrokeThickness="0"
+                                        HorizontalOptions="Start" VerticalOptions="Center">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                                    <Image Source="profilephone.png" WidthRequest="18" HeightRequest="18" Aspect="AspectFit"/>
+                                </Border>
+                                <Entry x:Name="PhoneEntry" Grid.Column="1"
+                                       Text="{Binding ContactNumber}"
+                                       Keyboard="Telephone" MaxLength="11"
+                                       Style="{StaticResource FieldEntry}"
+                                       VerticalOptions="Fill"
+                                       SemanticProperties.Description="Phone number"/>
+                                <Button Grid.Column="2" Text="×" Clicked="OnClearEntryClicked"
+                                        CommandParameter="{x:Reference PhoneEntry}" WidthRequest="32"
+                                        HeightRequest="32" Padding="0" FontSize="20"
+                                        BackgroundColor="Transparent" TextColor="{StaticResource TextTertiary}"/>
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="Email" Style="{StaticResource FieldLabel}" Margin="2,0"/>
+                        <Border Style="{StaticResource FieldBorder}" HeightRequest="52">
+                            <Grid ColumnDefinitions="40,*,32" ColumnSpacing="8">
+                                <Border Padding="7" BackgroundColor="{StaticResource SurfaceSunken}" StrokeThickness="0"
+                                        HorizontalOptions="Start" VerticalOptions="Center">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                                    <Image Source="profileemail.png" WidthRequest="18" HeightRequest="18" Aspect="AspectFit"/>
+                                </Border>
+                                <Entry x:Name="EmailEntry" Grid.Column="1"
+                                       Text="{Binding Email}" Keyboard="Email"
+                                       Style="{StaticResource FieldEntry}"
+                                       VerticalOptions="Fill"
+                                       SemanticProperties.Description="Email address"/>
+                                <Button Grid.Column="2" Text="×" Clicked="OnClearEntryClicked"
+                                        CommandParameter="{x:Reference EmailEntry}" WidthRequest="32"
+                                        HeightRequest="32" Padding="0" FontSize="20"
+                                        BackgroundColor="Transparent" TextColor="{StaticResource TextTertiary}"/>
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout Spacing="3">
+                        <Label Text="Username" Style="{StaticResource FieldLabel}" Margin="2,0"/>
+                        <Border Style="{StaticResource FieldBorder}" HeightRequest="52">
+                            <Grid ColumnDefinitions="40,*,32" ColumnSpacing="8">
+                                <Border Padding="7" BackgroundColor="{StaticResource SurfaceSunken}" StrokeThickness="0"
+                                        HorizontalOptions="Start" VerticalOptions="Center">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                                    <Image Source="loginusername.png" WidthRequest="18" HeightRequest="18" Aspect="AspectFit"/>
+                                </Border>
+                                <Entry x:Name="UsernameEntry" Grid.Column="1"
+                                       Text="{Binding Username}"
+                                       Style="{StaticResource FieldEntry}"
+                                       VerticalOptions="Fill"
+                                       SemanticProperties.Description="Username"/>
+                                <Button Grid.Column="2" Text="×" Clicked="OnClearEntryClicked"
+                                        CommandParameter="{x:Reference UsernameEntry}" WidthRequest="32"
+                                        HeightRequest="32" Padding="0" FontSize="20"
+                                        BackgroundColor="Transparent" TextColor="{StaticResource TextTertiary}"/>
+                            </Grid>
+                        </Border>
+                    </VerticalStackLayout>
+
+                </VerticalStackLayout>
+
+                <Label Text="Bio"
+                       Style="{StaticResource ReportSectionHeading}"
+                       Margin="0,18,0,8"/>
+                <Border Style="{StaticResource FieldBorder}"
+                        Padding="12,6" HeightRequest="104">
+                    <Grid RowDefinitions="*,Auto" RowSpacing="4">
+                        <Editor x:Name="BioEditor" Text="{Binding Bio}"
+                                Placeholder="Say a little about your work — this shows on your profile."
+                                MaxLength="300" AutoSize="Disabled"
+                                Style="{StaticResource FieldEditor}"/>
+                        <Label Grid.Row="1"
+                               Text="{Binding BioLengthDisplay}"
+                               Style="{StaticResource MetaText}"
+                               HorizontalTextAlignment="End"/>
+                    </Grid>
+                </Border>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <Grid Grid.Row="2" Padding="20,8,20,10"
+              BackgroundColor="{StaticResource SurfaceMuted}">
+            <BoxView Style="{StaticResource Divider}"
+                     VerticalOptions="Start" Margin="-20,-12,-20,0"/>
+            <Button Text="Save Changes"
+                    Clicked="OnSaveChangesClicked"
+                    Style="{StaticResource PrimaryButton}"
+                    HeightRequest="46"/>
+        </Grid>
+
+    </Grid>
+</base:EduTaskPage>

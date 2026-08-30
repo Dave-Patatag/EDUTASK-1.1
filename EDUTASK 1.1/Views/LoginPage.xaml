@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<base:EduTaskPage xmlns:base="clr-namespace:EDUTASK_1._1.Views.Base" xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="EDUTASK_1._1.Views.LoginPage"
+             NavigationPage.HasNavigationBar="False"
+             BackgroundColor="{StaticResource SurfaceBase}">
+
+    <Grid>
+        <Border BackgroundColor="{StaticResource SurfaceBase}"
+                StrokeThickness="0"
+                Padding="28,70,28,34">
+
+            <Grid x:Name="LoginFormGrid"
+                  RowDefinitions="*,Auto,18,Auto,Auto,Auto,Auto,*"
+                  RowSpacing="4">
+
+                <Image Grid.Row="0"
+                       Source="loginlogo.png"
+                       Aspect="AspectFit"
+                       MaximumHeightRequest="190"
+                       Margin="0,55,0,12"/>
+
+                <Border x:Name="UsernameBorder"
+                        Grid.Row="1"
+                        Style="{StaticResource AuthField}">
+
+                    <Grid ColumnDefinitions="24,*"
+                          ColumnSpacing="8">
+
+                        <Image Source="loginusername.png"
+                               Style="{StaticResource AuthFieldIcon}"/>
+
+                        <Entry x:Name="UsernameEntry"
+                               Grid.Column="1"
+                               Style="{StaticResource AuthFieldEntry}"
+                               Placeholder="Username"
+                               TextChanged="OnUsernameChanged"/>
+                    </Grid>
+                </Border>
+
+                <Label x:Name="UsernameErrorLabel"
+                       Grid.Row="2"
+                       Style="{StaticResource AuthFieldError}"/>
+
+                <Border x:Name="PasswordBorder"
+                        Grid.Row="3"
+                        Style="{StaticResource AuthField}">
+
+                    <Grid ColumnDefinitions="24,*,32"
+                          ColumnSpacing="8">
+
+                        <Image Source="loginpassword.png"
+                               Style="{StaticResource AuthFieldIcon}"/>
+
+                        <Entry x:Name="PasswordEntry"
+                               Grid.Column="1"
+                               Style="{StaticResource AuthFieldEntry}"
+                               Placeholder="Password"
+                               IsPassword="True"
+                               IsTextPredictionEnabled="False"
+                               IsSpellCheckEnabled="False"
+                               TextChanged="OnPasswordChanged"/>
+
+                        <Entry x:Name="VisiblePasswordEntry"
+                               Grid.Column="1"
+                               Style="{StaticResource AuthFieldEntry}"
+                               Placeholder="Password"
+                               IsVisible="False"
+                               IsTextPredictionEnabled="False"
+                               IsSpellCheckEnabled="False"
+                               TextChanged="OnVisiblePasswordChanged"/>
+
+                        <ImageButton x:Name="PasswordToggleButton"
+                                     Grid.Column="2"
+                                     Style="{StaticResource AuthFieldTrailingButton}"
+                                     Source="loginshowpassword.png"
+                                     Clicked="OnTogglePassword"
+                                     ToolTipProperties.Text="Show password"
+                                     SemanticProperties.Description="Show password"/>
+                    </Grid>
+                </Border>
+
+                <!-- Field-specific and authentication errors share the space
+                     directly beneath Password. Only one is populated at a
+                     time, so the message stays attached to the inputs. -->
+                <Grid Grid.Row="4"
+                      RowDefinitions="Auto,Auto"
+                      ColumnDefinitions="*,Auto">
+
+                    <Label x:Name="PasswordErrorLabel"
+                           Style="{StaticResource AuthFieldError}"
+                           HorizontalOptions="Fill"
+                           HorizontalTextAlignment="Start"
+                           Grid.ColumnSpan="2"/>
+
+                    <Label Grid.Column="1"
+                           Grid.Row="1"
+                           Text="Forgot password?"
+                           FontSize="{StaticResource FontLabel}"
+                           TextColor="{StaticResource Accent500}"
+                           Margin="0,0,13,0"
+                           HorizontalOptions="End"
+                           VerticalTextAlignment="Center">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnForgotPasswordTapped"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                </Grid>
+
+                <Button Grid.Row="5"
+                        Text="Login"
+                        Clicked="OnLoginClicked"
+                        HeightRequest="50"
+                        Margin="0,14,0,0"
+                        BackgroundColor="{StaticResource Brand800}"
+                        TextColor="{StaticResource TextInverse}"
+                        CornerRadius="8"/>
+
+                <HorizontalStackLayout Grid.Row="6"
+                                       HorizontalOptions="Center"
+                                       Spacing="4">
+
+                    <Label Text="Don't have an account?"
+                           FontSize="{StaticResource FontLabel}"
+                           TextColor="{StaticResource TextTertiary}"/>
+
+                    <Label Text="Sign Up"
+                           FontSize="{StaticResource FontLabel}"
+                           TextColor="{StaticResource Accent500}"
+                           TextDecorations="Underline">
+
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnCreateAccountTapped"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                </HorizontalStackLayout>
+
+            </Grid>
+        </Border>
+    </Grid>
+</base:EduTaskPage>

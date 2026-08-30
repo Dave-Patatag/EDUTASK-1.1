@@ -1,11 +1,12 @@
 using EDUTASK_1._1.Services;
+using EDUTASK_1._1.Views.Base;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using TeacherOption = EDUTASK_1._1.Models.TeacherOption;
 
 namespace EDUTASK_1._1.Views;
 
-public partial class TeacherSelectionPage : ContentPage
+public partial class TeacherSelectionPage : EduTaskPage
 {
     private readonly List<SelectableTeacher> _teachers;
     private readonly TaskCompletionSource<IReadOnlyList<TeacherOption>?> _completion = new();

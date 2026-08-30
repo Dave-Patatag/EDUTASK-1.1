@@ -230,27 +230,9 @@ BEGIN
     COMMIT TRANSACTION;
 END;
 GO
-
-CREATE OR ALTER PROCEDURE dbo.ReopenTask
-    @TaskID int,
-    @ActingUserID int,
-    @Reason nvarchar(1000) = NULL
-AS
-BEGIN
-    SET NOCOUNT ON; SET XACT_ABORT ON;
-    EXEC dbo.AssertActiveUserRole @ActingUserID, @AllowDirector = 1;
-    BEGIN TRANSACTION;
-    IF NOT EXISTS (SELECT 1 FROM dbo.TaskAssignment WITH (UPDLOCK, HOLDLOCK) WHERE TaskID = @TaskID AND CompletionStatus = N'Completed')
-        THROW 51130, 'Only a completed task can be reopened.', 1;
-    UPDATE dbo.TaskAssignment SET CompletionStatus = N'Needs Revision', CompletedAt = NULL WHERE TaskID = @TaskID;
-    UPDATE dbo.[Task] SET CompletionApprovedByUserID = NULL, CompletionApprovedAt = NULL,
-        RevisionRequestedByUserID = @ActingUserID, RevisionRequestedAt = SYSUTCDATETIME(),
-        RevisionReason = @Reason, LastModifiedByUserID = @ActingUserID,
-        UpdatedAt = SYSUTCDATETIME() WHERE TaskID = @TaskID;
-    INSERT dbo.TaskActivityLog(TaskID, PerformedByUserID, ActionType, PreviousStatus, NewStatus, Details)
-        VALUES (@TaskID, @ActingUserID, N'TaskReopened', N'Completed', N'Needs Revision', @Reason);
-    COMMIT TRANSACTION;
-END;
+/* dbo.ReopenTask was never called by the app. Retired here so replaying this
+   script removes it from databases that already have it. */
+DROP PROCEDURE IF EXISTS dbo.ReopenTask;
 GO
 
 /* Validation: all result sets should show healthy mappings and zero invalid rows. */
@@ -260,5 +242,5 @@ SELECT r.RoleName, COUNT(*) AS AccountCount FROM dbo.Teacher t JOIN dbo.Roles r 
 SELECT COUNT(*) AS TasksWithoutCreator FROM dbo.[Task] WHERE CreatedByUserID IS NULL;
 SELECT CompletionStatus, COUNT(*) AS AssignmentCount FROM dbo.TaskAssignment GROUP BY CompletionStatus;
 SELECT name AS InstalledProcedure FROM sys.procedures
-WHERE name IN (N'AssertActiveUserRole', N'ApproveTaskCompletion', N'RequestTaskRevision', N'ReopenTask')
+WHERE name IN (N'AssertActiveUserRole', N'ApproveTaskCompletion', N'RequestTaskRevision')
 ORDER BY name;

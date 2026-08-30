@@ -9,10 +9,6 @@ IF COL_LENGTH(N'dbo.Teacher', N'Username') IS NULL
     ALTER TABLE dbo.Teacher ADD Username NVARCHAR(50) NULL;
 GO
 
-IF COL_LENGTH(N'dbo.Teacher', N'Birthdate') IS NULL
-    ALTER TABLE dbo.Teacher ADD Birthdate DATE NULL;
-GO
-
 IF COL_LENGTH(N'dbo.Teacher', N'ProfilePhotoPath') IS NULL
     ALTER TABLE dbo.Teacher ADD ProfilePhotoPath NVARCHAR(500) NULL;
 GO
@@ -23,7 +19,7 @@ WHERE NULLIF(LTRIM(RTRIM(Username)), '') IS NULL;
 GO
 
 SELECT TeacherID, FirstName, LastName, Email, ContactNumber,
-       Username, Birthdate, ProfilePhotoPath
+       Username, ProfilePhotoPath
 FROM dbo.Teacher
 ORDER BY TeacherID;
 GO

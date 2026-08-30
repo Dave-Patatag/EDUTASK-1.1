@@ -16,10 +16,12 @@ namespace EDUTASK_1._1.Models
         public string ContactNumber { get; set; } = string.Empty;
         public DateTime AccountCreated { get; set; }
         public string Username { get; set; } = string.Empty;
-        public DateTime? Birthdate { get; set; }
         public string ProfilePhotoPath { get; set; } = string.Empty;
         public int RoleID { get; set; }
         public string RoleName { get; set; } = string.Empty;
         public bool IsActive { get; set; }
+
+        /// <summary>Short free-text description shown on their profile.</summary>
+        public string Bio { get; set; } = string.Empty;
     }
 }

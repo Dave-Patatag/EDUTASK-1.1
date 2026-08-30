@@ -1,102 +1,103 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<base:EduTaskPage xmlns:base="clr-namespace:EDUTASK_1._1.Views.Base" xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:EDUTASK_1._1.Views"
              x:Class="EDUTASK_1._1.Views.TeacherDashboardPage"
              NavigationPage.HasNavigationBar="False"
              Shell.NavBarIsVisible="False"
-             BackgroundColor="White">
+             BackgroundColor="{StaticResource SurfaceMuted}">
     <ContentPage.Resources>
         <DataTemplate x:Key="TeacherTaskCardTemplate">
-            <VerticalStackLayout Margin="16,0,16,12" Spacing="0">
-                <BoxView HeightRequest="1" Color="#C9CED4" Margin="0,0,0,12"/>
-                <Grid ColumnDefinitions="46,*" ColumnSpacing="14">
-                    <VerticalStackLayout Grid.Column="0" Spacing="0" Padding="0,2,0,0"
-                                         HorizontalOptions="Center" VerticalOptions="Start">
-                        <Label Text="{Binding DeadlineMonth}" FontSize="10" FontAttributes="Bold"
-                               TextColor="#687786" HorizontalTextAlignment="Center"/>
-                        <Label Text="{Binding DeadlineDay}" FontSize="20" FontAttributes="Bold"
-                               TextColor="#243447" HorizontalTextAlignment="Center"/>
-                    </VerticalStackLayout>
-                    <VerticalStackLayout Grid.Column="1" Spacing="8">
+            <VerticalStackLayout Margin="14,0,14,8" Spacing="0">
+                <BoxView HeightRequest="1" Color="{StaticResource BorderDefault}" Margin="0,0,0,8"/>
+                <Grid>
+                    <VerticalStackLayout Spacing="5">
                         <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
-                            <Label Text="{Binding Title}" FontSize="15" FontAttributes="Bold"
-                                   TextColor="#202936" VerticalOptions="Center"/>
+                            <Label Text="{Binding Title}" FontSize="{StaticResource FontHeading}" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextPrimary}" VerticalOptions="Center"/>
                             <Border Grid.Column="1" Padding="8,2" BackgroundColor="Transparent"
                                     Stroke="{Binding PriorityColor}" StrokeThickness="1" VerticalOptions="Center">
                                 <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
-                                <Label Text="{Binding Priority}" FontSize="10" FontAttributes="Bold"
+                                <Label Text="{Binding Priority}" FontSize="{StaticResource FontMicro}" FontAttributes="Bold"
                                        TextColor="{Binding PriorityColor}"/>
                             </Border>
                             <Border Grid.Column="2" Padding="8,3" BackgroundColor="{Binding StatusColor}"
                                     StrokeThickness="0" VerticalOptions="Center">
                                 <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
-                                <Label Text="{Binding Status}" FontSize="10" FontAttributes="Bold"
-                                       TextColor="White"/>
+                                <Label Text="{Binding Status}" FontSize="{StaticResource FontMicro}" FontAttributes="Bold"
+                                       TextColor="{StaticResource TextInverse}"/>
                             </Border>
                         </Grid>
-                        <Label Text="{Binding Description}" FontSize="12" TextColor="#596574"
-                               LineBreakMode="WordWrap"/>
-                        <VerticalStackLayout IsVisible="{Binding HasSubtasks}" Spacing="3" Margin="0,2,0,0">
-                            <Label Text="Subtasks" FontSize="10" TextColor="#7A8491"/>
-                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Subtasks}" Spacing="0">
+                        <Label Text="{Binding Description}" FontSize="{StaticResource FontCaption}" TextColor="{StaticResource TextSecondary}"
+                               LineBreakMode="TailTruncation" MaxLines="1"/>
+                        <VerticalStackLayout IsVisible="{Binding HasSubtasks}" Spacing="6">
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Subtasks}" Spacing="6">
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="18,*,Auto"
-                                              ColumnSpacing="7" RowSpacing="2" Padding="1,5">
-                                            <Label Text="{Binding Marker}" TextColor="{Binding MarkerColor}"
-                                                   FontAttributes="Bold" FontSize="14" VerticalOptions="Center"/>
-                                            <Label Grid.Column="1" Text="{Binding Title}" FontSize="12"
-                                                   TextColor="{Binding TitleColor}" TextDecorations="{Binding TitleDecoration}"
-                                                   VerticalOptions="Center"/>
-                                            <HorizontalStackLayout Grid.Column="2" Grid.RowSpan="2" Spacing="5" VerticalOptions="Center">
-                                                <Grid WidthRequest="40" HeightRequest="40">
+                                        <Border Padding="10,6"
+                                                BackgroundColor="{StaticResource SurfaceBase}"
+                                                Stroke="{StaticResource Brand800}" StrokeThickness="1">
+                                            <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                                            <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="16,*,Auto"
+                                                  ColumnSpacing="7" RowSpacing="2">
+                                                <Label Grid.ColumnSpan="2" Text="Subtask"
+                                                       FontSize="{StaticResource FontMicro}" FontAttributes="Bold"
+                                                       TextColor="{StaticResource Brand800}"/>
+                                                <Label Grid.Row="1" Text="{Binding Marker}" TextColor="{Binding MarkerColor}"
+                                                       FontAttributes="Bold" FontSize="{StaticResource FontBody}" VerticalOptions="Center"/>
+                                                <Label Grid.Row="1" Grid.Column="1" Text="{Binding Title}" FontSize="{StaticResource FontCaption}"
+                                                       TextColor="{Binding TitleColor}" TextDecorations="{Binding TitleDecoration}"
+                                                       VerticalOptions="Center"/>
+                                                <HorizontalStackLayout Grid.Row="1" Grid.Column="2"
+                                                                       Spacing="4" VerticalOptions="Center"
+                                                                       HorizontalOptions="End">
+                                                <Grid WidthRequest="34" HeightRequest="34">
                                                     <ImageButton Source="discussion.png" Aspect="AspectFit" Padding="6"
-                                                                 WidthRequest="36" HeightRequest="36" CornerRadius="8"
+                                                                 WidthRequest="32" HeightRequest="32" CornerRadius="8"
                                                                  HorizontalOptions="Start" VerticalOptions="End"
-                                                                 BackgroundColor="#687786"
+                                                                 BackgroundColor="{StaticResource Slate400}"
                                                                  ToolTipProperties.Text="Discussion"
                                                                  SemanticProperties.Description="Open subtask discussion"
                                                                  CommandParameter="{Binding .}" Clicked="OnSubtaskDiscussionClicked"/>
                                                     <Border IsVisible="{Binding HasUnreadDiscussion}"
-                                                            BackgroundColor="#E5252A" StrokeThickness="0"
+                                                            BackgroundColor="{StaticResource StatusDanger}" StrokeThickness="0"
                                                             Padding="3,0" MinimumWidthRequest="15" HeightRequest="15"
                                                             HorizontalOptions="End" VerticalOptions="Start"
                                                             InputTransparent="True">
                                                         <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
-                                                        <Label Text="{Binding UnreadDiscussionDisplay}" FontSize="8"
-                                                               FontAttributes="Bold" TextColor="White"
+                                                        <Label Text="{Binding UnreadDiscussionDisplay}" FontSize="{StaticResource FontMicro}"
+                                                               FontAttributes="Bold" TextColor="{StaticResource TextInverse}"
                                                                HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
                                                     </Border>
                                                 </Grid>
                                                 <ImageButton Source="viewproof.png" Aspect="AspectFit" Padding="6"
-                                                             WidthRequest="36" HeightRequest="36" CornerRadius="8"
-                                                             IsVisible="{Binding ShowTeacherProofButton}" BackgroundColor="#687786"
+                                                             WidthRequest="32" HeightRequest="32" CornerRadius="8"
+                                                             IsVisible="{Binding ShowTeacherProofButton}" BackgroundColor="{StaticResource Slate400}"
                                                              ToolTipProperties.Text="{Binding TeacherProofButtonText}"
                                                              SemanticProperties.Description="{Binding TeacherProofButtonText}"
                                                              CommandParameter="{Binding .}" Clicked="OnTeacherProofButtonClicked"/>
                                                 <ImageButton Source="uploadfile.png" Aspect="AspectFit" Padding="6"
-                                                             WidthRequest="36" HeightRequest="36" CornerRadius="8"
-                                                             IsVisible="{Binding CanUploadProof}" BackgroundColor="#687786"
+                                                             WidthRequest="32" HeightRequest="32" CornerRadius="8"
+                                                             IsVisible="{Binding CanUploadProof}" BackgroundColor="{StaticResource Slate400}"
                                                              ToolTipProperties.Text="{Binding ProofActionText}"
                                                              SemanticProperties.Description="{Binding ProofActionText}"
                                                              CommandParameter="{Binding .}" Clicked="OnUploadProofClicked"/>
-                                            </HorizontalStackLayout>
-                                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding ProofStatusText}"
-                                                   IsVisible="{Binding HasProof}"
-                                                   FontSize="9" TextColor="{Binding ProofStatusColor}"
-                                                   LineBreakMode="TailTruncation"/>
-                                            <BoxView Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2"
-                                                     HeightRequest="1" Margin="0,4,0,0" Color="#D7DCE2"/>
-                                        </Grid>
+                                                </HorizontalStackLayout>
+                                                <Label Grid.Row="2" Grid.Column="1" Text="{Binding ProofStatusText}"
+                                                       IsVisible="{Binding HasProof}"
+                                                       FontSize="{StaticResource FontMicro}" TextColor="{Binding ProofStatusColor}"
+                                                       LineBreakMode="TailTruncation"/>
+                                            </Grid>
+                                        </Border>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
                             </VerticalStackLayout>
                         </VerticalStackLayout>
-                        <HorizontalStackLayout HorizontalOptions="End" Margin="0,7,0,0" Spacing="7">
-                            <Border StrokeThickness="0" BackgroundColor="#D5DADF" Padding="12,6"
+                        <HorizontalStackLayout HorizontalOptions="End" Margin="0,4,0,2" Spacing="7">
+                            <Border StrokeThickness="0" BackgroundColor="{StaticResource Slate100}" Padding="12,6"
                                     IsVisible="{Binding ShowAcknowledge}">
                                 <Border.StrokeShape><RoundRectangle CornerRadius="7"/></Border.StrokeShape>
-                                <Label Text="Acknowledge" FontSize="11" TextColor="#202936"/>
+                                <Label Text="Acknowledge" FontSize="{StaticResource FontLabel}" TextColor="{StaticResource TextPrimary}"/>
                                 <Border.GestureRecognizers>
                                     <TapGestureRecognizer Tapped="OnAcknowledgeTapped" CommandParameter="{Binding AssignmentID}"/>
                                 </Border.GestureRecognizers>
@@ -106,21 +107,33 @@
                 </Grid>
             </VerticalStackLayout>
         </DataTemplate>        <DataTemplate x:Key="DeadlineGroupTemplate">
-            <Border Margin="16,5" Padding="0" BackgroundColor="#EDEFF2" StrokeThickness="0">
-                <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+            <Border Style="{StaticResource ListCard}"
+                    Margin="{StaticResource CardStackMargin}"
+                    Padding="0"
+                    Stroke="Transparent" StrokeThickness="0">
                 <VerticalStackLayout Spacing="0">
-                    <Grid ColumnDefinitions="*,Auto" Padding="16,12">
+                    <Grid ColumnDefinitions="*,Auto,Auto" Padding="14,8" ColumnSpacing="6">
                         <VerticalStackLayout Spacing="2" VerticalOptions="Center">
-                            <Label Text="{Binding TaskTitle}" FontAttributes="Bold"
-                                   FontSize="15" TextColor="#243447" LineBreakMode="TailTruncation"/>
-                            <Label Text="{Binding DeadlineDisplay}" FontSize="10"
-                                   TextColor="#7A8491" LineBreakMode="TailTruncation"/>
+                            <Label Text="{Binding DeadlineDisplay}" FontAttributes="Bold"
+                                   FontSize="{StaticResource FontHeading}" TextColor="{StaticResource TextPrimary}" LineBreakMode="TailTruncation"/>
+                            <Label Text="{Binding TaskTitle}"
+                                   FontSize="{StaticResource FontBody}" TextColor="{StaticResource TextPrimary}"
+                                   LineBreakMode="TailTruncation"/>
                         </VerticalStackLayout>
-                        <Label Grid.Column="1"
+                        <Border Grid.Column="1" IsVisible="{Binding ShowUnreadDiscussion}"
+                                BackgroundColor="{StaticResource StatusDanger}" StrokeThickness="0"
+                                Padding="4,0" MinimumWidthRequest="18" HeightRequest="18"
+                                HorizontalOptions="End" VerticalOptions="Center">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="9"/></Border.StrokeShape>
+                            <Label Text="{Binding UnreadDiscussionDisplay}" FontSize="{StaticResource FontMicro}"
+                                   FontAttributes="Bold" TextColor="{StaticResource TextInverse}"
+                                   HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                        </Border>
+                        <Label Grid.Column="2"
                                Text="{Binding Arrow}"
                                Rotation="{Binding ArrowRotation}"
                                FontSize="22"
-                               TextColor="#4B6073"
+                               TextColor="{StaticResource TextSecondary}"
                                WidthRequest="24"
                                HeightRequest="24"
                                HorizontalTextAlignment="Center"
@@ -140,46 +153,45 @@
         </DataTemplate>    </ContentPage.Resources>
 
 
-    <Grid x:Name="DashboardLayout" RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="0">
+    <Grid x:Name="DashboardLayout" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="0">
 
-        <!-- Header -->
-        <Grid Grid.Row="0" ColumnDefinitions="Auto,*"
-              Padding="20,18,20,10" VerticalOptions="Center">
-
-            <Image Grid.Column="0" Source="menubar.png"
-                   WidthRequest="26" HeightRequest="26" VerticalOptions="Center">
-                <Image.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnMenuClicked"/>
-                </Image.GestureRecognizers>
-            </Image>
-
-            <Border Grid.Column="1" BackgroundColor="#F3F4F6" StrokeThickness="0"
-                    HeightRequest="42" Margin="12,0,12,0" VerticalOptions="Center">
-                <Border.StrokeShape>
-                    <RoundRectangle CornerRadius="8"/>
-                </Border.StrokeShape>
+        <Grid Grid.Row="0" RowDefinitions="Auto,Auto" RowSpacing="8" Padding="9,10,9,10">
+            <Grid ColumnDefinitions="48,*" ColumnSpacing="12">
+            <Border WidthRequest="48" HeightRequest="48"
+                    BackgroundColor="{StaticResource SurfaceBase}"
+                    Stroke="{StaticResource BorderSubtle}" StrokeThickness="1"
+                    HorizontalOptions="Start" VerticalOptions="Center"
+                    SemanticProperties.Description="Open navigation menu">
+                <Border.StrokeShape><RoundRectangle CornerRadius="14"/></Border.StrokeShape>
+                <Image Source="menubar.png" WidthRequest="21" HeightRequest="21"
+                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuClicked"/></Border.GestureRecognizers>
+            </Border>
+            <VerticalStackLayout Grid.Column="1" Spacing="0" VerticalOptions="Center">
+                <Label x:Name="GreetingLabel" Text="Good morning" FontSize="{StaticResource FontCaption}" TextColor="{StaticResource TextSecondary}"/>
+                <Label x:Name="DashboardUserNameLabel" Text="Tasks" FontSize="{StaticResource FontTitle}" FontAttributes="Bold" TextColor="{StaticResource TextPrimary}"/>
+            </VerticalStackLayout>
+            </Grid>
+            <Border Grid.Row="1" BackgroundColor="{StaticResource SurfaceBase}"
+                    Stroke="{StaticResource BorderSubtle}" StrokeThickness="1"
+                    HeightRequest="48" VerticalOptions="Center">
+                <Border.StrokeShape><RoundRectangle CornerRadius="14"/></Border.StrokeShape>
                 <Grid ColumnDefinitions="*,Auto,Auto" Padding="12,0,8,0">
-                    <Entry x:Name="TaskSearchBar"
-                           Grid.Column="0"
-                           Placeholder="Search tasks"
+                    <Entry x:Name="TaskSearchBar" Placeholder="Search tasks"
+                           Style="{StaticResource SearchFieldEntry}"
                            TextChanged="OnSearchTextChanged"
-                           FontSize="14"
-                           TextColor="#111827"
-                           PlaceholderColor="#9CA3AF"
+                           FontSize="{StaticResource FontBody}"
+                           TextColor="{StaticResource TextPrimary}"
+                           PlaceholderColor="{StaticResource TextDisabled}"
                            BackgroundColor="Transparent"
-                           VerticalOptions="Center"/>
-
-                    <Label x:Name="ClearSearchButton"
-                           Grid.Column="1"
-                           Text="&#x2715;"
-                           FontSize="16"
-                           TextColor="#9CA3AF"
-                           IsVisible="False"
-                           VerticalOptions="Center"
-                           Padding="6,0">
-                        <Label.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnClearSearchTapped"/>
-                        </Label.GestureRecognizers>
+                           VerticalOptions="Fill"
+                           VerticalTextAlignment="Center"
+                           TranslationY="10"/>
+                    <Label x:Name="ClearSearchButton" Grid.Column="1" Text="&#x2715;"
+                           FontSize="{StaticResource FontHeading}"
+                           TextColor="{StaticResource TextDisabled}"
+                           IsVisible="False" VerticalOptions="Center" Padding="6,0">
+                        <Label.GestureRecognizers><TapGestureRecognizer Tapped="OnClearSearchTapped"/></Label.GestureRecognizers>
                     </Label>
                     <Image Grid.Column="2" Source="search.png" WidthRequest="22" HeightRequest="22"
                            Margin="4,0,0,0" VerticalOptions="Center">
@@ -189,68 +201,54 @@
             </Border>
         </Grid>
 
-        <!-- Teacher selector -->
-        <Border Grid.Row="1" Margin="20,4,20,12" Padding="12,2"
-                BackgroundColor="#F3F4F6" Stroke="#E5E7EB" StrokeThickness="1">
-            <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
-            <Picker x:Name="TeacherPicker" Title="Select teacher"
-                    ItemDisplayBinding="{Binding DisplayName}"
-                    SelectedIndexChanged="OnTeacherSelected"
-                    TextColor="#111827" TitleColor="#6B7280"/>
-        </Border>
-
         <!-- Filter Pills -->
-        <ScrollView Grid.Row="2" Orientation="Horizontal"
-                    HorizontalScrollBarVisibility="Never" Padding="20,0,20,12">
-            <HorizontalStackLayout Spacing="10">
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,Auto,*,Auto" ColumnSpacing="12" Padding="18,2,18,4">
 
-                <Border x:Name="AllFilterBorder" StrokeThickness="0" BackgroundColor="#E5E7EB" Padding="16,7">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="16"/>
-                    </Border.StrokeShape>
-                    <Label Text="All" FontSize="13" TextColor="#111827"/>
+                <Border x:Name="AllFilterBorder" Grid.Column="0" Style="{StaticResource FilterChip}" HorizontalOptions="Start">
+                    <Label x:Name="AllFilterLabel" Text="All" Style="{StaticResource FilterChipLabel}" HorizontalTextAlignment="Center"/>
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnAllTasksClicked"/>
                     </Border.GestureRecognizers>
                 </Border>
 
-                <Border x:Name="TodayFilterBorder" StrokeThickness="0" BackgroundColor="#F3F4F6" Padding="16,7">
-                    <Border.StrokeShape><RoundRectangle CornerRadius="16"/></Border.StrokeShape>
-                    <Label Text="Today" FontSize="13" TextColor="#374151"/>
+                <Border x:Name="TodayFilterBorder" Grid.Column="1" Style="{StaticResource FilterChip}" HorizontalOptions="Start">
+                    <Label x:Name="TodayFilterLabel" Text="Today" Style="{StaticResource FilterChipLabel}" HorizontalTextAlignment="Center"/>
                     <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnTodayTasksClicked"/></Border.GestureRecognizers>
                 </Border>
 
-                <Border x:Name="OverdueFilterBorder" StrokeThickness="0" BackgroundColor="#F3F4F6" Padding="16,7">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="16"/>
-                    </Border.StrokeShape>
-                    <Label Text="Overdue" FontSize="13" TextColor="#374151"/>
+                <Border x:Name="OverdueFilterBorder" Grid.Column="2" Style="{StaticResource FilterChip}" HorizontalOptions="Start">
+                    <Label x:Name="OverdueFilterLabel" Text="Overdue" Style="{StaticResource FilterChipLabel}" HorizontalTextAlignment="Center"/>
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnOverdueTasksClicked"/>
                     </Border.GestureRecognizers>
                 </Border>
 
-                            <Border x:Name="DateFilterBorder" StrokeThickness="0" BackgroundColor="#F3F4F6" Padding="14,6">
-                    <Border.StrokeShape><RoundRectangle CornerRadius="16"/></Border.StrokeShape>
-                    <Image Source="datefilter.png" WidthRequest="18" HeightRequest="18"
-                           SemanticProperties.Description="Filter tasks by deadline"/>
-                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnDateFilterClicked"/></Border.GestureRecognizers>
-                </Border></HorizontalStackLayout>
-        </ScrollView>
+                <Border x:Name="DateFilterBorder" Grid.Column="4"
+                        WidthRequest="42" HeightRequest="42" Padding="0"
+                        HorizontalOptions="Start" VerticalOptions="Center"
+                        BackgroundColor="Transparent"
+                        Stroke="Transparent" StrokeThickness="0">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="21"/></Border.StrokeShape>
+                    <Image x:Name="DateFilterIcon" Source="blackfiltericon.png" WidthRequest="18" HeightRequest="18"
+                           HorizontalOptions="Center" VerticalOptions="Center"
+                           SemanticProperties.Description="Open date filter"/>
+                    <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnTaskToolsClicked"/></Border.GestureRecognizers>
+                </Border>
+        </Grid>
 
-        <ScrollView Grid.Row="3" VerticalScrollBarVisibility="Never">
+        <ScrollView x:Name="TasksScrollView" Grid.Row="2" VerticalScrollBarVisibility="Never">
             <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto">
 
         <!-- Active tasks header -->
-        <Grid x:Name="TodaySectionHeader" Grid.Row="0" ColumnDefinitions="*,Auto" Padding="20,8,20,10">
+        <Grid x:Name="TodaySectionHeader" Grid.Row="0" ColumnDefinitions="*,Auto" Padding="20,6">
             <Label x:Name="TodayHeaderLabel" Text="Active Tasks (0)" FontAttributes="Bold"
-                   FontSize="16" TextColor="#111827" VerticalOptions="Center"/>
-            <Label x:Name="TodayToggleArrow" Grid.Column="1" Text="&#x25BC;"
-                   FontSize="12" TextColor="#6B7280" Padding="8,0" VerticalOptions="Center">
-                <Label.GestureRecognizers>
+                   FontSize="{StaticResource FontBodySmall}" TextColor="{StaticResource TextPrimary}" VerticalOptions="Center"/>
+            <Image x:Name="TodayToggleArrow" Grid.Column="1" Source="collapse.png"
+                   WidthRequest="18" HeightRequest="18" Aspect="AspectFit" Margin="8,0" VerticalOptions="Center">
+                <Image.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnTodayToggleClicked"/>
-                </Label.GestureRecognizers>
-            </Label>
+                </Image.GestureRecognizers>
+            </Image>
         </Grid>
 
         <!-- Task List -->
@@ -259,52 +257,71 @@
                              BindableLayout.ItemTemplate="{StaticResource DeadlineGroupTemplate}"/>
 
         <!-- Completed tasks header -->
-        <Grid x:Name="CompletedTodaySectionHeader" Grid.Row="2" ColumnDefinitions="*,Auto" Padding="20,10">
+        <Grid x:Name="CompletedTodaySectionHeader" Grid.Row="2" ColumnDefinitions="*,Auto" Padding="20,8">
             <Label x:Name="CompletedTodayHeaderLabel" Text="Completed Today (0)"
-                   FontAttributes="Bold" FontSize="16" TextColor="#111827" VerticalOptions="Center"/>
-            <Label x:Name="CompletedTodayToggleArrow" Grid.Column="1" Text="&#x25BC;"
-                   FontSize="12" TextColor="#6B7280" Padding="8,0" VerticalOptions="Center">
-                <Label.GestureRecognizers>
+                   FontAttributes="Bold" FontSize="{StaticResource FontBodySmall}" TextColor="{StaticResource TextPrimary}" VerticalOptions="Center"/>
+            <Image x:Name="CompletedTodayToggleArrow" Grid.Column="1" Source="collapse.png"
+                   WidthRequest="18" HeightRequest="18" Aspect="AspectFit" Margin="8,0" VerticalOptions="Center">
+                <Image.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnCompletedTodayToggleClicked"/>
-                </Label.GestureRecognizers>
-            </Label>
+                </Image.GestureRecognizers>
+            </Image>
         </Grid>
 
         <VerticalStackLayout x:Name="CompletedTodayTaskListView" Grid.Row="3"
                              Spacing="0"
                              BindableLayout.ItemTemplate="{StaticResource DeadlineGroupTemplate}"/>
         <Label x:Name="CompletionHistoryLink" Grid.Row="4" Text="Check all completed tasks"
-               FontSize="12" TextColor="#7A8491" TextDecorations="Underline"
-               HorizontalTextAlignment="Center" Margin="20,12,20,18">
+               FontSize="{StaticResource FontMicro}" TextColor="{StaticResource TextTertiary}" TextDecorations="Underline"
+               HorizontalTextAlignment="Center" Margin="20,10,20,14">
             <Label.GestureRecognizers><TapGestureRecognizer Tapped="OnCompletionHistoryClicked"/></Label.GestureRecognizers>
         </Label>
-
-        <Label x:Name="NoTodayTasksLabel" Grid.Row="0" Grid.RowSpan="5" HeightRequest="120"
-               Text="No tasks available" FontSize="13" TextColor="#9CA3AF"
-               HorizontalTextAlignment="Center" VerticalTextAlignment="Center"
-               IsVisible="False"/>
 
             </Grid>
         </ScrollView>
 
-        <!-- Bottom Navigation Bar -->
-        <Grid Grid.Row="4" ColumnDefinitions="*,*,*"
-              Padding="0,20,0,12" BackgroundColor="White">
-            <Grid.Resources>
-                <Style TargetType="Image">
-                    <Setter Property="WidthRequest" Value="24"/>
-                    <Setter Property="HeightRequest" Value="24"/>
-                    <Setter Property="HorizontalOptions" Value="Center"/>
-                </Style>
-            </Grid.Resources>
+        <VerticalStackLayout x:Name="NoTodayTasksLabel" Grid.Row="2"
+                             Spacing="8" Margin="20,0" IsVisible="False"
+                             HorizontalOptions="Center" VerticalOptions="Center">
+            <Image Source="notaskdue.png" WidthRequest="180" HeightRequest="180"
+                   Aspect="AspectFit" HorizontalOptions="Center"/>
+            <Label x:Name="NoTasksTitleLabel" Text="No tasks yet" FontSize="{StaticResource FontBodySmall}" FontAttributes="Bold" Margin="0,6,0,0"
+                   TextColor="{StaticResource TextPrimary}" HorizontalTextAlignment="Center"/>
+            <Label x:Name="NoTasksMessageLabel" Text="Assigned tasks will appear here." FontSize="{StaticResource FontBody}" TextColor="{StaticResource Slate300}"
+                   HorizontalTextAlignment="Center"/>
+            <Label x:Name="ViewOverdueEmptyLink" Text="View overdue tasks" FontSize="{StaticResource FontCaption}" FontAttributes="Bold"
+                   TextColor="{StaticResource Accent500}" HorizontalTextAlignment="Center" Margin="0,4,0,0" IsVisible="False">
+                <Label.GestureRecognizers><TapGestureRecognizer Tapped="OnEmptyViewOverdueClicked"/></Label.GestureRecognizers>
+            </Label>
+        </VerticalStackLayout>
 
-            <BoxView Grid.ColumnSpan="3" HeightRequest="1" Color="#E5E7EB" VerticalOptions="Start"/>
-
-            <Image Grid.Column="0" Source="task.png" Margin="0,8,0,0"/>
-            <Image Grid.Column="1" Source="notificationbell.png" Margin="0,8,0,0"/>
-            <Image Grid.Column="2" Source="personicon.png" Margin="0,8,0,0"/>
+        <Grid x:Name="TaskToolsOverlay" Grid.Row="2" ZIndex="100" IsVisible="False">
+            <Button Clicked="OnTaskToolsDismissClicked"
+                    BackgroundColor="Transparent" BorderWidth="0"/>
+            <Border WidthRequest="220" Margin="0,4,18,0"
+                    HorizontalOptions="End" VerticalOptions="Start"
+                    Style="{StaticResource DropdownPanel}">
+                <VerticalStackLayout Spacing="2">
+                    <Border Style="{StaticResource DropdownOption}">
+                        <Grid ColumnDefinitions="24,*" ColumnSpacing="10">
+                            <Image Source="blackfiltericon.png" WidthRequest="17" HeightRequest="17" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="Date filter" Style="{StaticResource DropdownOptionLabel}"/>
+                        </Grid>
+                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnTaskToolsDateFilterClicked"/></Border.GestureRecognizers>
+                    </Border>
+                    <Border Style="{StaticResource DropdownOption}">
+                        <Grid ColumnDefinitions="24,*" ColumnSpacing="10">
+                            <Image Source="completedtask.png" WidthRequest="18" HeightRequest="18" VerticalOptions="Center"/>
+                            <Label Grid.Column="1" Text="Completion history" Style="{StaticResource DropdownOptionLabel}"/>
+                        </Grid>
+                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnTaskToolsHistoryClicked"/></Border.GestureRecognizers>
+                    </Border>
+                </VerticalStackLayout>
+            </Border>
         </Grid>
 
+        <local:BottomNavigationBar Grid.Row="3" ActiveTab="Tasks"/>
+
     </Grid>
-</ContentPage>
+</base:EduTaskPage>
 

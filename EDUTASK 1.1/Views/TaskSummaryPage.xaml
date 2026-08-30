@@ -1,258 +1,1335 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:models="clr-namespace:EDUTASK_1._1.Models"
-             x:Class="EDUTASK_1._1.Views.TaskSummaryPage"
-             NavigationPage.HasNavigationBar="False"
-             Shell.NavBarIsVisible="False"
-             BackgroundColor="#F3F6FA">
-    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="0">
-        <Grid Padding="22,14,22,18" RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4" BackgroundColor="White">
-            <ImageButton Source="backicon.png" Clicked="OnBackClicked" WidthRequest="30" HeightRequest="30" Padding="5" BackgroundColor="Transparent" HorizontalOptions="Start" SemanticProperties.Description="Go back"/>
-            <Label Grid.Row="1" Text="Task Summary Reports" FontSize="20" FontAttributes="Bold" TextColor="#1F2937"/>
-            <Grid Grid.Row="1" Grid.Column="1" WidthRequest="135" HorizontalOptions="End">
-                <Picker x:Name="PeriodPicker" SelectedIndexChanged="OnPeriodChanged"
-                        FontSize="11" TextColor="#7A8491" HorizontalOptions="Fill"/>
-                <Label Text="&#x25BE;" FontSize="12" TextColor="#7A8491" HorizontalOptions="End"
-                       VerticalOptions="Center" Margin="0,0,8,0" InputTransparent="True"/>
-            </Grid>
-            <Label x:Name="ReportDateLabel" Grid.Row="2" FontSize="10" TextColor="#9AA4AF">
-                <Label.GestureRecognizers><TapGestureRecognizer Tapped="OnReportDateTapped"/></Label.GestureRecognizers>
-            </Label>
+
+<base:EduTaskPage
+    xmlns:base="clr-namespace:EDUTASK_1._1.Views.Base"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:EDUTASK_1._1.Views"
+    xmlns:models="clr-namespace:EDUTASK_1._1.Models"
+    x:Class="EDUTASK_1._1.Views.TaskSummaryPage"
+    Transition="Dialog"
+    NavigationPage.HasNavigationBar="False"
+    Shell.NavBarIsVisible="False"
+    BackgroundColor="{StaticResource SurfaceMuted}">
+
+    <base:EduTaskPage.Resources>
+
+        <ResourceDictionary>
+
+            <!-- ================================================= -->
+            <!-- OVERVIEW METRIC CARDS                             -->
+            <!-- ================================================= -->
+
+            <Style
+                x:Key="SummaryMetricCard"
+                TargetType="Border">
+
+                <Setter
+                    Property="Padding"
+                    Value="6,10"/>
+
+                <Setter
+                    Property="HeightRequest"
+                    Value="82"/>
+
+                <Setter
+                    Property="BackgroundColor"
+                    Value="{StaticResource SurfaceBase}"/>
+
+                <Setter
+                    Property="Stroke"
+                    Value="{StaticResource BorderDefault}"/>
+
+                <Setter
+                    Property="StrokeThickness"
+                    Value="1"/>
+
+                <Setter Property="StrokeShape">
+                    <Setter.Value>
+                        <RoundRectangle CornerRadius="12"/>
+                    </Setter.Value>
+                </Setter>
+
+                <Setter Property="Shadow">
+                    <Setter.Value>
+                        <Shadow
+                            Brush="{StaticResource ShadowAmbient}"
+                            Offset="0,2"
+                            Radius="4"
+                            Opacity="0.16"/>
+                    </Setter.Value>
+                </Setter>
+
+            </Style>
+
+
+            <!-- ================================================= -->
+            <!-- TASK SUMMARY LIST CARD                            -->
+            <!-- ================================================= -->
+
+            <Style
+                x:Key="TaskSummaryListCard"
+                TargetType="Border">
+
+                <Setter
+                    Property="Padding"
+                    Value="0"/>
+
+                <Setter
+                    Property="Margin"
+                    Value="0,0,0,7"/>
+
+                <Setter
+                    Property="MinimumHeightRequest"
+                    Value="58"/>
+
+                <Setter
+                    Property="BackgroundColor"
+                    Value="#FFFFFF"/>
+
+                <Setter
+                    Property="Stroke"
+                    Value="#E9E9E9"/>
+
+                <Setter
+                    Property="StrokeThickness"
+                    Value="1"/>
+
+                <Setter Property="StrokeShape">
+                    <Setter.Value>
+                        <RoundRectangle CornerRadius="10"/>
+                    </Setter.Value>
+                </Setter>
+
+                <Setter Property="Shadow">
+                    <Setter.Value>
+                        <Shadow
+                            Brush="#000000"
+                            Offset="0,2"
+                            Radius="5"
+                            Opacity="0.10"/>
+                    </Setter.Value>
+                </Setter>
+
+            </Style>
+
+        </ResourceDictionary>
+
+    </base:EduTaskPage.Resources>
+
+
+    <!-- ========================================================= -->
+    <!-- PAGE ROOT                                                  -->
+    <!-- ========================================================= -->
+
+    <Grid
+        RowDefinitions="Auto,*,Auto"
+        RowSpacing="0">
+
+
+        <!-- ===================================================== -->
+        <!-- HEADER                                                -->
+        <!-- ===================================================== -->
+
+        <Grid
+            x:Name="ReportHeader"
+            Padding="18,14,18,14"
+            ColumnDefinitions="44,*,44"
+            BackgroundColor="{StaticResource SurfaceMuted}">
+
+            <ImageButton
+                x:Name="ReportBackButton"
+                Source="backicon.png"
+                Clicked="OnBackClicked"
+                Pressed="OnReportBackPressed"
+                Released="OnReportBackReleased"
+                WidthRequest="42"
+                HeightRequest="42"
+                Padding="10"
+                CornerRadius="12"
+                BackgroundColor="{StaticResource SurfaceBase}"
+                BorderWidth="0"
+                HorizontalOptions="Start"
+                VerticalOptions="Center"
+                SemanticProperties.Description="Go back"/>
+
+            <Label
+                Grid.Column="1"
+                Text="Summary Report"
+                FontSize="{StaticResource FontHeading}"
+                FontAttributes="Bold"
+                TextColor="{StaticResource TextPrimary}"
+                HorizontalTextAlignment="Center"
+                VerticalTextAlignment="Center"
+                SemanticProperties.HeadingLevel="Level1"/>
+
+            <BoxView
+                Grid.Column="2"
+                WidthRequest="42"
+                HeightRequest="42"
+                Color="Transparent"/>
+
         </Grid>
-        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Never">
-            <VerticalStackLayout Padding="22,16,22,24" Spacing="14">
-                <Border Padding="4" BackgroundColor="#E5EBF2" StrokeThickness="0">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="20"/>
-                    </Border.StrokeShape>
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="3">
-                        <Button x:Name="OverviewTabButton" Text="Overview" Clicked="OnOverviewTabClicked" HeightRequest="34"
-                                FontSize="11" FontAttributes="Bold" CornerRadius="17" BackgroundColor="#5D6D7E" TextColor="White"/>
-                        <Button x:Name="TasksTabButton" Grid.Column="1" Text="Tasks" Clicked="OnTasksTabClicked" HeightRequest="34"
-                                FontSize="11" FontAttributes="Bold" CornerRadius="17" BackgroundColor="Transparent" TextColor="#596574"/>
+
+
+        <!-- ===================================================== -->
+        <!-- REPORT CONTENT                                        -->
+        <!-- ===================================================== -->
+
+        <ScrollView
+            Grid.Row="1"
+            VerticalScrollBarVisibility="Never">
+
+            <VerticalStackLayout
+                Padding="18,12,18,24"
+                Spacing="16">
+
+
+                <!-- ================================================= -->
+                <!-- OVERVIEW                                           -->
+                <!-- ================================================= -->
+
+                <VerticalStackLayout Spacing="14">
+
+                    <Grid
+                        x:Name="OverviewHeaderRow"
+                        ColumnDefinitions="*,Auto"
+                        ColumnSpacing="8">
+
+                        <Label
+                            x:Name="SectionHeadingLabel"
+                            Text="Overview"
+                            Style="{StaticResource ReportSectionHeading}"/>
+
+
+                        <!-- ================================================= -->
+                        <!-- ALL TIME                                          -->
+                        <!-- ================================================= -->
+
+                        <Border
+                            x:Name="FilterButton"
+                            Grid.Column="1"
+                            WidthRequest="102"
+                            HeightRequest="32"
+                            MinimumWidthRequest="0"
+                            Padding="8,0"
+                            BackgroundColor="#111C3A"
+                            StrokeThickness="0"
+                            HorizontalOptions="End"
+                            VerticalOptions="Center"
+                            SemanticProperties.Description="Choose report date range">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="10"/>
+                            </Border.StrokeShape>
+
+                            <Grid
+                                ColumnDefinitions="*,12"
+                                ColumnSpacing="6">
+
+                                <Label
+                                    x:Name="PeriodFilterLabel"
+                                    Text="This Week"
+                                    FontSize="{StaticResource FontCaption}"
+                                    TextColor="#FFFFFF"
+                                    HorizontalTextAlignment="Center"
+                                    VerticalTextAlignment="Center"/>
+
+                                <Label
+                                    Grid.Column="1"
+                                    Text="&#x25BC;"
+                                    FontSize="{StaticResource FontMicro}"
+                                    TextColor="#FFFFFF"
+                                    HorizontalTextAlignment="Center"
+                                    VerticalTextAlignment="Center"/>
+
+                            </Grid>
+
+                            <Border.GestureRecognizers>
+
+                                <TapGestureRecognizer
+                                    Tapped="OnPeriodFilterTapped"/>
+
+                            </Border.GestureRecognizers>
+
+                        </Border>
+
                     </Grid>
-                </Border>
-                <Grid x:Name="TeacherFilterRow" ColumnDefinitions="Auto,*" ColumnSpacing="10" IsVisible="False">
-                    <Label Text="TEACHER" FontSize="10" FontAttributes="Bold" TextColor="#687786" VerticalOptions="Center"/>
-                    <Border Grid.Column="1" HorizontalOptions="End" WidthRequest="170" Padding="10,0"
-                            BackgroundColor="White" Stroke="#DCE4ED">
-                        <Border.StrokeShape><RoundRectangle CornerRadius="16"/></Border.StrokeShape>
+
+
+                    <!-- ================================================= -->
+                    <!-- SUMMARY CARDS                                     -->
+                    <!-- ================================================= -->
+
+                    <Grid
+                        x:Name="SummaryCards"
+                        ColumnDefinitions="*,*,*,*"
+                        ColumnSpacing="8">
+
+
+                        <!-- PENDING -->
+
+                        <Border
+                            x:Name="PendingCard"
+                            Grid.Column="0"
+                            Style="{StaticResource SummaryMetricCard}">
+
+                            <Grid RowDefinitions="30,24">
+
+                                <Label
+                                    x:Name="PendingCountLabel"
+                                    FontSize="22"
+                                    FontAttributes="Bold"
+                                    TextColor="{StaticResource Accent500}"
+                                    HorizontalTextAlignment="Center"
+                                    VerticalTextAlignment="Center"/>
+
+                                <Label
+                                    Grid.Row="1"
+                                    Text="Pending"
+                                    FontSize="{StaticResource FontCaption}"
+                                    TextColor="{StaticResource TextSecondary}"
+                                    HorizontalTextAlignment="Center"
+                                    VerticalTextAlignment="Center"
+                                    LineBreakMode="NoWrap"/>
+
+                            </Grid>
+
+                            <Border.GestureRecognizers>
+
+                                <TapGestureRecognizer
+                                    Tapped="OnSummaryCardTapped"
+                                    CommandParameter="Pending"/>
+
+                            </Border.GestureRecognizers>
+
+                        </Border>
+
+
+                        <!-- ONGOING -->
+
+                        <Border
+                            x:Name="OngoingCard"
+                            Grid.Column="1"
+                            Style="{StaticResource SummaryMetricCard}">
+
+                            <Grid RowDefinitions="30,24">
+
+                                <Label
+                                    x:Name="OngoingCountLabel"
+                                    FontSize="22"
+                                    FontAttributes="Bold"
+                                    TextColor="{StaticResource StatusWarning}"
+                                    HorizontalTextAlignment="Center"
+                                    VerticalTextAlignment="Center"/>
+
+                                <Label
+                                    Grid.Row="1"
+                                    Text="Ongoing"
+                                    FontSize="{StaticResource FontCaption}"
+                                    TextColor="{StaticResource TextSecondary}"
+                                    HorizontalTextAlignment="Center"
+                                    VerticalTextAlignment="Center"
+                                    LineBreakMode="NoWrap"/>
+
+                            </Grid>
+
+                            <Border.GestureRecognizers>
+
+                                <TapGestureRecognizer
+                                    Tapped="OnSummaryCardTapped"
+                                    CommandParameter="Ongoing"/>
+
+                            </Border.GestureRecognizers>
+
+                        </Border>
+
+
+                        <!-- COMPLETED -->
+
+                        <Border
+                            x:Name="CompletedCard"
+                            Grid.Column="2"
+                            Style="{StaticResource SummaryMetricCard}">
+
+                            <Grid RowDefinitions="30,24">
+
+                                <Label
+                                    x:Name="CompletedCountLabel"
+                                    FontSize="22"
+                                    FontAttributes="Bold"
+                                    TextColor="#48E000"
+                                    HorizontalTextAlignment="Center"
+                                    VerticalTextAlignment="Center"/>
+
+                                <Label
+                                    Grid.Row="1"
+                                    Text="Completed"
+                                    FontSize="{StaticResource FontCaption}"
+                                    TextColor="{StaticResource TextSecondary}"
+                                    HorizontalTextAlignment="Center"
+                                    VerticalTextAlignment="Center"
+                                    LineBreakMode="NoWrap"/>
+
+                            </Grid>
+
+                            <Border.GestureRecognizers>
+
+                                <TapGestureRecognizer
+                                    Tapped="OnSummaryCardTapped"
+                                    CommandParameter="Completed"/>
+
+                            </Border.GestureRecognizers>
+
+                        </Border>
+
+
+                        <!-- OVERDUE -->
+
+                        <Border
+                            x:Name="OverdueCard"
+                            Grid.Column="3"
+                            Style="{StaticResource SummaryMetricCard}">
+
+                            <Grid RowDefinitions="30,24">
+
+                                <Label
+                                    x:Name="OverdueCountLabel"
+                                    FontSize="22"
+                                    FontAttributes="Bold"
+                                    TextColor="#DF0038"
+                                    HorizontalTextAlignment="Center"
+                                    VerticalTextAlignment="Center"/>
+
+                                <Label
+                                    Grid.Row="1"
+                                    Text="Overdue"
+                                    FontSize="{StaticResource FontCaption}"
+                                    TextColor="{StaticResource TextSecondary}"
+                                    HorizontalTextAlignment="Center"
+                                    VerticalTextAlignment="Center"
+                                    LineBreakMode="NoWrap"/>
+
+                            </Grid>
+
+                            <Border.GestureRecognizers>
+
+                                <TapGestureRecognizer
+                                    Tapped="OnSummaryCardTapped"
+                                    CommandParameter="Overdue"/>
+
+                            </Border.GestureRecognizers>
+
+                        </Border>
+
+                    </Grid>
+
+                </VerticalStackLayout>
+
+
+                <!-- ================================================= -->
+                <!-- COMPLETION                                        -->
+                <!-- ================================================= -->
+
+                <VerticalStackLayout
+                    x:Name="CompletionSection"
+                    Spacing="8">
+
+                    <Label
+                        Text="Completion"
+                        Style="{StaticResource ReportSectionHeading}"/>
+
+                    <Border
+                        BackgroundColor="{StaticResource SurfaceBase}"
+                        Stroke="{StaticResource BorderSubtle}"
+                        StrokeThickness="1"
+                        Padding="10,8,10,10"
+                        HorizontalOptions="Fill">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="12"/>
+                        </Border.StrokeShape>
+
                         <Grid>
-                            <Picker x:Name="TeacherPicker" SelectedIndexChanged="OnTeacherChanged" FontSize="11"
-                                    TextColor="#374151" HorizontalOptions="Fill"/>
-                            <Label Text="&#x25BE;" FontSize="11" TextColor="#7A8491" HorizontalOptions="End"
-                                   VerticalOptions="Center" InputTransparent="True"/>
+
+                            <Grid
+                                WidthRequest="140"
+                                HeightRequest="140"
+                                HorizontalOptions="Center">
+
+                                <GraphicsView
+                                    x:Name="CompletionRing"/>
+
+                                <Label
+                                    x:Name="CompletionPercentLabel"
+                                    FontSize="22"
+                                    FontAttributes="Bold"
+                                    TextColor="{StaticResource TextPrimary}"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center"/>
+
+                            </Grid>
+
                         </Grid>
+
                     </Border>
-                </Grid>
-                <Grid x:Name="SummaryCards" ColumnDefinitions="*,*,*,*" ColumnSpacing="10">
-                    <Border x:Name="TotalCard" Grid.Column="3" BackgroundColor="White" Stroke="#DCE4ED" Padding="5,8">
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="14"/>
-                        </Border.StrokeShape>
-                        <VerticalStackLayout Spacing="1" HorizontalOptions="Center">
-                            <Label x:Name="TotalCountLabel" FontSize="19" FontAttributes="Bold" TextColor="#243447" HorizontalTextAlignment="Center"/>
-                            <Label Text="Total" FontSize="9" TextColor="#7A8491"/>
-                        </VerticalStackLayout>
-                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnSummaryCardTapped" CommandParameter="All"/></Border.GestureRecognizers>
-                    </Border>
-                    <Border x:Name="CompletedCard" Grid.Column="1" BackgroundColor="White" Stroke="#DCE4ED" Padding="5,8">
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="14"/>
-                        </Border.StrokeShape>
-                        <VerticalStackLayout Spacing="1" HorizontalOptions="Center">
-                            <Label x:Name="CompletedCountLabel" FontSize="19" FontAttributes="Bold" TextColor="#16803A" HorizontalTextAlignment="Center"/>
-                            <Label Text="Completed" FontSize="9" TextColor="#7A8491"/>
-                        </VerticalStackLayout>
-                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnSummaryCardTapped" CommandParameter="Completed"/></Border.GestureRecognizers>
-                    </Border>
-                    <Border x:Name="PendingCard" Grid.Column="0" BackgroundColor="White" Stroke="#DCE4ED" Padding="5,8">
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="14"/>
-                        </Border.StrokeShape>
-                        <VerticalStackLayout Spacing="1" HorizontalOptions="Center">
-                            <Label x:Name="PendingCountLabel" FontSize="19" FontAttributes="Bold" TextColor="#2563EB" HorizontalTextAlignment="Center"/>
-                            <Label Text="Pending" FontSize="9" TextColor="#7A8491"/>
-                        </VerticalStackLayout>
-                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnSummaryCardTapped" CommandParameter="Pending"/></Border.GestureRecognizers>
-                    </Border>
-                    <Border x:Name="OverdueCard" Grid.Column="2" BackgroundColor="White" Stroke="#DCE4ED" Padding="5,8">
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="14"/>
-                        </Border.StrokeShape>
-                        <VerticalStackLayout Spacing="1" HorizontalOptions="Center">
-                            <Label x:Name="OverdueCountLabel" FontSize="19" FontAttributes="Bold" TextColor="#B42318" HorizontalTextAlignment="Center"/>
-                            <Label Text="Overdue" FontSize="9" TextColor="#7A8491"/>
-                        </VerticalStackLayout>
-                        <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnSummaryCardTapped" CommandParameter="Overdue"/></Border.GestureRecognizers>
-                    </Border>
-                </Grid>
-                <VerticalStackLayout x:Name="CompletionSection" Spacing="4" Padding="0,4">
-                    <Label Text="Completion" FontSize="12" FontAttributes="Bold" TextColor="#374151"/>
-                    <Grid WidthRequest="180" HeightRequest="180" HorizontalOptions="Center">
-                        <GraphicsView x:Name="CompletionRing"/>
-                        <Label x:Name="CompletionPercentLabel" FontSize="30" FontAttributes="Bold" TextColor="#2563EB"
-                               HorizontalOptions="Center" VerticalOptions="Center"/>
-                    </Grid>
+
                 </VerticalStackLayout>
 
-                <VerticalStackLayout x:Name="StatusSection" Spacing="7">
-                    <Label Text="ACTION REQUIRED" FontSize="10" FontAttributes="Bold" TextColor="#687786"/>
-                    <Border Padding="14,12" BackgroundColor="White" Stroke="#E1E5EA">
-                        <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
-                            <VerticalStackLayout x:Name="ValidationMetric" Spacing="2" IsVisible="False">
-                                <Label x:Name="StatusValidationLabel" FontSize="16" FontAttributes="Bold" TextColor="#6554C0"/>
-                                <Label Text="For validation" FontSize="9" TextColor="#596574"/>
-                            </VerticalStackLayout>
-                            <VerticalStackLayout x:Name="RevisionMetric" Grid.Column="1" Spacing="2" IsVisible="False">
-                                <Label x:Name="StatusRevisionLabel" FontSize="16" FontAttributes="Bold" TextColor="#DC2626"/>
-                                <Label Text="Needs revision" FontSize="9" TextColor="#596574"/>
-                            </VerticalStackLayout>
-                        </Grid>
-                    </Border>
-                </VerticalStackLayout>
 
-                <VerticalStackLayout x:Name="TeacherSection" Spacing="7">
-                    <Label Text="TEACHER PERFORMANCE" FontSize="10" FontAttributes="Bold" TextColor="#687786"/>
-                    <VerticalStackLayout x:Name="TeacherSummaryList" BindableLayout.ItemsSource="{Binding TeacherSummaries}" Spacing="8">
-                        <BindableLayout.ItemTemplate>
-                            <DataTemplate x:DataType="models:TeacherSummaryItem">
-                                <Border Padding="14,11" BackgroundColor="White" Stroke="#DCE4ED">
+                <!-- ================================================= -->
+                <!-- TASKS                                             -->
+                <!-- ================================================= -->
+
+                <Grid
+                    x:Name="FilteredTasksSection"
+                    RowDefinitions="Auto,Auto,Auto"
+                    RowSpacing="10">
+
+
+                    <!-- ================================================= -->
+                    <!-- TASK HEADER                                       -->
+                    <!-- ================================================= -->
+
+                    <Grid
+                        x:Name="TaskFilterRow"
+                        ColumnDefinitions="*,Auto"
+                        ColumnSpacing="8">
+
+                        <Label
+                            x:Name="FilteredTasksHeadingLabel"
+                            Text="Tasks"
+                            Style="{StaticResource ReportSectionHeading}"
+                            VerticalOptions="Center"/>
+
+
+                        <!-- ================================================= -->
+                        <!-- FIXED ALL TEACHER BUTTON                          -->
+                        <!-- EXACT SAME SIZE/COLOR/FONT AS ALL TIME           -->
+                        <!-- ================================================= -->
+
+                        <Border
+                            x:Name="TaskTeacherPill"
+                            Grid.Column="1"
+                            WidthRequest="102"
+                            HeightRequest="32"
+                            MinimumWidthRequest="0"
+                            Padding="0"
+                            BackgroundColor="Transparent"
+                            StrokeThickness="0"
+                            HorizontalOptions="End"
+                            VerticalOptions="Center">
+
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="10"/>
+                            </Border.StrokeShape>
+
+
+                            <Grid>
+
+
+                                <!-- ================================================= -->
+                                <!-- THESE HIDDEN LABELS ARE KEPT FOR EXISTING C#     -->
+                                <!-- FUNCTIONALITY                                    -->
+                                <!-- ================================================= -->
+
+                                <Label
+                                    x:Name="TaskTeacherPillLabel"
+                                    Text="All Teacher"
+                                    FontSize="{StaticResource FontCaption}"
+                                    TextColor="#FFFFFF"
+                                    IsVisible="False"/>
+
+                                <Label
+                                    x:Name="TaskTeacherPillChevron"
+                                    Text="&#x25BC;"
+                                    FontSize="{StaticResource FontMicro}"
+                                    TextColor="#FFFFFF"
+                                    IsVisible="False"/>
+
+
+                                <!-- ================================================= -->
+                                <!-- FIXED VISIBLE BUTTON                              -->
+                                <!-- ================================================= -->
+
+                                <Border
+                                    WidthRequest="102"
+                                    HeightRequest="32"
+                                    Padding="8,0"
+                                    BackgroundColor="#111C3A"
+                                    StrokeThickness="0"
+                                    HorizontalOptions="Fill"
+                                    VerticalOptions="Fill"
+                                    InputTransparent="True">
+
                                     <Border.StrokeShape>
-                                        <RoundRectangle CornerRadius="14"/>
+                                        <RoundRectangle CornerRadius="10"/>
                                     </Border.StrokeShape>
-                                    <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4">
-                                        <Label Text="{Binding TeacherName}" FontSize="11" FontAttributes="Bold" TextColor="#243447"/>
-                                        <Label Grid.Column="1" Text="{Binding PercentDisplay}" FontSize="10" FontAttributes="Bold" TextColor="#2563EB"/>
-                                        <ProgressBar Grid.Row="1" Grid.ColumnSpan="2" Progress="{Binding CompletionRate}" HeightRequest="5"
-                                                     ProgressColor="#2563EB" BackgroundColor="#E5E7EB"/>
-                                        <Label Grid.Row="2" Text="{Binding CompletionDisplay}" FontSize="9" TextColor="#7A8491"/>
-                                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding OverdueCount, StringFormat='{0} overdue'}" FontSize="9" TextColor="#A33A32"/>
+
+
+                                    <Grid
+                                        ColumnDefinitions="*,12"
+                                        ColumnSpacing="6"
+                                        InputTransparent="True">
+
+
+                                        <!-- VISIBLE TEACHER TEXT -->
+
+                                        <Label
+                                            Text="{Binding Text, Source={x:Reference TaskTeacherPillLabel}}"
+                                            FontSize="{StaticResource FontCaption}"
+                                            MaximumWidthRequest="76"
+                                            LineBreakMode="TailTruncation"
+                                            TextColor="#FFFFFF"
+                                            HorizontalTextAlignment="Center"
+                                            VerticalTextAlignment="Center"
+                                            InputTransparent="True"/>
+
+
+                                        <!-- VISIBLE ARROW -->
+
+                                        <Label
+                                            Grid.Column="1"
+                                            Text="{Binding Text, Source={x:Reference TaskTeacherPillChevron}}"
+                                            FontSize="{StaticResource FontMicro}"
+                                            TextColor="#FFFFFF"
+                                            HorizontalTextAlignment="Center"
+                                            VerticalTextAlignment="Center"
+                                            InputTransparent="True"/>
+
                                     </Grid>
+
                                 </Border>
-                            </DataTemplate>
-                        </BindableLayout.ItemTemplate>
-                    </VerticalStackLayout>
-                </VerticalStackLayout>
-                <VerticalStackLayout x:Name="TasksSection" IsVisible="False" Spacing="5">
-                    <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,4">
-                        <VerticalStackLayout Spacing="1">
-                            <Label Text="TASKS" FontSize="10" FontAttributes="Bold" TextColor="#687786"/>
-                            <Label x:Name="ActiveStatusFilterLabel" Text="Showing: All tasks" FontSize="10" TextColor="#596574"/>
-                        </VerticalStackLayout>
-                        <Button x:Name="ClearStatusFilterButton" Grid.Column="1" Text="Clear" Clicked="OnClearStatusFilterClicked"
-                                IsVisible="False" FontSize="10" FontAttributes="Bold" HeightRequest="30" Padding="12,0"
-                                CornerRadius="15" BackgroundColor="#E5EBF2" TextColor="#374151"/>
+
+                            </Grid>
+
+
+                            <!-- KEEP EXISTING DROPDOWN FUNCTION -->
+
+                            <Border.GestureRecognizers>
+
+                                <TapGestureRecognizer
+                                    Tapped="OnTaskTeacherFilterTapped"/>
+
+                            </Border.GestureRecognizers>
+
+                        </Border>
+
                     </Grid>
-                    <Label x:Name="EmptyReportLabel" Text="No tasks found for this period." IsVisible="False"
-                           Padding="4,18" HorizontalTextAlignment="Center" FontSize="11" TextColor="#9AA4AF"/>
-                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding ReportTasks}" Spacing="8">
+
+
+                    <!-- ================================================= -->
+                    <!-- TASK SUMMARY CARDS                                -->
+                    <!-- ================================================= -->
+
+                    <VerticalStackLayout
+                        Grid.Row="1"
+                        BindableLayout.ItemsSource="{Binding FilteredTasks}"
+                        Spacing="0">
+
                         <BindableLayout.ItemTemplate>
-                            <DataTemplate x:DataType="models:TaskSummaryItem">
-                                <Border Padding="12,10" BackgroundColor="White" Stroke="#DCE4ED">
-                                    <Border.StrokeShape>
-                                        <RoundRectangle CornerRadius="14"/>
-                                    </Border.StrokeShape>
-                                    <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="4">
-                                        <Label Text="{Binding Title}" FontSize="11" FontAttributes="Bold" TextColor="#243447"/>
-                                        <Label Grid.Column="1" Text="{Binding Status}" FontSize="9" FontAttributes="Bold" TextColor="{Binding StatusColor}"/>
-                                        <Label Grid.Row="1" Text="{Binding TeacherName}" FontSize="9" TextColor="#596574"/>
-                                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding DeadlineDisplay, StringFormat='Due {0}'}" FontSize="9" TextColor="#7A8491"/>
+
+                            <DataTemplate
+                                x:DataType="models:TaskSummaryItem">
+
+                                <Border
+                                    Style="{StaticResource TaskSummaryListCard}">
+
+                                    <Grid
+                                        ColumnDefinitions="4,*">
+
+
+                                        <!-- STATUS STRIPE -->
+
+                                        <BoxView
+                                            Grid.Column="0"
+                                            WidthRequest="4"
+                                            Margin="0,6,0,6"
+                                            Color="{Binding ReportStatusColor}"
+                                            CornerRadius="2">
+
+                                            <BoxView.Triggers>
+
+
+                                                <!-- COMPLETED -->
+
+                                                <DataTrigger
+                                                    TargetType="BoxView"
+                                                    Binding="{Binding ReportCategory}"
+                                                    Value="Completed">
+
+                                                    <Setter
+                                                        Property="Color"
+                                                        Value="#48E000"/>
+
+                                                </DataTrigger>
+
+
+                                                <!-- OVERDUE -->
+
+                                                <DataTrigger
+                                                    TargetType="BoxView"
+                                                    Binding="{Binding ReportCategory}"
+                                                    Value="Overdue">
+
+                                                    <Setter
+                                                        Property="Color"
+                                                        Value="#DF0038"/>
+
+                                                </DataTrigger>
+
+                                            </BoxView.Triggers>
+
+                                        </BoxView>
+
+
+                                        <!-- TASK DETAILS -->
+
+                                        <Grid
+                                            Grid.Column="1"
+                                            Padding="13,9,12,8"
+                                            RowDefinitions="Auto,Auto"
+                                            ColumnDefinitions="*,Auto"
+                                            ColumnSpacing="10"
+                                            RowSpacing="2">
+
+
+                                            <!-- TITLE -->
+
+                                            <Label
+                                                Grid.Row="0"
+                                                Grid.Column="0"
+                                                Text="{Binding Title}"
+                                                FontSize="{StaticResource FontLabel}"
+                                                FontAttributes="Bold"
+                                                TextColor="{StaticResource TextPrimary}"
+                                                LineBreakMode="TailTruncation"
+                                                VerticalTextAlignment="Center"
+                                                VerticalOptions="Center"/>
+
+
+                                            <!-- STATUS -->
+
+                                            <Label
+                                                Grid.Row="0"
+                                                Grid.Column="1"
+                                                Text="{Binding ReportCategory}"
+                                                FontSize="{StaticResource FontMicro}"
+                                                FontAttributes="Bold"
+                                                TextColor="{Binding ReportStatusColor}"
+                                                HorizontalTextAlignment="End"
+                                                VerticalTextAlignment="Center"
+                                                VerticalOptions="Center">
+
+                                                <Label.Triggers>
+
+
+                                                    <!-- COMPLETED -->
+
+                                                    <DataTrigger
+                                                        TargetType="Label"
+                                                        Binding="{Binding ReportCategory}"
+                                                        Value="Completed">
+
+                                                        <Setter
+                                                            Property="TextColor"
+                                                            Value="#48E000"/>
+
+                                                    </DataTrigger>
+
+
+                                                    <!-- OVERDUE -->
+
+                                                    <DataTrigger
+                                                        TargetType="Label"
+                                                        Binding="{Binding ReportCategory}"
+                                                        Value="Overdue">
+
+                                                        <Setter
+                                                            Property="TextColor"
+                                                            Value="#DF0038"/>
+
+                                                    </DataTrigger>
+
+                                                </Label.Triggers>
+
+                                            </Label>
+
+
+                                            <!-- ASSIGNED TEACHER -->
+
+                                            <Label
+                                                Grid.Row="1"
+                                                Grid.Column="0"
+                                                Text="{Binding TeacherName, StringFormat='Assigned to {0}'}"
+                                                FontSize="{StaticResource FontMicro}"
+                                                TextColor="{StaticResource TextSecondary}"
+                                                LineBreakMode="TailTruncation"
+                                                VerticalTextAlignment="Center"/>
+
+
+                                            <!-- DUE DATE -->
+
+                                            <Label
+                                                Grid.Row="1"
+                                                Grid.Column="1"
+                                                Text="{Binding DueDisplay}"
+                                                FontSize="{StaticResource FontMicro}"
+                                                TextColor="{StaticResource TextSecondary}"
+                                                HorizontalTextAlignment="End"
+                                                VerticalTextAlignment="Center">
+
+                                                <Label.Triggers>
+
+                                                    <DataTrigger
+                                                        TargetType="Label"
+                                                        Binding="{Binding ReportCategory}"
+                                                        Value="Overdue">
+
+                                                        <Setter
+                                                            Property="TextColor"
+                                                            Value="#DF0038"/>
+
+                                                    </DataTrigger>
+
+                                                </Label.Triggers>
+
+                                            </Label>
+
+                                        </Grid>
+
                                     </Grid>
+
+
+                                    <!-- KEEP EXISTING TASK CLICK -->
+
                                     <Border.GestureRecognizers>
-                                        <TapGestureRecognizer Tapped="OnTaskTapped" CommandParameter="{Binding .}"/>
+
+                                        <TapGestureRecognizer
+                                            Tapped="OnFilteredTaskTapped"
+                                            CommandParameter="{Binding .}"/>
+
                                     </Border.GestureRecognizers>
+
                                 </Border>
+
                             </DataTemplate>
+
                         </BindableLayout.ItemTemplate>
+
                     </VerticalStackLayout>
-                </VerticalStackLayout>
-                <ActivityIndicator x:Name="LoadingIndicator" IsVisible="False" IsRunning="False" Color="#687786"/>
+
+
+                    <!-- ================================================= -->
+                    <!-- EMPTY STATE                                       -->
+                    <!-- ================================================= -->
+
+                    <Border
+                        x:Name="FilteredTasksEmptyState"
+                        Grid.Row="2"
+                        IsVisible="False"
+                        Padding="16,10,16,14"
+                        BackgroundColor="Transparent"
+                        StrokeThickness="0">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="16"/>
+                        </Border.StrokeShape>
+
+                        <VerticalStackLayout
+                            Spacing="8"
+                            HorizontalOptions="Center">
+
+                            <Image
+                                Source="tasknodue.png"
+                                WidthRequest="110"
+                                HeightRequest="86"
+                                Aspect="AspectFit"
+                                Opacity="0.9"
+                                HorizontalOptions="Center"/>
+
+                            <Label
+                                x:Name="FilteredTasksEmptyLabel"
+                                Style="{StaticResource EmptyStateTitle}"
+                                HorizontalTextAlignment="Center"/>
+
+                        </VerticalStackLayout>
+
+                    </Border>
+
+
+                    <!-- ================================================= -->
+                    <!-- TEACHER DROPDOWN                                  -->
+                    <!-- ================================================= -->
+
+                    <Border
+                        x:Name="TaskTeacherDropdownPanel"
+                        Grid.RowSpan="3"
+                        ZIndex="30"
+                        WidthRequest="194"
+                        MaximumHeightRequest="236"
+                        HorizontalOptions="End"
+                        Style="{StaticResource DropdownPanel}">
+
+                        <ScrollView
+                            VerticalScrollBarVisibility="Never">
+
+                            <VerticalStackLayout
+                                x:Name="TaskTeacherOptionsHost"
+                                Spacing="2"/>
+
+                        </ScrollView>
+
+                    </Border>
+
+                </Grid>
+
+
+                <!-- ================================================= -->
+                <!-- LOADING                                           -->
+                <!-- ================================================= -->
+
+                <ActivityIndicator
+                    x:Name="LoadingIndicator"
+                    IsVisible="False"
+                    IsRunning="False"
+                    Color="{StaticResource Slate400}"/>
+
             </VerticalStackLayout>
+
         </ScrollView>
-        <Grid Grid.Row="2" ColumnDefinitions="*,*,*" Padding="0,16,0,10" BackgroundColor="White">
-            <Grid.Resources>
-                <Style TargetType="Image">
-                    <Setter Property="WidthRequest" Value="24"/>
-                    <Setter Property="HeightRequest" Value="24"/>
-                    <Setter Property="HorizontalOptions" Value="Center"/>
-                </Style>
-            </Grid.Resources>
-            <BoxView Grid.ColumnSpan="3" HeightRequest="1" Color="#E5E7EB" VerticalOptions="Start"/>
-            <Image Grid.Column="0" Source="task.png" Margin="0,7,0,0">
-                <Image.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnDashboardTapped"/>
-                </Image.GestureRecognizers>
-            </Image>
-            <Image Grid.Column="1" Source="notificationbell.png" Margin="0,7,0,0">
-                <Image.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnNotificationsTapped"/>
-                </Image.GestureRecognizers>
-            </Image>
-            <Image Grid.Column="2" Source="personicon.png" Margin="0,7,0,0">
-                <Image.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnProfileTapped"/>
-                </Image.GestureRecognizers>
-            </Image>
-        </Grid>
-        <Grid x:Name="TaskDetailOverlay" Grid.RowSpan="3" IsVisible="False" ZIndex="11" BackgroundColor="#66000000" Padding="24">
-            <Border WidthRequest="370" Padding="20" BackgroundColor="White" Stroke="#D7DCE2"
-                    HorizontalOptions="Center" VerticalOptions="Center">
+
+
+        <!-- ===================================================== -->
+        <!-- BOTTOM NAVIGATION                                     -->
+        <!-- ===================================================== -->
+
+        <local:BottomNavigationBar
+            Grid.Row="2"
+            ActiveTab="None"/>
+
+
+        <!-- ===================================================== -->
+        <!-- PERIOD DROPDOWN                                       -->
+        <!-- ===================================================== -->
+
+        <Grid
+            x:Name="PeriodSheetOverlay"
+            Grid.RowSpan="3"
+            ZIndex="100"
+            IsVisible="False"
+            InputTransparent="False">
+
+            <BoxView
+                x:Name="PeriodSheetBackdrop"
+                Color="Transparent">
+
+                <BoxView.GestureRecognizers>
+
+                    <TapGestureRecognizer
+                        Tapped="OnPeriodSheetBackdropTapped"/>
+
+                </BoxView.GestureRecognizers>
+
+            </BoxView>
+
+
+            <Border
+                x:Name="PeriodSheet"
+                WidthRequest="156"
+                Padding="6"
+                Margin="0,108,24,0"
+                BackgroundColor="{StaticResource SurfaceBase}"
+                Stroke="{StaticResource BorderDefault}"
+                StrokeThickness="1"
+                HorizontalOptions="End"
+                VerticalOptions="Start">
+
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="14"/>
                 </Border.StrokeShape>
-                <VerticalStackLayout Spacing="16">
-                    <Grid ColumnDefinitions="*,Auto">
-                        <Label Text="Task details" FontSize="18" FontAttributes="Bold" TextColor="#243447"/>
-                        <Button Grid.Column="1" Text="&#x2715;" Clicked="OnTaskDetailCloseClicked" WidthRequest="30" HeightRequest="30"
-                                Padding="0" FontSize="14" BackgroundColor="Transparent" TextColor="#687786"/>
-                    </Grid>
-                    <BoxView HeightRequest="1" Color="#E5E7EB"/>
-                    <VerticalStackLayout Spacing="5">
-                        <Label Text="TASK" FontSize="9" FontAttributes="Bold" TextColor="#7A8491"/>
-                        <Label x:Name="TaskModalTitleLabel" FontSize="16" FontAttributes="Bold" TextColor="#243447"/>
-                    </VerticalStackLayout>
-                    <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" ColumnSpacing="16" RowSpacing="5">
-                        <Label Text="ASSIGNED TO" FontSize="9" FontAttributes="Bold" TextColor="#7A8491"/>
-                        <Label Grid.Column="1" Text="STATUS" FontSize="9" FontAttributes="Bold" TextColor="#7A8491"/>
-                        <Label x:Name="TaskModalTeacherLabel" Grid.Row="1" FontSize="12" TextColor="#374151"/>
-                        <Label x:Name="TaskModalStatusLabel" Grid.Row="1" Grid.Column="1" FontSize="12" FontAttributes="Bold"/>
-                    </Grid>
-                    <VerticalStackLayout Spacing="5">
-                        <Label Text="DEADLINE" FontSize="9" FontAttributes="Bold" TextColor="#7A8491"/>
-                        <Label x:Name="TaskModalDueDateLabel" FontSize="12" TextColor="#374151"/>
-                    </VerticalStackLayout>
-                    <Button Text="Close" Clicked="OnTaskDetailCloseClicked" HeightRequest="40" CornerRadius="10"
-                            BackgroundColor="#5D6D7E" TextColor="White" FontAttributes="Bold" FontSize="12"/>
+
+                <Border.Shadow>
+
+                    <Shadow
+                        Brush="{StaticResource ShadowOverlay}"
+                        Offset="0,4"
+                        Radius="12"
+                        Opacity="0.32"/>
+
+                </Border.Shadow>
+
+
+                <VerticalStackLayout Spacing="0">
+
+
+                    <!-- ALL TIME -->
+
+                    <Border
+                        x:Name="AllTimeOption"
+                        HeightRequest="42"
+                        Padding="12,0"
+                        BackgroundColor="Transparent"
+                        StrokeThickness="0">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="9"/>
+                        </Border.StrokeShape>
+
+                        <Grid ColumnDefinitions="*,Auto">
+
+                            <Label
+                                x:Name="AllTimeOptionLabel"
+                                Text="All Time"
+                                FontSize="{StaticResource FontBodySmall}"
+                                TextColor="{StaticResource TextPrimary}"
+                                VerticalTextAlignment="Center"/>
+
+                            <Button
+                                x:Name="AllTimeOptionButton"
+                                Grid.ColumnSpan="2"
+                                CommandParameter="All Time"
+                                Clicked="OnPeriodOptionClicked"
+                                BackgroundColor="Transparent"
+                                BorderWidth="0"
+                                CornerRadius="0"/>
+
+                        </Grid>
+
+                    </Border>
+
+
+                    <BoxView
+                        HeightRequest="1"
+                        Margin="10,0"
+                        Color="{StaticResource BorderSubtle}"/>
+
+
+                    <!-- THIS WEEK -->
+
+                    <Border
+                        x:Name="WeekOption"
+                        HeightRequest="42"
+                        Padding="12,0"
+                        BackgroundColor="Transparent"
+                        StrokeThickness="0">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="9"/>
+                        </Border.StrokeShape>
+
+                        <Grid ColumnDefinitions="*,Auto">
+
+                            <Label
+                                x:Name="WeekOptionLabel"
+                                Text="This Week"
+                                FontSize="{StaticResource FontBodySmall}"
+                                TextColor="{StaticResource TextPrimary}"
+                                VerticalTextAlignment="Center"/>
+
+                            <Label
+                                x:Name="WeekOptionCheck"
+                                Grid.Column="1"
+                                Text="&#x2713;"
+                                FontSize="{StaticResource FontBodySmall}"
+                                FontAttributes="Bold"
+                                TextColor="{StaticResource Accent600}"
+                                VerticalTextAlignment="Center"
+                                IsVisible="False"/>
+
+                            <Button
+                                x:Name="WeekOptionButton"
+                                Grid.ColumnSpan="2"
+                                CommandParameter="This Week"
+                                Clicked="OnPeriodOptionClicked"
+                                BackgroundColor="Transparent"
+                                BorderWidth="0"
+                                CornerRadius="0"/>
+
+                        </Grid>
+
+                    </Border>
+
+
+                    <BoxView
+                        HeightRequest="1"
+                        Margin="10,0"
+                        Color="{StaticResource BorderSubtle}"/>
+
+
+                    <!-- THIS MONTH -->
+
+                    <Border
+                        x:Name="MonthOption"
+                        HeightRequest="42"
+                        Padding="12,0"
+                        BackgroundColor="Transparent"
+                        StrokeThickness="0">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="9"/>
+                        </Border.StrokeShape>
+
+                        <Grid ColumnDefinitions="*,Auto">
+
+                            <Label
+                                x:Name="MonthOptionLabel"
+                                Text="This Month"
+                                FontSize="{StaticResource FontBodySmall}"
+                                TextColor="{StaticResource TextPrimary}"
+                                VerticalTextAlignment="Center"/>
+
+                            <Label
+                                x:Name="MonthOptionCheck"
+                                Grid.Column="1"
+                                Text="&#x2713;"
+                                FontSize="{StaticResource FontBodySmall}"
+                                FontAttributes="Bold"
+                                TextColor="{StaticResource Accent600}"
+                                VerticalTextAlignment="Center"
+                                IsVisible="False"/>
+
+                            <Button
+                                x:Name="MonthOptionButton"
+                                Grid.ColumnSpan="2"
+                                CommandParameter="This Month"
+                                Clicked="OnPeriodOptionClicked"
+                                BackgroundColor="Transparent"
+                                BorderWidth="0"
+                                CornerRadius="0"/>
+
+                        </Grid>
+
+                    </Border>
+
+
+                    <BoxView
+                        HeightRequest="1"
+                        Margin="10,0"
+                        Color="{StaticResource BorderSubtle}"/>
+
+
+                    <!-- THIS YEAR -->
+
+                    <Border
+                        x:Name="YearOption"
+                        HeightRequest="42"
+                        Padding="12,0"
+                        BackgroundColor="Transparent"
+                        StrokeThickness="0">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="9"/>
+                        </Border.StrokeShape>
+
+                        <Grid ColumnDefinitions="*,Auto">
+
+                            <Label
+                                x:Name="YearOptionLabel"
+                                Text="This Year"
+                                FontSize="{StaticResource FontBodySmall}"
+                                TextColor="{StaticResource TextPrimary}"
+                                VerticalTextAlignment="Center"/>
+
+                            <Label
+                                x:Name="YearOptionCheck"
+                                Grid.Column="1"
+                                Text="&#x2713;"
+                                FontSize="{StaticResource FontBodySmall}"
+                                FontAttributes="Bold"
+                                TextColor="{StaticResource Accent600}"
+                                VerticalTextAlignment="Center"
+                                IsVisible="False"/>
+
+                            <Button
+                                x:Name="YearOptionButton"
+                                Grid.ColumnSpan="2"
+                                CommandParameter="This Year"
+                                Clicked="OnPeriodOptionClicked"
+                                BackgroundColor="Transparent"
+                                BorderWidth="0"
+                                CornerRadius="0"/>
+
+                        </Grid>
+
+                    </Border>
+
+
+                    <BoxView
+                        HeightRequest="1"
+                        Margin="10,0"
+                        Color="{StaticResource BorderSubtle}"/>
+
+
+                    <!-- CUSTOM DATE -->
+
+                    <Border
+                        x:Name="CustomOption"
+                        HeightRequest="42"
+                        Padding="12,0"
+                        BackgroundColor="Transparent"
+                        StrokeThickness="0">
+
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="9"/>
+                        </Border.StrokeShape>
+
+                        <Grid ColumnDefinitions="*,Auto">
+
+                            <Label
+                                x:Name="CustomOptionLabel"
+                                Text="Custom Date"
+                                FontSize="{StaticResource FontBodySmall}"
+                                TextColor="{StaticResource TextPrimary}"
+                                VerticalTextAlignment="Center"/>
+
+                            <Label
+                                x:Name="CustomOptionCheck"
+                                Grid.Column="1"
+                                Text="&#x2713;"
+                                FontSize="{StaticResource FontBodySmall}"
+                                FontAttributes="Bold"
+                                TextColor="{StaticResource Accent600}"
+                                VerticalTextAlignment="Center"
+                                IsVisible="False"/>
+
+                            <Button
+                                x:Name="CustomOptionButton"
+                                Grid.ColumnSpan="2"
+                                CommandParameter="Custom Date"
+                                Clicked="OnPeriodOptionClicked"
+                                BackgroundColor="Transparent"
+                                BorderWidth="0"
+                                CornerRadius="0"/>
+
+                        </Grid>
+
+                    </Border>
+
                 </VerticalStackLayout>
+
             </Border>
+
         </Grid>
-        <Grid x:Name="CustomDateOverlay" Grid.RowSpan="3" IsVisible="False" ZIndex="10" BackgroundColor="#66000000" Padding="24">
-            <Border WidthRequest="380" Padding="20" BackgroundColor="White" Stroke="#D7DCE2"
-                    HorizontalOptions="Center" VerticalOptions="Center">
+
+
+        <!-- ===================================================== -->
+        <!-- CUSTOM DATE DIALOG                                    -->
+        <!-- ===================================================== -->
+
+        <Grid
+            x:Name="CustomDateOverlay"
+            Grid.RowSpan="3"
+            IsVisible="False"
+            ZIndex="10"
+            BackgroundColor="{StaticResource ScrimLight}"
+            Padding="16">
+
+            <Border
+                MaximumWidthRequest="380"
+                Padding="14"
+                BackgroundColor="{StaticResource SurfaceBase}"
+                Stroke="{StaticResource BorderDefault}"
+                HorizontalOptions="Fill"
+                VerticalOptions="Center">
+
                 <Border.StrokeShape>
                     <RoundRectangle CornerRadius="14"/>
                 </Border.StrokeShape>
+
+
                 <VerticalStackLayout Spacing="16">
-                    <Label Text="Select date range" FontSize="19" FontAttributes="Bold" TextColor="#243447"/>
-                    <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,*" ColumnSpacing="12" RowSpacing="5">
-                        <Label Text="FROM" FontSize="9" FontAttributes="Bold" TextColor="#687786"/>
-                        <Label Grid.Column="1" Text="TO" FontSize="9" FontAttributes="Bold" TextColor="#687786"/>
-                        <DatePicker x:Name="StartDatePicker" Grid.Row="1" DateSelected="OnCustomDateChanged"
-                                    Format="dd MMMM, yyyy" FontSize="11" BackgroundColor="#F3F6FA" TextColor="#243447"/>
-                        <DatePicker x:Name="EndDatePicker" Grid.Row="1" Grid.Column="1" DateSelected="OnCustomDateChanged"
-                                    Format="dd MMMM, yyyy" FontSize="11" BackgroundColor="#F3F6FA" TextColor="#243447"/>
+
+                    <Label
+                        Text="Select date range"
+                        FontSize="{StaticResource FontTitle}"
+                        FontAttributes="Bold"
+                        TextColor="{StaticResource TextPrimary}"/>
+
+
+                    <Grid
+                        RowDefinitions="Auto,Auto"
+                        ColumnDefinitions="*,*"
+                        ColumnSpacing="12"
+                        RowSpacing="5">
+
+                        <Label
+                            Text="FROM"
+                            FontSize="{StaticResource FontMicro}"
+                            FontAttributes="Bold"
+                            TextColor="{StaticResource Slate400}"/>
+
+                        <Label
+                            Grid.Column="1"
+                            Text="TO"
+                            FontSize="{StaticResource FontMicro}"
+                            FontAttributes="Bold"
+                            TextColor="{StaticResource Slate400}"/>
+
+
+                        <DatePicker
+                            x:Name="StartDatePicker"
+                            Grid.Row="1"
+                            DateSelected="OnCustomDateChanged"
+                            Format="dd MMMM, yyyy"
+                            FontSize="{StaticResource FontMicro}"
+                            MinimumWidthRequest="0"
+                            HorizontalOptions="Fill"
+                            BackgroundColor="{StaticResource SurfaceMuted}"
+                            TextColor="{StaticResource TextPrimary}"/>
+
+                        <DatePicker
+                            x:Name="EndDatePicker"
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            DateSelected="OnCustomDateChanged"
+                            Format="dd MMMM, yyyy"
+                            FontSize="{StaticResource FontMicro}"
+                            MinimumWidthRequest="0"
+                            HorizontalOptions="Fill"
+                            BackgroundColor="{StaticResource SurfaceMuted}"
+                            TextColor="{StaticResource TextPrimary}"/>
+
                     </Grid>
-                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                        <Button Text="Cancel" Clicked="OnCustomDateCancelClicked" HeightRequest="40" CornerRadius="8"
-                                BackgroundColor="#E9EDF2" TextColor="#374151" FontAttributes="Bold" FontSize="12"/>
-                        <Button Grid.Column="1" Text="Apply" Clicked="OnCustomDateApplyClicked" HeightRequest="40" CornerRadius="8"
-                                BackgroundColor="#5D6D7E" TextColor="White" FontAttributes="Bold" FontSize="12"/>
+
+
+                    <Grid
+                        ColumnDefinitions="*,*"
+                        ColumnSpacing="10">
+
+                        <Button
+                            Text="Cancel"
+                            Clicked="OnCustomDateCancelClicked"
+                            HeightRequest="40"
+                            MinimumWidthRequest="0"
+                            HorizontalOptions="Fill"
+                            CornerRadius="8"
+                            BackgroundColor="{StaticResource SurfaceSunken}"
+                            TextColor="{StaticResource TextSecondary}"
+                            FontAttributes="Bold"
+                            FontSize="{StaticResource FontCaption}"/>
+
+                        <Button
+                            Grid.Column="1"
+                            Text="Apply"
+                            Clicked="OnCustomDateApplyClicked"
+                            HeightRequest="40"
+                            MinimumWidthRequest="0"
+                            HorizontalOptions="Fill"
+                            CornerRadius="8"
+                            BackgroundColor="#111C3A"
+                            TextColor="#FFFFFF"
+                            FontAttributes="Bold"
+                            FontSize="{StaticResource FontCaption}"/>
+
                     </Grid>
+
                 </VerticalStackLayout>
+
             </Border>
+
         </Grid>
+
     </Grid>
-</ContentPage>
+
+</base:EduTaskPage>

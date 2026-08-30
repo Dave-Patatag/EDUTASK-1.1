@@ -1,4 +1,6 @@
 using EDUTASK_1._1.Services;
+using EDUTASK_1._1.Helpers;
+using EDUTASK_1._1.Views.Base;
 using EDUTASK_1._1.ViewModels;
 using Microsoft.Maui.Controls.Shapes;
 using System.Collections.ObjectModel;
@@ -8,7 +10,7 @@ using TaskEditData = EDUTASK_1._1.Models.TaskEditData;
 
 namespace EDUTASK_1._1.Views;
 
-public partial class EditTaskPage : ContentPage
+public partial class EditTaskPage : EduTaskPage
 {
     private readonly int _taskID;
     private readonly TaskFormViewModel _formViewModel;
@@ -81,14 +83,14 @@ DescriptionEditor.Text = _task.Description;
                 var marker = new Label
                 {
                     Text = subtask.IsCompleted ? "✓" : "○",
-                    TextColor = subtask.IsCompleted ? Color.FromArgb("#24743A") : Color.FromArgb("#7B8794"),
-                    FontSize = 18,
+                    TextColor = subtask.IsCompleted ? AppColors.StatusSuccess : AppColors.TextTertiary,
+                    FontSize = AppTypography.Heading,
                     VerticalOptions = LayoutOptions.Center
                 };
                 var title = new Label
                 {
                     Text = subtask.Title,
-                    TextColor = Color.FromArgb("#2C3E50"),
+                    TextColor = AppColors.TextPrimary,
                     TextDecorations = subtask.IsCompleted ? TextDecorations.Strikethrough : TextDecorations.None,
                     VerticalOptions = LayoutOptions.Center
                 };
@@ -97,8 +99,8 @@ DescriptionEditor.Text = _task.Description;
                 row.Add(title, 1);
                 SubtasksList.Children.Add(new Border
                 {
-                    BackgroundColor = subtask.IsCompleted ? Color.FromArgb("#F0F8F2") : Colors.White,
-                    Stroke = Color.FromArgb("#DCE3E8"),
+                    BackgroundColor = subtask.IsCompleted ? AppColors.StatusSuccessSurface : AppColors.SurfaceBase,
+                    Stroke = AppColors.Slate100,
                     StrokeShape = new RoundRectangle { CornerRadius = 8 },
                     Padding = new Thickness(12, 9),
                     Content = row
@@ -152,10 +154,50 @@ TeacherPicker.SelectedItem = teachers.FirstOrDefault(t => t.TeacherID == _task.T
     private void OnDueDateSelected(object sender, DateChangedEventArgs e) =>
         DueDateDisplayLabel.Text = e.NewDate.ToString("MMM dd, yyyy");
 
-    private void OnSelectTeacherClicked(object sender, EventArgs e) => TeacherPicker.Focus();
+    private void OnTitleChanged(object sender, TextChangedEventArgs e) =>
+        FormFieldValidation.ClearFieldError(TitleBorder, TitleErrorLabel);
+
+    private async void OnSelectTeacherClicked(object sender, EventArgs e)
+    {
+        if (_isReadOnly || TeacherPicker.ItemsSource is not IEnumerable<TeacherOption> teachers)
+            return;
+
+        IEnumerable<TeacherOption> currentSelection = TeacherPicker.SelectedItem is TeacherOption selected
+            ? [selected]
+            : [];
+
+        var selector = new TeacherSelectionPage(teachers, currentSelection, 1);
+        IReadOnlyList<TeacherOption>? selection = await selector.ShowAsync(Navigation);
+        if (selection is { Count: > 0 })
+        {
+            TeacherPicker.SelectedItem = selection[0];
+            FormFieldValidation.ClearFieldError(TeacherBorder, TeacherErrorLabel);
+        }
+    }
+
+    private bool ValidateFields()
+    {
+        FormFieldValidation.ClearFieldError(TitleBorder, TitleErrorLabel);
+        FormFieldValidation.ClearFieldError(TeacherBorder, TeacherErrorLabel);
+
+        bool valid = true;
+        if (string.IsNullOrWhiteSpace(TitleEntry.Text))
+        {
+            FormFieldValidation.SetFieldError(TitleBorder, TitleErrorLabel, "Enter a task title.");
+            valid = false;
+        }
+        if (TeacherPicker.SelectedItem is not TeacherOption)
+        {
+            FormFieldValidation.SetFieldError(TeacherBorder, TeacherErrorLabel, "Select a teacher.");
+            valid = false;
+        }
+        return valid;
+    }
     private async void OnSaveClicked(object sender, EventArgs e)
     {
         if (_isReadOnly || _task is null || !_originalDeadline.HasValue)
+            return;
+        if (!ValidateFields())
             return;
 
         SetBusy(true);

@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<base:EduTaskPage xmlns:base="clr-namespace:EDUTASK_1._1.Views.Base"
+                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                  xmlns:viewModels="clr-namespace:EDUTASK_1._1.ViewModels"
+                  x:Class="EDUTASK_1._1.Views.AccountProfileDialog"
+                  x:DataType="viewModels:ProfileViewModel"
+                  Transition="Dialog"
+                  BackgroundColor="{StaticResource Scrim}"
+                  NavigationPage.HasNavigationBar="False"
+                  Shell.NavBarIsVisible="False">
+
+    <Grid Padding="16">
+        <BoxView Color="Transparent">
+            <BoxView.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnBackdropTapped"/>
+            </BoxView.GestureRecognizers>
+        </BoxView>
+
+        <Border x:Name="DialogPanel"
+                WidthRequest="320"
+                HeightRequest="312"
+                MaximumWidthRequest="380"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                MinimumWidthRequest="0"
+                MaximumHeightRequest="600"
+                BackgroundColor="{StaticResource SurfaceBase}"
+                Stroke="{StaticResource BorderDefault}"
+                StrokeThickness="1">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="18"/>
+            </Border.StrokeShape>
+            <Border.Shadow>
+                <Shadow Brush="{StaticResource ShadowOverlay}"
+                        Offset="0,6" Radius="18" Opacity="0.65"/>
+            </Border.Shadow>
+
+            <!-- The panel receives a responsive explicit height in code.
+                 The middle row uses the remaining space and scrolls only when
+                 optional bio or management content needs it. -->
+            <Grid RowDefinitions="Auto,*,Auto">
+                <Grid Padding="16,14,12,8" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                        <Label Text="Profile details"
+                               FontSize="{StaticResource FontHeading}"
+                               FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimary}"
+                               SemanticProperties.HeadingLevel="Level1"/>
+                    </VerticalStackLayout>
+
+                    <Button Grid.Column="1"
+                            Text="&#x2715;"
+                            Clicked="OnCloseClicked"
+                            WidthRequest="36" HeightRequest="36"
+                            MinimumWidthRequest="36" MinimumHeightRequest="36"
+                            Padding="0" CornerRadius="18"
+                            FontSize="{StaticResource FontBodySmall}"
+                            BackgroundColor="{StaticResource SurfaceSunken}"
+                            TextColor="{StaticResource TextPrimary}"
+                            SemanticProperties.Description="Close profile details"/>
+                </Grid>
+
+                <ScrollView Grid.Row="1"
+                            HorizontalOptions="Fill"
+                            VerticalOptions="Fill"
+                            VerticalScrollBarVisibility="Never">
+                    <VerticalStackLayout Padding="16,2,16,10"
+                                         HorizontalOptions="Fill"
+                                         Spacing="0">
+                        <Grid ColumnDefinitions="94,*" ColumnSpacing="14" Padding="0,8,0,14">
+                            <Border WidthRequest="88" HeightRequest="88"
+                                    HorizontalOptions="Start" VerticalOptions="Center"
+                                    BackgroundColor="{Binding AvatarColor}"
+                                    Stroke="{StaticResource SurfaceBase}" StrokeThickness="3">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="44"/>
+                                </Border.StrokeShape>
+                                <Grid>
+                                    <Label Text="{Binding AvatarInitials}"
+                                           IsVisible="{Binding ShowInitials}"
+                                           FontSize="28"
+                                           FontAttributes="Bold"
+                                           TextColor="{StaticResource TextInverse}"
+                                           HorizontalTextAlignment="Center"
+                                           VerticalTextAlignment="Center"/>
+                                    <Image Source="{Binding ProfilePhotoPath}"
+                                           IsVisible="{Binding HasProfilePhoto}"
+                                           Aspect="AspectFill"/>
+                                </Grid>
+                            </Border>
+
+                            <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                <Label Text="{Binding FullName}"
+                                       FontSize="22"
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource TextPrimary}"
+                                       LineBreakMode="TailTruncation"/>
+                                <Label Text="{Binding UsernameDisplay}"
+                                       FontSize="13"
+                                       TextColor="{StaticResource TextTertiary}"
+                                       LineBreakMode="TailTruncation"/>
+                                <HorizontalStackLayout Spacing="8" Margin="0,8,0,0">
+                                    <Border IsVisible="False" Padding="8,4" BackgroundColor="{StaticResource StatusInfoSurface}" StrokeThickness="0">
+                                        <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                                        <HorizontalStackLayout Spacing="5">
+                                            <Image Source="profileposition.png" WidthRequest="13" HeightRequest="13"/>
+                                            <Label x:Name="RoleLabel" FontSize="{StaticResource FontMicro}"
+                                                   TextColor="{StaticResource StatusInfo}" VerticalTextAlignment="Center"/>
+                                        </HorizontalStackLayout>
+                                    </Border>
+                                    <Border x:Name="StatusCard" Padding="8,4" StrokeThickness="0">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                                        <Label x:Name="StatusLabel" FontSize="{StaticResource FontMicro}" FontAttributes="Bold"/>
+                                    </Border>
+                                </HorizontalStackLayout>
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <Label Text="Information"
+                               Style="{StaticResource ReportSectionHeading}"
+                               Margin="0,0,0,8"/>
+
+                        <Border Padding="12,6"
+                                BackgroundColor="{StaticResource SurfaceBase}"
+                                Stroke="{StaticResource BorderSubtle}"
+                                StrokeThickness="1">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="0">
+                                <Grid ColumnDefinitions="40,*" ColumnSpacing="8" MinimumHeightRequest="48">
+                                    <Border Padding="7" BackgroundColor="{StaticResource SurfaceSunken}" StrokeThickness="0"
+                                            HorizontalOptions="Start" VerticalOptions="Center">
+                                        <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                                        <Image Source="profileemail.png" WidthRequest="18" HeightRequest="18"/>
+                                    </Border>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                        <Label Text="Email" FontSize="{StaticResource FontCaption}"
+                                               TextColor="{StaticResource TextTertiary}"/>
+                                        <Label Text="{Binding Email}" FontSize="13"
+                                               TextColor="{StaticResource TextPrimary}" LineBreakMode="TailTruncation"/>
+                                    </VerticalStackLayout>
+                                </Grid>
+
+                                <BoxView HeightRequest="1" Color="{StaticResource BorderSubtle}"/>
+
+                                <Grid ColumnDefinitions="40,*" ColumnSpacing="8" MinimumHeightRequest="48">
+                                    <Border Padding="7" BackgroundColor="{StaticResource SurfaceSunken}" StrokeThickness="0"
+                                            HorizontalOptions="Start" VerticalOptions="Center">
+                                        <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                                        <Image Source="profilephone.png" WidthRequest="18" HeightRequest="18"/>
+                                    </Border>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                        <Label Text="Phone" FontSize="{StaticResource FontCaption}"
+                                               TextColor="{StaticResource TextTertiary}"/>
+                                        <Label Text="{Binding ContactNumber}" FontSize="13"
+                                               TextColor="{StaticResource TextPrimary}" LineBreakMode="TailTruncation"/>
+                                    </VerticalStackLayout>
+                                </Grid>
+
+                                <BoxView HeightRequest="1" Color="{StaticResource BorderSubtle}"/>
+
+                                <Grid ColumnDefinitions="40,*" ColumnSpacing="8" MinimumHeightRequest="48">
+                                    <Border Padding="7" BackgroundColor="{StaticResource SurfaceSunken}" StrokeThickness="0"
+                                            HorizontalOptions="Start" VerticalOptions="Center">
+                                        <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                            <Image Source="profilecalendar.png" WidthRequest="18" HeightRequest="18"/>
+                                    </Border>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                                        <Label Text="Member since" FontSize="{StaticResource FontCaption}"
+                                               TextColor="{StaticResource TextTertiary}"/>
+                                <Label x:Name="MemberSinceLabel" FontSize="13"
+                                               TextColor="{StaticResource TextPrimary}"/>
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <VerticalStackLayout x:Name="BioSection" IsVisible="False" Spacing="6">
+                            <Label Text="About"
+                                   Style="{StaticResource ReportSectionHeading}"
+                                   Margin="0,20,0,0"/>
+                            <Label Text="{Binding BioDisplay}"
+                                   Style="{StaticResource BodyText}"
+                                   LineBreakMode="WordWrap"/>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </ScrollView>
+
+                <VerticalStackLayout x:Name="ManagementActions"
+                                     Grid.Row="2"
+                                     IsVisible="False"
+                                     Padding="16,8,16,10"
+                                     Spacing="8">
+                    <BoxView HeightRequest="1" Color="{StaticResource BorderSubtle}"/>
+                    <Button x:Name="PromoteButton"
+                            Text="Promote to Director"
+                            Clicked="OnPromoteClicked"
+                            HeightRequest="38"
+                            CornerRadius="10"
+                            FontSize="{StaticResource FontMicro}"
+                            FontAttributes="Bold"
+                            BackgroundColor="{StaticResource Accent600}"
+                            TextColor="{StaticResource TextInverse}"/>
+                    <Button x:Name="AccountStateButton"
+                            Text="Disable account"
+                            Clicked="OnAccountStateClicked"
+                            HeightRequest="38"
+                            CornerRadius="10"
+                            FontSize="{StaticResource FontMicro}"
+                            FontAttributes="Bold"
+                            BackgroundColor="{StaticResource StatusDangerSurface}"
+                            BorderColor="{StaticResource StatusDangerBorder}"
+                            BorderWidth="1"
+                            TextColor="{StaticResource StatusDanger}"/>
+                </VerticalStackLayout>
+            </Grid>
+        </Border>
+    </Grid>
+</base:EduTaskPage>

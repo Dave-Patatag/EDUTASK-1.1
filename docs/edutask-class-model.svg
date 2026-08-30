@@ -1,0 +1,379 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1650 1470" width="1650" height="1470" role="img">
+<style>
+  text{font-family:"IBM Plex Sans","Segoe UI",Arial,sans-serif}
+  .ubox{fill:#ffffff;stroke:#c9d4e2;stroke-width:1.1}
+  .upanel{fill:#fafbfd;stroke:#c9d4e2;stroke-width:1.1}
+  .urule{stroke:#c9d4e2;stroke-width:1}
+  .uhd.a{fill:#efeafb}.uhd.b{fill:#e7effc}.uhd.c{fill:#e2f2f0}.uhd.d{fill:#f8eee0}.uhd.s{fill:#eef1f6}
+  .unm{font-size:14px;font-weight:600}
+  .unm.a{fill:#5B3BB4}.unm.b{fill:#1a55b8}.unm.c{fill:#0b6b64}.unm.d{fill:#955614}.unm.s{fill:#3c485e}
+  .ust{font-size:9px;fill:#64748b;letter-spacing:.04em}
+  .uat{font-family:"IBM Plex Mono",Consolas,monospace;font-size:11px;fill:#33465f}
+  .uat.op{fill:#1f3348}
+  .umk{font-size:8.5px;fill:#7c8aa0;letter-spacing:.03em}
+  .uln{stroke:#7a8ba3;stroke-width:1.2;fill:none}
+  .uln.dash{stroke-dasharray:5 4}
+  .uarrowhead{fill:#7a8ba3}
+  .ulbl{font-size:10.5px;fill:#64748b}
+  .umult{font-family:"IBM Plex Mono",Consolas,monospace;font-size:10px;fill:#33465f}
+  .ltitle{font-size:18px;font-weight:600;fill:#131c2a}
+  .lsub{font-size:11px;fill:#64748b}
+  .lcap{font-size:9px;font-weight:600;fill:#64748b;letter-spacing:.09em}
+  .lrow{font-size:11px;fill:#33465f}
+  .lkey{font-family:"IBM Plex Mono",Consolas,monospace;font-size:10px;fill:#33465f}
+  .lnote{font-size:10.5px;fill:#5b6b81}
+  .lsw.a{fill:#6B4CC4}.lsw.b{fill:#1F62C9}.lsw.c{fill:#0E7C74}.lsw.d{fill:#A9631B}
+</style>
+<defs><marker id="uarrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="uarrowhead" d="M0,1.5 L9,5 L0,8.5 z"/></marker></defs>
+<rect x="0" y="0" width="1650" height="1470" fill="#ffffff"/>
+<g>
+<rect class="ubox" x="40" y="100" width="320" height="137"/>
+<rect class="uhd a" x="40" y="100" width="320" height="34"/>
+<text class="unm a" x="200" y="122" text-anchor="middle">Role</text>
+<line class="urule" x1="40" y1="134" x2="360" y2="134"/>
+<text class="uat" x="54" y="154">+ RoleID : int</text>
+<text class="umk" x="346" y="154" text-anchor="end">«PK»</text>
+<text class="uat" x="54" y="171">+ RoleName : string</text>
+<text class="umk" x="346" y="171" text-anchor="end">«UQ»</text>
+<text class="uat" x="54" y="188">+ Description : string?</text>
+<text class="uat" x="54" y="205">+ IsActive : bool</text>
+<text class="uat" x="54" y="222">+ CreatedAt : DateTime</text>
+</g>
+<g>
+<rect class="ubox" x="40" y="287" width="320" height="154"/>
+<rect class="uhd a" x="40" y="287" width="320" height="34"/>
+<text class="unm a" x="200" y="309" text-anchor="middle">AccountRoleChangeLog</text>
+<line class="urule" x1="40" y1="321" x2="360" y2="321"/>
+<text class="uat" x="54" y="341">+ RoleChangeID : long</text>
+<text class="umk" x="346" y="341" text-anchor="end">«PK»</text>
+<text class="uat" x="54" y="358">+ UserID : int</text>
+<text class="umk" x="346" y="358" text-anchor="end">«FK»</text>
+<text class="uat" x="54" y="375">+ PreviousRoleID : int</text>
+<text class="umk" x="346" y="375" text-anchor="end">«FK»</text>
+<text class="uat" x="54" y="392">+ NewRoleID : int</text>
+<text class="umk" x="346" y="392" text-anchor="end">«FK»</text>
+<text class="uat" x="54" y="409">+ ChangedByUserID : int</text>
+<text class="umk" x="346" y="409" text-anchor="end">«FK»</text>
+<text class="uat" x="54" y="426">+ ChangedAt : DateTime</text>
+</g>
+<g>
+<rect class="ubox" x="450" y="100" width="320" height="392"/>
+<rect class="uhd a" x="450" y="100" width="320" height="34"/>
+<text class="ust" x="610" y="114" text-anchor="middle">«Director / Staff»</text>
+<text class="unm a" x="610" y="128" text-anchor="middle">User</text>
+<line class="urule" x1="450" y1="134" x2="770" y2="134"/>
+<text class="uat" x="464" y="154">+ UserID : int</text>
+<text class="umk" x="756" y="154" text-anchor="end">«PK»</text>
+<text class="uat" x="464" y="171">+ FirstName : string</text>
+<text class="uat" x="464" y="188">+ LastName : string</text>
+<text class="uat" x="464" y="205">+ Username : string</text>
+<text class="umk" x="756" y="205" text-anchor="end">«UQ»</text>
+<text class="uat" x="464" y="222">+ Email : string</text>
+<text class="umk" x="756" y="222" text-anchor="end">«UQ»</text>
+<text class="uat" x="464" y="239">+ Password : string</text>
+<text class="uat" x="464" y="256">+ ContactNumber : string</text>
+<text class="uat" x="464" y="273">+ Birthdate : DateTime?</text>
+<text class="uat" x="464" y="290">+ ProfilePhotoPath : string</text>
+<text class="uat" x="464" y="307">+ Position : string</text>
+<text class="uat" x="464" y="324">+ Bio : string</text>
+<text class="uat" x="464" y="341">+ AccountCreated : DateTime</text>
+<text class="uat" x="464" y="358">+ RoleID : int</text>
+<text class="umk" x="756" y="358" text-anchor="end">«FK»</text>
+<text class="uat" x="464" y="375">/ RoleName : string</text>
+<text class="uat" x="464" y="392">+ IsActive : bool</text>
+<text class="uat" x="464" y="409">+ DisabledAt : DateTime?</text>
+<text class="uat" x="464" y="426">+ SecurityQuestion1 : string</text>
+<text class="uat" x="464" y="443">+ SecurityAnswerHash1 : string</text>
+<text class="uat" x="464" y="460">+ SecurityQuestion2 : string</text>
+<text class="uat" x="464" y="477">+ SecurityAnswerHash2 : string</text>
+</g>
+<g>
+<rect class="ubox" x="860" y="100" width="320" height="392"/>
+<rect class="uhd a" x="860" y="100" width="320" height="34"/>
+<text class="ust" x="1020" y="114" text-anchor="middle">«Teacher»</text>
+<text class="unm a" x="1020" y="128" text-anchor="middle">Teacher</text>
+<line class="urule" x1="860" y1="134" x2="1180" y2="134"/>
+<text class="uat" x="874" y="154">+ TeacherID : int</text>
+<text class="umk" x="1166" y="154" text-anchor="end">«PK»</text>
+<text class="uat" x="874" y="171">+ FirstName : string</text>
+<text class="uat" x="874" y="188">+ LastName : string</text>
+<text class="uat" x="874" y="205">+ Username : string</text>
+<text class="umk" x="1166" y="205" text-anchor="end">«UQ»</text>
+<text class="uat" x="874" y="222">+ Email : string</text>
+<text class="umk" x="1166" y="222" text-anchor="end">«UQ»</text>
+<text class="uat" x="874" y="239">+ Password : string</text>
+<text class="uat" x="874" y="256">+ ContactNumber : string</text>
+<text class="uat" x="874" y="273">+ Birthdate : DateTime?</text>
+<text class="uat" x="874" y="290">+ ProfilePhotoPath : string</text>
+<text class="uat" x="874" y="307">+ Position : string</text>
+<text class="uat" x="874" y="324">+ Bio : string</text>
+<text class="uat" x="874" y="341">+ AccountCreated : DateTime</text>
+<text class="uat" x="874" y="358">+ RoleID : int</text>
+<text class="umk" x="1166" y="358" text-anchor="end">«FK»</text>
+<text class="uat" x="874" y="375">/ RoleName : string</text>
+<text class="uat" x="874" y="392">+ IsActive : bool</text>
+<text class="uat" x="874" y="409">+ DisabledAt : DateTime?</text>
+<text class="uat" x="874" y="426">+ SecurityQuestion1 : string</text>
+<text class="uat" x="874" y="443">+ SecurityAnswerHash1 : string</text>
+<text class="uat" x="874" y="460">+ SecurityQuestion2 : string</text>
+<text class="uat" x="874" y="477">+ SecurityAnswerHash2 : string</text>
+</g>
+<g>
+<rect class="ubox" x="1270" y="100" width="320" height="205"/>
+<rect class="uhd d" x="1270" y="100" width="320" height="34"/>
+<text class="unm d" x="1430" y="122" text-anchor="middle">TaskActivityLog</text>
+<line class="urule" x1="1270" y1="134" x2="1590" y2="134"/>
+<text class="uat" x="1284" y="154">+ ActivityLogID : long</text>
+<text class="umk" x="1576" y="154" text-anchor="end">«PK»</text>
+<text class="uat" x="1284" y="171">+ TaskID : int</text>
+<text class="umk" x="1576" y="171" text-anchor="end">«FK»</text>
+<text class="uat" x="1284" y="188">+ PerformedByUserID : int?</text>
+<text class="umk" x="1576" y="188" text-anchor="end">«FK»</text>
+<text class="uat" x="1284" y="205">+ PerformedByTeacherID : int?</text>
+<text class="umk" x="1576" y="205" text-anchor="end">«FK»</text>
+<text class="uat" x="1284" y="222">+ ActionType : string</text>
+<text class="uat" x="1284" y="239">+ PreviousStatus : string?</text>
+<text class="uat" x="1284" y="256">+ NewStatus : string?</text>
+<text class="uat" x="1284" y="273">+ Details : string?</text>
+<text class="uat" x="1284" y="290">+ CreatedAt : DateTime</text>
+</g>
+<g>
+<rect class="ubox" x="1270" y="355" width="320" height="120"/>
+<rect class="uhd d" x="1270" y="355" width="320" height="34"/>
+<text class="ust" x="1430" y="369" text-anchor="middle">«inbox state»</text>
+<text class="unm d" x="1430" y="383" text-anchor="middle">NotificationRead / Hidden</text>
+<line class="urule" x1="1270" y1="389" x2="1590" y2="389"/>
+<text class="uat" x="1284" y="409">+ RecipientType : string</text>
+<text class="umk" x="1576" y="409" text-anchor="end">«PK»</text>
+<text class="uat" x="1284" y="426">+ RecipientID : int</text>
+<text class="umk" x="1576" y="426" text-anchor="end">«PK»</text>
+<text class="uat" x="1284" y="443">+ NotificationKey : string</text>
+<text class="umk" x="1576" y="443" text-anchor="end">«PK»</text>
+<text class="uat" x="1284" y="460">+ ReadAt / HiddenAt : DateTime</text>
+</g>
+<g>
+<rect class="ubox" x="450" y="560" width="320" height="290"/>
+<rect class="uhd b" x="450" y="560" width="320" height="34"/>
+<text class="unm b" x="610" y="582" text-anchor="middle">Task</text>
+<line class="urule" x1="450" y1="594" x2="770" y2="594"/>
+<text class="uat" x="464" y="614">+ TaskID : int</text>
+<text class="umk" x="756" y="614" text-anchor="end">«PK»</text>
+<text class="uat" x="464" y="631">+ Title : string</text>
+<text class="uat" x="464" y="648">+ Description : string</text>
+<text class="uat" x="464" y="665">+ CreatedAt : DateTime</text>
+<text class="uat" x="464" y="682">+ UpdatedAt : DateTime</text>
+<text class="uat" x="464" y="699">+ UserID : int</text>
+<text class="umk" x="756" y="699" text-anchor="end">«FK»</text>
+<text class="uat" x="464" y="716">+ isDailyRemind : bool</text>
+<text class="uat" x="464" y="733">+ CreatedByUserID : int?</text>
+<text class="umk" x="756" y="733" text-anchor="end">«FK»</text>
+<text class="uat" x="464" y="750">+ LastModifiedByUserID : int?</text>
+<text class="umk" x="756" y="750" text-anchor="end">«FK»</text>
+<text class="uat" x="464" y="767">+ CompletionApprovedByUserID : int?</text>
+<text class="umk" x="756" y="767" text-anchor="end">«FK»</text>
+<text class="uat" x="464" y="784">+ CompletionApprovedAt : DateTime?</text>
+<text class="uat" x="464" y="801">+ RevisionRequestedByUserID : int?</text>
+<text class="umk" x="756" y="801" text-anchor="end">«FK»</text>
+<text class="uat" x="464" y="818">+ RevisionRequestedAt : DateTime?</text>
+<text class="uat" x="464" y="835">+ RevisionReason : string?</text>
+</g>
+<g>
+<rect class="ubox" x="860" y="560" width="320" height="222"/>
+<rect class="uhd b" x="860" y="560" width="320" height="34"/>
+<text class="unm b" x="1020" y="582" text-anchor="middle">TaskAssignment</text>
+<line class="urule" x1="860" y1="594" x2="1180" y2="594"/>
+<text class="uat" x="874" y="614">+ AssignmentID : int</text>
+<text class="umk" x="1166" y="614" text-anchor="end">«PK»</text>
+<text class="uat" x="874" y="631">+ TaskID : int</text>
+<text class="umk" x="1166" y="631" text-anchor="end">«FK»</text>
+<text class="uat" x="874" y="648">+ TeacherID : int</text>
+<text class="umk" x="1166" y="648" text-anchor="end">«FK»</text>
+<text class="uat" x="874" y="665">+ Deadline : DateTime</text>
+<text class="uat" x="874" y="682">+ Priority : string</text>
+<text class="uat" x="874" y="699">+ AssignedAt : DateTime</text>
+<text class="uat" x="874" y="716">+ IsAcknowledged : bool</text>
+<text class="uat" x="874" y="733">+ AcknowledgedAt : DateTime?</text>
+<text class="uat" x="874" y="750">+ CompletionStatus : string</text>
+<text class="uat" x="874" y="767">+ CompletedAt : DateTime?</text>
+</g>
+<g>
+<rect class="ubox" x="450" y="910" width="320" height="137"/>
+<rect class="uhd b" x="450" y="910" width="320" height="34"/>
+<text class="unm b" x="610" y="932" text-anchor="middle">Subtask</text>
+<line class="urule" x1="450" y1="944" x2="770" y2="944"/>
+<text class="uat" x="464" y="964">+ SubtaskID : int</text>
+<text class="umk" x="756" y="964" text-anchor="end">«PK»</text>
+<text class="uat" x="464" y="981">+ TaskID : int</text>
+<text class="umk" x="756" y="981" text-anchor="end">«FK»</text>
+<text class="uat" x="464" y="998">+ Title : string</text>
+<text class="uat" x="464" y="1015">+ IsCompleted : bool</text>
+<text class="uat" x="464" y="1032">+ CreatedAt : DateTime</text>
+</g>
+<g>
+<rect class="ubox" x="1270" y="910" width="320" height="205"/>
+<rect class="uhd d" x="1270" y="910" width="320" height="34"/>
+<text class="unm d" x="1430" y="932" text-anchor="middle">TaskComment</text>
+<line class="urule" x1="1270" y1="944" x2="1590" y2="944"/>
+<text class="uat" x="1284" y="964">+ CommentID : int</text>
+<text class="umk" x="1576" y="964" text-anchor="end">«PK»</text>
+<text class="uat" x="1284" y="981">+ TaskID : int</text>
+<text class="umk" x="1576" y="981" text-anchor="end">«FK»</text>
+<text class="uat" x="1284" y="998">+ SubtaskID : int?</text>
+<text class="umk" x="1576" y="998" text-anchor="end">«FK»</text>
+<text class="uat" x="1284" y="1015">+ AuthorType : string</text>
+<text class="uat" x="1284" y="1032">+ AuthorID : int</text>
+<text class="uat" x="1284" y="1049">+ AuthorName : string</text>
+<text class="uat" x="1284" y="1066">+ MessageType : string</text>
+<text class="uat" x="1284" y="1083">+ CommentText : string</text>
+<text class="uat" x="1284" y="1100">+ CreatedAt : DateTime</text>
+</g>
+<g>
+<rect class="ubox" x="450" y="1175" width="320" height="222"/>
+<rect class="uhd c" x="450" y="1175" width="320" height="34"/>
+<text class="ust" x="610" y="1189" text-anchor="middle">«current evidence»</text>
+<text class="unm c" x="610" y="1203" text-anchor="middle">SubtaskProof</text>
+<line class="urule" x1="450" y1="1209" x2="770" y2="1209"/>
+<text class="uat" x="464" y="1229">+ ProofID : int</text>
+<text class="umk" x="756" y="1229" text-anchor="end">«PK»</text>
+<text class="uat" x="464" y="1246">+ SubtaskID : int</text>
+<text class="umk" x="756" y="1246" text-anchor="end">«FK, UQ»</text>
+<text class="uat" x="464" y="1263">+ ImageData : byte[]</text>
+<text class="uat" x="464" y="1280">+ FileName : string</text>
+<text class="uat" x="464" y="1297">+ ContentType : string</text>
+<text class="uat" x="464" y="1314">+ ValidationStatus : string</text>
+<text class="uat" x="464" y="1331">+ UploadedAt : DateTime</text>
+<text class="uat" x="464" y="1348">+ ReviewedAt : DateTime?</text>
+<text class="uat" x="464" y="1365">+ ReviewedByUserID : int?</text>
+<text class="umk" x="756" y="1365" text-anchor="end">«FK»</text>
+<text class="uat" x="464" y="1382">+ AdminRemarks : string?</text>
+</g>
+<g>
+<rect class="ubox" x="860" y="1175" width="320" height="239"/>
+<rect class="uhd c" x="860" y="1175" width="320" height="34"/>
+<text class="ust" x="1020" y="1189" text-anchor="middle">«attempt archive»</text>
+<text class="unm c" x="1020" y="1203" text-anchor="middle">SubtaskProofHistory</text>
+<line class="urule" x1="860" y1="1209" x2="1180" y2="1209"/>
+<text class="uat" x="874" y="1229">+ HistoryID : int</text>
+<text class="umk" x="1166" y="1229" text-anchor="end">«PK»</text>
+<text class="uat" x="874" y="1246">+ SubtaskID : int</text>
+<text class="umk" x="1166" y="1246" text-anchor="end">«FK»</text>
+<text class="uat" x="874" y="1263">+ AttemptNumber : int</text>
+<text class="uat" x="874" y="1280">+ FileName : string</text>
+<text class="uat" x="874" y="1297">+ ContentType : string</text>
+<text class="uat" x="874" y="1314">+ FileData : byte[]</text>
+<text class="uat" x="874" y="1331">+ ValidationStatus : string</text>
+<text class="uat" x="874" y="1348">+ SubmittedAt : DateTime</text>
+<text class="uat" x="874" y="1365">+ ReviewedAt : DateTime?</text>
+<text class="uat" x="874" y="1382">+ ReviewedByUserID : int?</text>
+<text class="umk" x="1166" y="1382" text-anchor="end">«FK»</text>
+<text class="uat" x="874" y="1399">+ ReturnRemarks : string?</text>
+</g>
+<g>
+<rect class="ubox" x="1270" y="1175" width="320" height="137"/>
+<rect class="uhd d" x="1270" y="1175" width="320" height="34"/>
+<text class="unm d" x="1430" y="1197" text-anchor="middle">TaskCommentRead</text>
+<line class="urule" x1="1270" y1="1209" x2="1590" y2="1209"/>
+<text class="uat" x="1284" y="1229">+ SubtaskID : int</text>
+<text class="umk" x="1576" y="1229" text-anchor="end">«PK, FK»</text>
+<text class="uat" x="1284" y="1246">+ ReaderType : string</text>
+<text class="umk" x="1576" y="1246" text-anchor="end">«PK»</text>
+<text class="uat" x="1284" y="1263">+ ReaderID : int</text>
+<text class="umk" x="1576" y="1263" text-anchor="end">«PK»</text>
+<text class="uat" x="1284" y="1280">+ LastReadCommentID : int</text>
+<text class="uat" x="1284" y="1297">+ ReadAt : DateTime</text>
+</g>
+<polyline class="uln" points="360,150 450,150" marker-end="url(#uarrow)"/>
+<text class="umult" x="366" y="144">1</text>
+<text class="umult" x="444" y="144" text-anchor="end">0..*</text>
+<text class="ulbl" x="405" y="166" text-anchor="middle">governs</text>
+<polyline class="uln" points="200,100 200,58 1020,58 1020,100" marker-end="url(#uarrow)"/>
+<text class="umult" x="210" y="94">1</text>
+<text class="umult" x="1010" y="94" text-anchor="end">0..*</text>
+<text class="ulbl" x="600" y="50" text-anchor="middle">governs</text>
+<polyline class="uln" points="700,100 700,80 1430,80 1430,100" marker-end="url(#uarrow)"/>
+<text class="ulbl" x="1065" y="72" text-anchor="middle">performed by</text>
+<polyline class="uln" points="200,287 200,237" marker-end="url(#uarrow)"/>
+<text class="ulbl" x="210" y="268">from / to role</text>
+<polyline class="uln" points="360,364 450,364" marker-end="url(#uarrow)"/>
+<text class="umult" x="366" y="358">0..*</text>
+<text class="umult" x="444" y="358" text-anchor="end">1</text>
+<text class="ulbl" x="405" y="380" text-anchor="middle">promotes</text>
+<polyline class="uln" points="1180,250 1270,250" marker-end="url(#uarrow)"/>
+<text class="ulbl" x="1225" y="242" text-anchor="middle">acts</text>
+<polyline class="uln" points="1180,420 1270,420" marker-end="url(#uarrow)"/>
+<text class="ulbl" x="1225" y="412" text-anchor="middle">receives</text>
+<polyline class="uln" points="610,492 610,560" marker-end="url(#uarrow)"/>
+<text class="umult" x="602" y="512" text-anchor="end">1</text>
+<text class="umult" x="602" y="552" text-anchor="end">0..*</text>
+<text class="ulbl" x="620" y="522">creates · approves · returns</text>
+<polyline class="uln" points="1020,492 1020,560" marker-end="url(#uarrow)"/>
+<text class="umult" x="1012" y="512" text-anchor="end">1</text>
+<text class="umult" x="1012" y="552" text-anchor="end">0..*</text>
+<text class="ulbl" x="1030" y="528">works on</text>
+<polyline class="uln" points="770,650 860,650" marker-end="url(#uarrow)"/>
+<text class="umult" x="776" y="644">1</text>
+<text class="umult" x="854" y="644" text-anchor="end">1..*</text>
+<text class="ulbl" x="815" y="668" text-anchor="middle">assigned by</text>
+<polyline class="uln" points="730,560 730,520 1615,520 1615,200 1590,200" marker-end="url(#uarrow)"/>
+<text class="umult" x="738" y="546">1</text>
+<text class="ulbl" x="1180" y="512" text-anchor="middle">records every action</text>
+<polyline class="uln" points="610,850 610,910" marker-end="url(#uarrow)"/>
+<text class="umult" x="602" y="870" text-anchor="end">1</text>
+<text class="umult" x="602" y="902" text-anchor="end">0..*</text>
+<text class="ulbl" x="620" y="884">breaks down into</text>
+<polyline class="uln" points="700,850 700,870 1240,870 1240,960 1270,960" marker-end="url(#uarrow)"/>
+<text class="ulbl" x="970" y="862" text-anchor="middle">discussed in</text>
+<polyline class="uln" points="770,930 1270,930" marker-end="url(#uarrow)"/>
+<text class="umult" x="778" y="924">1</text>
+<text class="umult" x="1262" y="924" text-anchor="end">0..*</text>
+<text class="ulbl" x="1020" y="950" text-anchor="middle">thread per subtask</text>
+<polyline class="uln" points="610,1047 610,1175" marker-end="url(#uarrow)"/>
+<text class="umult" x="602" y="1070" text-anchor="end">1</text>
+<text class="umult" x="602" y="1166" text-anchor="end">0..1</text>
+<text class="ulbl" x="620" y="1115">current proof</text>
+<polyline class="uln" points="770,1000 1020,1000 1020,1175" marker-end="url(#uarrow)"/>
+<text class="umult" x="778" y="994">1</text>
+<text class="umult" x="1030" y="1166">0..*</text>
+<text class="ulbl" x="895" y="994" text-anchor="middle">every attempt</text>
+<polyline class="uln dash" points="770,1290 860,1290" marker-end="url(#uarrow)"/>
+<text class="ulbl" x="815" y="1284" text-anchor="middle">copied into</text>
+<polyline class="uln" points="1430,1115 1430,1175" marker-end="url(#uarrow)"/>
+<text class="ulbl" x="1440" y="1150">last read</text>
+<polyline class="uln" points="450,400 405,400 405,1230 450,1230" marker-end="url(#uarrow)"/>
+<text class="ulbl" x="400" y="1150" text-anchor="end">reviews evidence</text>
+<rect class="upanel" x="40" y="560" width="320" height="515"/>
+<text class="ltitle" x="60" y="596">EDUTASK Class Model</text>
+<text class="lsub" x="60" y="616">Faculty task management — domain classes</text>
+<line class="urule" x1="60" y1="632" x2="340" y2="632"/>
+<text class="lcap" x="60" y="654">RECORD FAMILIES</text>
+<rect class="lsw a" x="60" y="670" width="12" height="12"/>
+<text class="lrow" x="82" y="680">Identity &amp; authorization</text>
+<rect class="lsw b" x="60" y="692" width="12" height="12"/>
+<text class="lrow" x="82" y="702">Task lifecycle</text>
+<rect class="lsw c" x="60" y="714" width="12" height="12"/>
+<text class="lrow" x="82" y="724">Evidence &amp; validation</text>
+<rect class="lsw d" x="60" y="736" width="12" height="12"/>
+<text class="lrow" x="82" y="746">Communication &amp; audit</text>
+<line class="urule" x1="60" y1="772" x2="340" y2="772"/>
+<text class="lcap" x="60" y="794">ATTRIBUTE MARKERS</text>
+<text class="lkey" x="60" y="814">«PK»</text>
+<text class="lrow" x="120" y="814">primary key</text>
+<text class="lkey" x="60" y="832">«FK»</text>
+<text class="lrow" x="120" y="832">foreign key</text>
+<text class="lkey" x="60" y="850">«UQ»</text>
+<text class="lrow" x="120" y="850">unique</text>
+<text class="lkey" x="60" y="868">/</text>
+<text class="lrow" x="120" y="868">derived, not stored</text>
+<line class="urule" x1="60" y1="898" x2="340" y2="898"/>
+<text class="lcap" x="60" y="920">NOTES</text>
+<text class="lnote" x="60" y="940">Each class maps to one table in the SQL Server</text>
+<text class="lnote" x="60" y="955">schema (dbo); types are shown as C# equivalents.</text>
+<text class="lnote" x="60" y="985">AuthorType, RecipientType and ReaderType hold</text>
+<text class="lnote" x="60" y="1000">either User or Teacher. The actor is polymorphic,</text>
+<text class="lnote" x="60" y="1015">so no foreign key is declared on those pairs.</text>
+<text class="lnote" x="60" y="1045">Inbox entries are derived at query time from</text>
+<text class="lnote" x="60" y="1060">assignments, proofs and comments; only read and</text>
+<text class="lnote" x="60" y="1075">hidden state is stored.</text>
+<text class="lnote" x="60" y="1105">CompletionStatus ∈ { Pending, Acknowledged,</text>
+<text class="lnote" x="60" y="1120">For Validation, Needs Revision, Completed }.</text>
+</svg>

@@ -1,38 +1,299 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <?xaml-comp compile="true" ?>
-<ResourceDictionary 
+<ResourceDictionary
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
-    <!-- Note: For Android please see also Platforms\Android\Resources\values\colors.xml -->
+    <!--
+        ===================================================================
+        EduTask design tokens
+        ===================================================================
 
-    <Color x:Key="Primary">#512BD4</Color>
-    <Color x:Key="PrimaryDark">#ac99ea</Color>
-    <Color x:Key="PrimaryDarkText">#242424</Color>
-    <Color x:Key="Secondary">#DFD8F7</Color>
-    <Color x:Key="SecondaryDarkText">#9880e5</Color>
-    <Color x:Key="Tertiary">#2B0B98</Color>
+        Every colour the UI is allowed to use lives here. Pages reference tokens
+        by role (TextPrimary, SurfaceMuted, StatusDanger) rather than by hex, so
+        a palette change happens in one file instead of 28.
 
-    <Color x:Key="White">White</Color>
-    <Color x:Key="Black">Black</Color>
+        THE PALETTE IS THE LOGO.
+
+        Both brand colours are sampled straight out of Resources/Images/loginlogo.png
+        rather than approximated by eye:
+
+            #111C3A   the EDUTASK wordmark navy   (6,941 px — the dominant ink)
+            #00FF36   the checkmark green         (the one accent the mark carries)
+
+        Those two anchor everything below. Navy carries structure — headers,
+        primary actions, active navigation. Green carries completion — the mark
+        is literally a check, so green means "done / approved / good" and is
+        never spent on ordinary links. That separation matters in a task app:
+        a green "View task" link would read as "this task is finished".
+        Interactive text stays blue, but a blue pulled to the navy's own hue
+        (~222 deg) so it reads as family rather than as stock Material blue.
+
+        ACCESSIBILITY
+
+        Every foreground/background pair this file can produce was measured
+        against WCAG 2.1: body text >= 4.5:1, non-text UI >= 3.0:1. The raw
+        #00FF36 is only 1.37:1 on white — unusable as text — so it is reserved
+        for dark navy surfaces (12.28:1 there) and the light-surface green steps
+        are darkened to Green600/700. Do not put BrandGreen on a white card.
+
+        Note: For Android please see also Platforms\Android\Resources\values\colors.xml
+    -->
+
+    <!-- ===================================================================
+         BRAND — the logo navy. Headers, primary actions, active navigation.
+         Brand800 is the wordmark colour exactly; the rest are its ramp.
+         =================================================================== -->
+    <Color x:Key="Brand900">#0A1226</Color>
+    <Color x:Key="Brand800">#111C3A</Color>
+    <Color x:Key="Brand700">#1B2A50</Color>
+    <Color x:Key="Brand600">#243766</Color>
+    <Color x:Key="Brand500">#33456F</Color>
+    <Color x:Key="Brand200">#C2CADB</Color>
+    <Color x:Key="Brand100">#DEE3EE</Color>
+    <Color x:Key="Brand50">#EEF1F7</Color>
+
+    <!-- ===================================================================
+         BRAND GREEN — the logo checkmark. Completion, approval, success.
+
+         BrandGreen is the untouched logo value and belongs on navy only.
+         Green600/700 are its accessible steps for light surfaces.
+         =================================================================== -->
+    <Color x:Key="BrandGreen">#00FF36</Color>
+    <Color x:Key="Green400">#3DDC6B</Color>
+    <Color x:Key="Green500">#16A34A</Color>
+    <Color x:Key="Green600">#0F7A33</Color>
+    <Color x:Key="Green700">#0B6B2B</Color>
+    <Color x:Key="Green100">#E8F8ED</Color>
+    <Color x:Key="Green200">#BFE8CD</Color>
+
+    <!-- ===================================================================
+         SLATE — secondary chrome. App bars, secondary buttons, muted fills.
+         Pulled to the navy hue so greys sit under the brand, not beside it.
+         =================================================================== -->
+    <Color x:Key="Slate700">#3B475C</Color>
+    <Color x:Key="Slate600">#47536A</Color>
+    <Color x:Key="Slate500">#55637A</Color>
+    <Color x:Key="Slate400">#657085</Color>
+    <Color x:Key="Slate300">#7F8A9D</Color>
+    <Color x:Key="Slate200">#B4BDCB</Color>
+    <Color x:Key="Slate100">#DBE1EA</Color>
+
+    <!-- ===================================================================
+         ACCENT — interactive text: links, inline actions, "View task".
+         Deliberately blue, not green: see the note at the top of this file.
+         =================================================================== -->
+    <Color x:Key="Accent600">#1A46C0</Color>
+    <Color x:Key="Accent500">#1D4ED8</Color>
+    <Color x:Key="Accent200">#C3D6FA</Color>
+    <Color x:Key="Accent100">#E9F0FE</Color>
+    <Color x:Key="CalendarAccent">#0D8EF5</Color>
+
+    <!-- Fill for a selected option in a list or dropdown. -->
+    <Color x:Key="SelectionSurface">#DCE7FD</Color>
+
+    <!-- ===================================================================
+         TEXT — one hierarchy, four steps. Replaces the six near-identical
+         darks that were scattered across the views (#243447 #202936 #2C3E50
+         #374151 #111827 #172033).
+
+         TextPrimary is the wordmark navy lightened just enough to stay
+         comfortable at body size; the hierarchy below it is neutral-navy so
+         nothing on a page fights the header.
+         =================================================================== -->
+    <Color x:Key="TextPrimary">#1B2436</Color>
+    <Color x:Key="TextSecondary">#55637A</Color>
+    <Color x:Key="TextTertiary">#657085</Color>
+    <Color x:Key="TextDisabled">#9AA3B2</Color>
+    <Color x:Key="TextInverse">#FFFFFF</Color>
+    <Color x:Key="TextInverseMuted">#B9C3D6</Color>
+
+    <!-- ===================================================================
+         SURFACE — page and container backgrounds. Faintly navy-tinted rather
+         than pure neutral grey, so cards feel part of the same system.
+         =================================================================== -->
+    <Color x:Key="SurfaceBase">#FFFFFF</Color>
+    <Color x:Key="SurfaceMuted">#F4F6FA</Color>
+    <Color x:Key="SurfaceSubtle">#F2F4F8</Color>
+    <Color x:Key="SurfaceSunken">#EBEFF6</Color>
+    <Color x:Key="SurfaceHover">#F0F3F8</Color>
+    <Color x:Key="SurfacePressed">#E5EAF2</Color>
+
+    <!-- Brand-tinted surface for headers/hero areas that sit on light pages. -->
+    <Color x:Key="SurfaceBrand">#EEF1F7</Color>
+
+    <!-- Modal scrim. Dialog pages sit on this. -->
+    <Color x:Key="Scrim">#99000000</Color>
+    <Color x:Key="ScrimLight">#66000000</Color>
+
+    <!-- Full-bleed media viewer backdrop. Deliberately neutral black rather than
+         brand navy: proof photos are judged against it, and a tinted surround
+         shifts how their colours read. -->
+    <Color x:Key="ViewerBackdrop">#000000</Color>
+
+    <!-- ===================================================================
+         SHADOW — the three elevation levels the style system describes:
+         cards sit low, floating actions sit raised, modals sit highest.
+
+         There used to be five different shadow tints spread across the styles
+         and the code (#1A0E1B3D #33000000 #40000000 #30000000), and the first
+         of them still encoded the retired navy.
+         =================================================================== -->
+    <Color x:Key="ShadowAmbient">#1A111C3A</Color>
+    <Color x:Key="ShadowRaised">#40000000</Color>
+    <Color x:Key="ShadowOverlay">#33000000</Color>
+
+    <!-- ===================================================================
+         IDENTITY — categorical colours that give a person or a subtask a
+         stable visual identity in a list.
+
+         These are not decorative: initials are drawn on top of them in white,
+         so every step clears 4.5:1 against white. The previous set was the
+         stock "flat UI" palette and failed that on seven of its eight colours
+         — white on its amber measured 2.15:1.
+         =================================================================== -->
+    <Color x:Key="Identity1">#3A56B4</Color>
+    <Color x:Key="Identity2">#6B46C1</Color>
+    <Color x:Key="Identity3">#A3327A</Color>
+    <Color x:Key="Identity4">#B3261E</Color>
+    <Color x:Key="Identity5">#B45309</Color>
+    <Color x:Key="Identity6">#0F7A33</Color>
+    <Color x:Key="Identity7">#0E6E78</Color>
+    <Color x:Key="Identity8">#55637A</Color>
+
+    <!-- ===================================================================
+         BORDER — three weights.
+         =================================================================== -->
+    <Color x:Key="BorderStrong">#C8D0DC</Color>
+    <Color x:Key="BorderDefault">#D6DDE7</Color>
+    <Color x:Key="BorderSubtle">#E4E9F0</Color>
+
+    <!-- ===================================================================
+         STATUS — each pairs a foreground with a tinted surface for badges.
+         Success is the brand green: the logo's check and a completed task are
+         the same idea, so they are the same colour.
+         =================================================================== -->
+    <Color x:Key="StatusSuccess">#0F7A33</Color>
+    <Color x:Key="StatusSuccessSurface">#E8F8ED</Color>
+    <Color x:Key="StatusSuccessBorder">#BFE8CD</Color>
+
+    <Color x:Key="StatusDanger">#C62828</Color>
+    <Color x:Key="StatusDangerSurface">#FDECEC</Color>
+    <Color x:Key="StatusDangerBorder">#F3C6C6</Color>
+
+    <Color x:Key="StatusWarning">#B45309</Color>
+    <Color x:Key="StatusWarningSurface">#FEF4E4</Color>
+    <Color x:Key="StatusWarningBorder">#F3D9A9</Color>
+
+    <Color x:Key="StatusInfo">#1D4ED8</Color>
+    <Color x:Key="StatusInfoSurface">#E9F0FE</Color>
+    <Color x:Key="StatusInfoBorder">#C3D6FA</Color>
+
+    <Color x:Key="StatusNeutral">#55637A</Color>
+    <Color x:Key="StatusNeutralSurface">#F0F3F8</Color>
+    <Color x:Key="StatusNeutralBorder">#DBE1EA</Color>
+
+    <!-- "For Validation" / "Proof submitted" — awaiting a human decision.
+         Deliberately not green or amber: the work is neither done nor late. -->
+    <Color x:Key="StatusValidation">#5B45B8</Color>
+    <Color x:Key="StatusValidationSurface">#EEEBFA</Color>
+    <Color x:Key="StatusValidationBorder">#CCC4EC</Color>
+
+    <!-- ===================================================================
+         PRIORITY — deliberately distinct from status so a High-priority
+         task is never mistaken for an overdue one.
+         =================================================================== -->
+    <Color x:Key="PriorityHigh">#C026D3</Color>
+    <Color x:Key="PriorityMedium">#0891B2</Color>
+    <Color x:Key="PriorityLow">#0F766E</Color>
+
+    <!-- ===================================================================
+         CHART — fills for large coloured areas: pie slices, bar segments.
+
+         DELIBERATELY NOT THE STATUS TOKENS.
+
+         Status is tuned as a *foreground*. Each of those three clears 4.5:1
+         on white so it can be read as text inside a badge, and that forces
+         all of them dark and low-chroma. Poured into a 140dp circle the
+         choice backfires: StatusWarning (#B45309) and StatusDanger
+         (#C62828) measure 1.12:1 against each other and sit 26 degrees
+         apart in hue, so the amber and red wedges fuse into one dark mass
+         and the amber reads brown rather than orange.
+
+         A fill has the opposite requirement. Nothing is read on top of it,
+         so it needs 3:1 against the page (WCAG 1.4.11) and — the part that
+         actually decides whether the chart is legible — distance from its
+         neighbours. These keep the status meaning (green done, amber in
+         progress, red late) with far more room between them:
+
+             ChartCompleted  #16A34A   hue 145 deg   3.30:1 on white
+             ChartOngoing    #D97706   hue  32 deg   3.18:1 on white
+             ChartOverdue    #C62828   hue   0 deg   5.62:1 on white
+
+         Amber against red is now 1.77:1 rather than 1.12:1, and amber sits
+         113 degrees of hue from the green. Luminance alone still does not
+         separate every pair — green and amber are close — which is why
+         every slice boundary carries a ChartGap wedge, and why the legend
+         repeats each slice as a label and a count. Colour is never the only
+         encoding here: these three hues are the classic worst case for
+         red/green colour blindness.
+
+         ChartGap must match whatever surface is behind the chart, so the
+         gap reads as a gap and not as a fourth category. Profile draws on
+         the bare page, so it is SurfaceBase; move a chart onto a tinted
+         card and this has to move with it.
+         =================================================================== -->
+    <Color x:Key="ChartCompleted">#16A34A</Color>
+    <Color x:Key="ChartOngoing">#D97706</Color>
+    <Color x:Key="ChartOverdue">#C62828</Color>
+
+    <!-- No tasks at all. A flat neutral disc reads as "nothing here yet"
+         where three empty slices read as a chart that failed to load. -->
+    <Color x:Key="ChartEmpty">#E4E9F0</Color>
+    <Color x:Key="ChartGap">#FFFFFF</Color>
+
+    <!-- ===================================================================
+         FOCUS — visible keyboard focus ring (WCAG 2.4.7).
+         =================================================================== -->
+    <Color x:Key="FocusRing">#1D4ED8</Color>
+    <Color x:Key="FocusRingSurface">#E2EBFD</Color>
+
+    <!-- ===================================================================
+         Framework aliases. MAUI's default control templates and the
+         platform projects resolve these names, so they are remapped onto
+         the EduTask palette instead of the template purple.
+         =================================================================== -->
+    <Color x:Key="Primary">#111C3A</Color>
+    <Color x:Key="PrimaryDark">#0A1226</Color>
+    <Color x:Key="PrimaryDarkText">#1B2436</Color>
+    <Color x:Key="Secondary">#55637A</Color>
+    <Color x:Key="SecondaryDarkText">#7F8A9D</Color>
+    <Color x:Key="Tertiary">#1D4ED8</Color>
+
+    <Color x:Key="White">#FFFFFF</Color>
+    <Color x:Key="Black">#000000</Color>
     <Color x:Key="Magenta">#D600AA</Color>
-    <Color x:Key="MidnightBlue">#190649</Color>
+    <Color x:Key="MidnightBlue">#111C3A</Color>
     <Color x:Key="OffBlack">#1f1f1f</Color>
 
-    <Color x:Key="Gray100">#E1E1E1</Color>
-    <Color x:Key="Gray200">#C8C8C8</Color>
-    <Color x:Key="Gray300">#ACACAC</Color>
-    <Color x:Key="Gray400">#919191</Color>
-    <Color x:Key="Gray500">#6E6E6E</Color>
-    <Color x:Key="Gray600">#404040</Color>
-    <Color x:Key="Gray900">#212121</Color>
+    <Color x:Key="Gray100">#F2F4F8</Color>
+    <Color x:Key="Gray200">#E4E9F0</Color>
+    <Color x:Key="Gray300">#C8D0DC</Color>
+    <Color x:Key="Gray400">#9AA3B2</Color>
+    <Color x:Key="Gray500">#657085</Color>
+    <Color x:Key="Gray600">#55637A</Color>
+    <Color x:Key="Gray900">#1B2436</Color>
     <Color x:Key="Gray950">#141414</Color>
 
+    <!-- ===================================================================
+         BRUSHES
+         =================================================================== -->
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
     <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>
     <SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>
     <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource White}"/>
     <SolidColorBrush x:Key="BlackBrush" Color="{StaticResource Black}"/>
+    <SolidColorBrush x:Key="BrandGreenBrush" Color="{StaticResource BrandGreen}"/>
 
     <SolidColorBrush x:Key="Gray100Brush" Color="{StaticResource Gray100}"/>
     <SolidColorBrush x:Key="Gray200Brush" Color="{StaticResource Gray200}"/>
@@ -42,4 +303,23 @@
     <SolidColorBrush x:Key="Gray600Brush" Color="{StaticResource Gray600}"/>
     <SolidColorBrush x:Key="Gray900Brush" Color="{StaticResource Gray900}"/>
     <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}"/>
+
+    <SolidColorBrush x:Key="BorderSubtleBrush" Color="{StaticResource BorderSubtle}"/>
+    <SolidColorBrush x:Key="BorderDefaultBrush" Color="{StaticResource BorderDefault}"/>
+    <SolidColorBrush x:Key="BorderStrongBrush" Color="{StaticResource BorderStrong}"/>
+    <SolidColorBrush x:Key="FocusRingBrush" Color="{StaticResource FocusRing}"/>
+
+    <!-- ===================================================================
+         GRADIENTS — used sparingly: auth backdrop and app-bar depth.
+         =================================================================== -->
+    <LinearGradientBrush x:Key="BrandGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="{StaticResource Brand700}" Offset="0.0"/>
+        <GradientStop Color="{StaticResource Brand900}" Offset="1.0"/>
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="SlateGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="{StaticResource Slate500}" Offset="0.0"/>
+        <GradientStop Color="{StaticResource Slate600}" Offset="1.0"/>
+    </LinearGradientBrush>
+
 </ResourceDictionary>

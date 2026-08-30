@@ -1,11 +1,13 @@
 using System.Collections.ObjectModel;
+using EDUTASK_1._1.Helpers;
+using EDUTASK_1._1.Views.Base;
 using System.ComponentModel;
 using EDUTASK_1._1.Models;
 using EDUTASK_1._1.Services;
 
 namespace EDUTASK_1._1.Views;
 
-public partial class SubtaskProofHistoryPage : ContentPage
+public partial class SubtaskProofHistoryPage : EduTaskPage
 {
     private readonly DatabaseService _db = new();
     private readonly SubtaskDisplayItem _subtask;
@@ -52,7 +54,7 @@ public partial class SubtaskProofHistoryPage : ContentPage
     }
 
     private async void OnCloseClicked(object sender, EventArgs e) =>
-        await Navigation.PopModalAsync();
+        await Navigation.PopModalAsync(false);
 
     private async void OnViewProofTapped(object sender, TappedEventArgs e)
     {
@@ -171,6 +173,8 @@ public sealed class ProofHistoryRowViewModel : INotifyPropertyChanged
         AttemptNumber = item.AttemptNumber;
         FileName = item.FileName;
         SubmittedAtDisplay = item.SubmittedAtDisplay;
+        SubmittedDateDisplay = item.SubmittedDateDisplay;
+        SubmittedTimeDisplay = item.SubmittedTimeDisplay;
         _validationStatus = item.ValidationStatus;
         _canReview = canReview;
     }
@@ -180,15 +184,17 @@ public sealed class ProofHistoryRowViewModel : INotifyPropertyChanged
     public string AttemptDisplay => AttemptNumber.ToString();
     public string FileName { get; }
     public string SubmittedAtDisplay { get; }
+    public string SubmittedDateDisplay { get; }
+    public string SubmittedTimeDisplay { get; }
     public string ValidationStatus => _validationStatus;
     public bool CanReview => _canReview;
     public Color StatusColor => _validationStatus switch
     {
-        "Approved" => Color.FromArgb("#16803A"),
-        "Returned" => Color.FromArgb("#DC2626"),
-        "Pending" => Color.FromArgb("#D97706"),
-        "Ready" => Color.FromArgb("#2563EB"),
-        _ => Color.FromArgb("#6B7280")
+        "Approved" => AppColors.StatusSuccess,
+        "Returned" => AppColors.StatusDanger,
+        "Pending" => AppColors.StatusWarning,
+        "Ready" => AppColors.Accent500,
+        _ => AppColors.TextTertiary
     };
 
     public void CompleteReview(string status)

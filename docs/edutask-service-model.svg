@@ -1,0 +1,153 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 620" width="1400" height="620" role="img">
+<style>
+  text{font-family:"IBM Plex Sans","Segoe UI",Arial,sans-serif}
+  .ubox{fill:#ffffff;stroke:#c9d4e2;stroke-width:1.1}
+  .upanel{fill:#fafbfd;stroke:#c9d4e2;stroke-width:1.1}
+  .urule{stroke:#c9d4e2;stroke-width:1}
+  .uhd.a{fill:#efeafb}.uhd.b{fill:#e7effc}.uhd.c{fill:#e2f2f0}.uhd.d{fill:#f8eee0}.uhd.s{fill:#eef1f6}
+  .unm{font-size:14px;font-weight:600}
+  .unm.a{fill:#5B3BB4}.unm.b{fill:#1a55b8}.unm.c{fill:#0b6b64}.unm.d{fill:#955614}.unm.s{fill:#3c485e}
+  .ust{font-size:9px;fill:#64748b;letter-spacing:.04em}
+  .uat{font-family:"IBM Plex Mono",Consolas,monospace;font-size:11px;fill:#33465f}
+  .uat.op{fill:#1f3348}
+  .umk{font-size:8.5px;fill:#7c8aa0;letter-spacing:.03em}
+  .uln{stroke:#7a8ba3;stroke-width:1.2;fill:none}
+  .uln.dash{stroke-dasharray:5 4}
+  .uarrowhead{fill:#7a8ba3}
+  .ulbl{font-size:10.5px;fill:#64748b}
+  .umult{font-family:"IBM Plex Mono",Consolas,monospace;font-size:10px;fill:#33465f}
+  .ltitle{font-size:18px;font-weight:600;fill:#131c2a}
+  .lsub{font-size:11px;fill:#64748b}
+  .lcap{font-size:9px;font-weight:600;fill:#64748b;letter-spacing:.09em}
+  .lrow{font-size:11px;fill:#33465f}
+  .lkey{font-family:"IBM Plex Mono",Consolas,monospace;font-size:10px;fill:#33465f}
+  .lnote{font-size:10.5px;fill:#5b6b81}
+  .lsw.a{fill:#6B4CC4}.lsw.b{fill:#1F62C9}.lsw.c{fill:#0E7C74}.lsw.d{fill:#A9631B}
+</style>
+<defs><marker id="uarrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="uarrowhead" d="M0,1.5 L9,5 L0,8.5 z"/></marker></defs>
+<rect x="0" y="0" width="1400" height="620" fill="#ffffff"/>
+<g>
+<rect class="ubox" x="40" y="60" width="300" height="264"/>
+<rect class="uhd s" x="40" y="60" width="300" height="34"/>
+<text class="ust" x="190" y="74" text-anchor="middle">«static»</text>
+<text class="unm s" x="190" y="88" text-anchor="middle">UserSessionService</text>
+<line class="urule" x1="40" y1="94" x2="340" y2="94"/>
+<text class="uat" x="54" y="114">+ CurrentUser : User?</text>
+<text class="uat" x="54" y="131">+ CurrentUserId : int</text>
+<text class="uat" x="54" y="148">+ CurrentRole : string</text>
+<text class="uat" x="54" y="165">+ IsDirector : bool</text>
+<text class="uat" x="54" y="182">+ IsStaff : bool</text>
+<text class="uat" x="54" y="199">+ CanCreateTasks : bool</text>
+<text class="uat" x="54" y="216">+ CanDeleteTasks : bool</text>
+<text class="uat" x="54" y="233">+ CanApproveCompletion : bool</text>
+<text class="uat" x="54" y="250">+ CanRequestRevision : bool</text>
+<line class="urule" x1="40" y1="259" x2="340" y2="259"/>
+<text class="uat op" x="54" y="279">+ GetCurrentUserAsync() : User?</text>
+<text class="uat op" x="54" y="296">+ SetCurrentUser(user) : void</text>
+<text class="uat op" x="54" y="313">+ Clear() : void</text>
+</g>
+<g>
+<rect class="ubox" x="40" y="400" width="300" height="111"/>
+<rect class="uhd s" x="40" y="400" width="300" height="34"/>
+<text class="ust" x="190" y="414" text-anchor="middle">«static»</text>
+<text class="unm s" x="190" y="428" text-anchor="middle">TeacherSessionService</text>
+<line class="urule" x1="40" y1="434" x2="340" y2="434"/>
+<text class="uat" x="54" y="454">+ CurrentTeacher : Teachers?</text>
+<line class="urule" x1="40" y1="463" x2="340" y2="463"/>
+<text class="uat op" x="54" y="483">+ SetCurrentTeacher(t) : void</text>
+<text class="uat op" x="54" y="500">+ Clear() : void</text>
+</g>
+<g>
+<rect class="ubox" x="380" y="60" width="300" height="162"/>
+<rect class="uhd s" x="380" y="60" width="300" height="34"/>
+<text class="ust" x="530" y="74" text-anchor="middle">«static»</text>
+<text class="unm s" x="530" y="88" text-anchor="middle">SessionStore</text>
+<line class="urule" x1="380" y1="94" x2="680" y2="94"/>
+<text class="uat" x="394" y="114">+ CurrentUser : User?</text>
+<text class="uat" x="394" y="131">+ CurrentTeacher : Teachers?</text>
+<line class="urule" x1="380" y1="140" x2="680" y2="140"/>
+<text class="uat op" x="394" y="160">+ SetCurrentUser(user) : void</text>
+<text class="uat op" x="394" y="177">+ SetCurrentTeacher(t) : void</text>
+<text class="uat op" x="394" y="194">+ ClearUser() : void</text>
+<text class="uat op" x="394" y="211">+ ClearTeacher() : void</text>
+</g>
+<g>
+<rect class="ubox" x="720" y="60" width="300" height="383"/>
+<rect class="uhd s" x="720" y="60" width="300" height="34"/>
+<text class="unm s" x="870" y="82" text-anchor="middle">DatabaseService</text>
+<line class="urule" x1="720" y1="94" x2="1020" y2="94"/>
+<text class="uat" x="734" y="114">- connectionString : string</text>
+<line class="urule" x1="720" y1="123" x2="1020" y2="123"/>
+<text class="uat op" x="734" y="143">+ AuthenticateAsync() : AuthResult</text>
+<text class="uat op" x="734" y="160">+ RegisterAccountAsync() : bool</text>
+<text class="uat op" x="734" y="177">+ ApproveAccountAsync() : bool</text>
+<text class="uat op" x="734" y="194">+ SetAccountDisabledAsync() : bool</text>
+<text class="uat op" x="734" y="211">+ PromoteStaffToDirectorAsync() : bool</text>
+<text class="uat op" x="734" y="228">+ ResetPasswordAsync() : bool</text>
+<text class="uat op" x="734" y="245">+ CreateTaskWithAssignmentsAsync()</text>
+<text class="uat op" x="734" y="262">+ UpdateTaskWithAssignmentAsync()</text>
+<text class="uat op" x="734" y="279">+ AcknowledgeTaskAsync() : bool</text>
+<text class="uat op" x="734" y="296">+ ValidateTaskAsync() : bool</text>
+<text class="uat op" x="734" y="313">+ RejectTaskCompletionAsync() : bool</text>
+<text class="uat op" x="734" y="330">+ DeleteTaskAsync() : bool</text>
+<text class="uat op" x="734" y="347">+ GetTaskSubtasksAsync() : List</text>
+<text class="uat op" x="734" y="364">+ UploadSubtaskProofAsync() : bool</text>
+<text class="uat op" x="734" y="381">+ ReviewSubtaskProofAsync() : bool</text>
+<text class="uat op" x="734" y="398">+ GetSubtaskProofHistoryAsync() : List</text>
+<text class="uat op" x="734" y="415">+ AddTaskCommentAsync() : bool</text>
+<text class="uat op" x="734" y="432">+ GetRecentActivityLogAsync() : List</text>
+</g>
+<g>
+<rect class="ubox" x="1060" y="60" width="300" height="111"/>
+<rect class="uhd s" x="1060" y="60" width="300" height="34"/>
+<text class="ust" x="1210" y="74" text-anchor="middle">«static»</text>
+<text class="unm s" x="1210" y="88" text-anchor="middle">CredentialHashService</text>
+<line class="urule" x1="1060" y1="94" x2="1360" y2="94"/>
+<line class="urule" x1="1060" y1="106" x2="1360" y2="106"/>
+<text class="uat op" x="1074" y="126">+ Hash(value) : string</text>
+<text class="uat op" x="1074" y="143">+ Verify(value, stored) : bool</text>
+<text class="uat op" x="1074" y="160">+ NormalizeAnswer(a) : string</text>
+</g>
+<g>
+<rect class="ubox" x="1060" y="230" width="300" height="128"/>
+<rect class="uhd s" x="1060" y="230" width="300" height="34"/>
+<text class="ust" x="1210" y="244" text-anchor="middle">«SQL Server»</text>
+<text class="unm s" x="1210" y="258" text-anchor="middle">Stored procedures</text>
+<line class="urule" x1="1060" y1="264" x2="1360" y2="264"/>
+<line class="urule" x1="1060" y1="276" x2="1360" y2="276"/>
+<text class="uat op" x="1074" y="296">+ AssertActiveUserRole()</text>
+<text class="uat op" x="1074" y="313">+ ApproveTaskCompletion()</text>
+<text class="uat op" x="1074" y="330">+ RequestTaskRevision()</text>
+<text class="uat op" x="1074" y="347">+ ReopenTask()</text>
+</g>
+<g>
+<rect class="ubox" x="1060" y="430" width="300" height="111"/>
+<rect class="uhd s" x="1060" y="430" width="300" height="34"/>
+<text class="unm s" x="1210" y="452" text-anchor="middle">NotificationDatabaseExtensions</text>
+<line class="urule" x1="1060" y1="464" x2="1360" y2="464"/>
+<line class="urule" x1="1060" y1="476" x2="1360" y2="476"/>
+<text class="uat op" x="1074" y="496">+ GetNotificationsAsync() : List</text>
+<text class="uat op" x="1074" y="513">+ MarkNotificationReadAsync() : void</text>
+<text class="uat op" x="1074" y="530">+ HideNotificationsAsync() : void</text>
+</g>
+<polyline class="uln dash" points="340,150 380,150" marker-end="url(#uarrow)"/>
+<text class="ulbl" x="360" y="142" text-anchor="middle">holds</text>
+<polyline class="uln dash" points="190,400 190,370 500,370 500,222" marker-end="url(#uarrow)"/>
+<text class="ulbl" x="330" y="362" text-anchor="middle">holds</text>
+<polyline class="uln dash" points="340,240 700,240 700,150 720,150" marker-end="url(#uarrow)"/>
+<text class="ulbl" x="520" y="232" text-anchor="middle">loads current account</text>
+<polyline class="uln dash" points="1020,120 1060,120" marker-end="url(#uarrow)"/>
+<text class="ulbl" x="1040" y="112" text-anchor="middle">hashes</text>
+<polyline class="uln dash" points="1020,300 1060,300" marker-end="url(#uarrow)"/>
+<text class="ulbl" x="1040" y="292" text-anchor="middle">executes</text>
+<polyline class="uln dash" points="900,443 900,470 1060,470" marker-end="url(#uarrow)"/>
+<text class="ulbl" x="980" y="462" text-anchor="middle">extends</text>
+<rect class="upanel" x="380" y="400" width="300" height="150"/>
+<text class="lcap" x="400" y="430">READING THIS FIGURE</text>
+<text class="lnote" x="400" y="450">Domain classes in Figure 1 hold no behaviour of</text>
+<text class="lnote" x="400" y="465">their own. Every rule — who may create, approve</text>
+<text class="lnote" x="400" y="480">or return a task — is enforced here and in the four</text>
+<text class="lnote" x="400" y="495">stored procedures, which re-check the acting</text>
+<text class="lnote" x="400" y="510">account role before writing.</text>
+<text class="lnote" x="400" y="540">Dashed arrows read as «use» dependencies.</text>
+</svg>

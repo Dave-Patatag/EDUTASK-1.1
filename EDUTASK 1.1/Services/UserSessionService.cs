@@ -6,17 +6,15 @@ public static class UserSessionService
 {
     public const int FixedUserId = 1;
 
-    public static User? CurrentUser { get; private set; }
+    public static User? CurrentUser => SessionStore.CurrentUser;
     public static int CurrentUserId => CurrentUser?.UserID
         ?? throw new InvalidOperationException("No Director or Staff account is signed in.");
     public static string CurrentRole => CurrentUser?.RoleName ?? string.Empty;
     public static bool IsDirector => CurrentRole == "Director";
     public static bool IsStaff => CurrentRole == "Staff";
-    public static bool CanCreateTasks => IsDirector || IsStaff;
     public static bool CanDeleteTasks => IsDirector;
     public static bool CanReviewSubtaskProof => IsDirector || IsStaff;
     public static bool CanApproveCompletion => IsDirector;
-    public static bool CanRequestRevision => IsDirector || IsStaff;
 
     public static async Task<User?> GetCurrentUserAsync(
         bool forceRefresh = false,
@@ -28,9 +26,13 @@ public static class UserSessionService
             return null;
 
         var database = new DatabaseService();
-        CurrentUser = await database.GetUserByIdAsync(CurrentUser.UserID, cancellationToken);
-        if (CurrentUser is { IsActive: false })
-            CurrentUser = null;
+        User? refreshed = await database.GetUserByIdAsync(CurrentUser.UserID, cancellationToken);
+        if (refreshed is { IsActive: false })
+            refreshed = null;
+        if (refreshed is null)
+            SessionStore.ClearUser();
+        else
+            SessionStore.SetCurrentUser(refreshed);
         return CurrentUser;
     }
 
@@ -38,8 +40,8 @@ public static class UserSessionService
     {
         if (!user.IsActive || user.RoleName is not ("Director" or "Staff"))
             throw new InvalidOperationException("Only an active Director or Staff account can start this session.");
-        CurrentUser = user;
+        SessionStore.SetCurrentUser(user);
     }
 
-    public static void Clear() => CurrentUser = null;
+    public static void Clear() => SessionStore.ClearUser();
 }

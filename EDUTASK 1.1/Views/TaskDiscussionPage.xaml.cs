@@ -1,10 +1,12 @@
 using EDUTASK_1._1.Services;
+using EDUTASK_1._1.Views.Base;
+using System.Data;
 using TaskCommentItem = EDUTASK_1._1.Models.TaskCommentItem;
 using SubtaskDisplayItem = EDUTASK_1._1.Models.SubtaskDisplayItem;
 
 namespace EDUTASK_1._1.Views;
 
-public partial class TaskDiscussionPage : ContentPage
+public partial class TaskDiscussionPage : EduTaskPage
 {
     private readonly DatabaseService _database = new();
     private readonly int _taskID;
@@ -48,6 +50,33 @@ public partial class TaskDiscussionPage : ContentPage
             TaskTitleLabel.Text = taskTable.Rows.Count == 0
                 ? "Task"
                 : taskTable.Rows[0]["Title"]?.ToString() ?? "Task";
+            string[] teacherNames = taskTable.AsEnumerable()
+                .Select(row => row["TeacherName"]?.ToString()?.Trim())
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Cast<string>()
+                .ToArray();
+            bool teacherView = string.Equals(_authorType, "Teacher", StringComparison.OrdinalIgnoreCase);
+            DataRow? firstTaskRow = taskTable.Rows.Count > 0 ? taskTable.Rows[0] : null;
+            string participantName;
+
+            if (teacherView)
+            {
+                participantName = firstTaskRow?["CreatorName"]?.ToString()?.Trim() ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(participantName))
+                    participantName = "Director / Staff";
+            }
+            else
+            {
+                participantName = teacherNames.Length switch
+                {
+                    0 => "No teacher assigned",
+                    1 => teacherNames[0],
+                    _ => $"{teacherNames[0]} +{teacherNames.Length - 1}"
+                };
+            }
+
+            ParticipantNameLabel.Text = participantName;
             await _database.MarkTaskCommentsReadAsync(_subtaskID, _authorType, _authorID);
             var comments = await _database.GetTaskCommentsAsync(_taskID, _subtaskID);
             int returnSequence = 0;
@@ -75,7 +104,7 @@ public partial class TaskDiscussionPage : ContentPage
     private async void OnRefreshing(object sender, EventArgs e) => await LoadAsync();
 
     private async void OnBackClicked(object sender, EventArgs e) =>
-        await Navigation.PopAsync();
+        await Navigation.PopModalAsync(false);
 
     private async void OnCommentTapped(object sender, TappedEventArgs e)
     {

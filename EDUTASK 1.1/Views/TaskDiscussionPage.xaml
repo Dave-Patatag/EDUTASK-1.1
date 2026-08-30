@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<base:EduTaskPage xmlns:base="clr-namespace:EDUTASK_1._1.Views.Base" xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="EDUTASK_1._1.Views.TaskDiscussionPage"
              NavigationPage.HasNavigationBar="False"
              Shell.NavBarIsVisible="False"
-             BackgroundColor="#F7F8FA">
+             BackgroundColor="{StaticResource SurfaceMuted}">
 
     <Grid RowDefinitions="Auto,*,Auto" RowSpacing="0">
         <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="14"
-              Padding="20,17" BackgroundColor="#5D6D7E">
-            <ImageButton x:Name="BackButton" Source="backicon.png" Clicked="OnBackClicked" WidthRequest="34" HeightRequest="34" Padding="7" CornerRadius="8" BackgroundColor="White" SemanticProperties.Description="Go back"/>
+              Padding="20,17" BackgroundColor="{StaticResource Brand800}">
+            <ImageButton x:Name="BackButton" Source="whitebackicon.png" Clicked="OnBackClicked" WidthRequest="34" HeightRequest="34" Padding="7" CornerRadius="8" BackgroundColor="Transparent" SemanticProperties.Description="Go back"/>
             <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
-                <Label Text="Discussion" FontSize="19" FontAttributes="Bold" TextColor="White"/>
-                <HorizontalStackLayout Spacing="3">
-                    <Label Text="Task:" FontSize="10" TextColor="#DCE2E7"/>
-                    <Label x:Name="TaskTitleLabel" FontSize="10" FontAttributes="Bold"
-                           TextColor="White" LineBreakMode="TailTruncation"/>
-                </HorizontalStackLayout>
+                <Label x:Name="TaskTitleLabel"
+                       Text="Task" FontSize="{StaticResource FontHeading}" FontAttributes="Bold"
+                       TextColor="{StaticResource TextInverse}" LineBreakMode="TailTruncation"/>
+                <Label x:Name="ParticipantNameLabel"
+                       Text="Participant" FontSize="{StaticResource FontLabel}" FontAttributes="Bold"
+                       TextColor="{StaticResource TextInverse}" LineBreakMode="TailTruncation"/>
             </VerticalStackLayout>
         </Grid>
 
@@ -24,25 +24,26 @@
                      Refreshing="OnRefreshing" Padding="16,14">
             <CollectionView x:Name="CommentsView">
                 <CollectionView.ItemsLayout>
-                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="10"/>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="14"/>
                 </CollectionView.ItemsLayout>
                 <CollectionView.EmptyView>
-                    <Grid Padding="8,42">
-                        <Border BackgroundColor="White" Stroke="#D7DCE2"
-                                StrokeThickness="1" Padding="24,28"
+                    <Grid Padding="8,20">
+                        <Border BackgroundColor="{StaticResource SurfaceBase}" Stroke="{StaticResource BorderDefault}"
+                                StrokeThickness="1" Padding="20,18"
+                                MaximumWidthRequest="440"
                                 HorizontalOptions="Fill" VerticalOptions="Start">
                             <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
-                            <VerticalStackLayout Spacing="7" HorizontalOptions="Center">
-                                <Border WidthRequest="42" HeightRequest="42"
-                                        BackgroundColor="#EEF1F4" StrokeThickness="0">
-                                    <Border.StrokeShape><RoundRectangle CornerRadius="21"/></Border.StrokeShape>
-                                    <Label Text="&#x270E;" FontSize="19" TextColor="#687786"
+                            <VerticalStackLayout Spacing="5" HorizontalOptions="Center">
+                                <Border WidthRequest="36" HeightRequest="36"
+                                        BackgroundColor="{StaticResource SurfaceSunken}" StrokeThickness="0">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="18"/></Border.StrokeShape>
+                                    <Label Text="&#x270E;" FontSize="{StaticResource FontHeading}" TextColor="{StaticResource Slate400}"
                                            HorizontalOptions="Center" VerticalOptions="Center"/>
                                 </Border>
-                                <Label Text="No comments yet" FontSize="15" FontAttributes="Bold"
-                                       TextColor="#374151" HorizontalOptions="Center"/>
+                                <Label Text="No comments yet" FontSize="{StaticResource FontHeading}" FontAttributes="Bold" Margin="0,3,0,0"
+                                       TextColor="{StaticResource TextSecondary}" HorizontalOptions="Center"/>
                                 <Label Text="Start the conversation with a comment or note."
-                                       FontSize="11" TextColor="#9AA4AF"
+                                       FontSize="{StaticResource FontLabel}" TextColor="{StaticResource TextDisabled}"
                                        HorizontalTextAlignment="Center"/>
                             </VerticalStackLayout>
                         </Border>
@@ -51,55 +52,79 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Grid ColumnDefinitions="Auto,*,Auto" HorizontalOptions="Fill">
-                            <Border Grid.Column="{Binding MessageColumn}"
-                                    IsVisible="{Binding IsRegularComment}"
-                                    Padding="12,10" MaximumWidthRequest="380"
-                                    BackgroundColor="{Binding BubbleColor}"
-                                    Stroke="{Binding BubbleStrokeColor}" StrokeThickness="1">
-                                <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
-                                <VerticalStackLayout Spacing="5">
-                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                                        <Label Text="{Binding AuthorDisplay}" FontAttributes="Bold"
-                                               FontSize="11" TextColor="#2C3E50"/>
-                                        <Label Grid.Column="1" Text="{Binding CreatedDisplay}"
-                                               FontSize="9" TextColor="#7A8491"/>
-                                    </Grid>
-                                    <Label Text="{Binding CommentText}" FontSize="13"
-                                           TextColor="#202936" LineBreakMode="WordWrap"/>
-                                </VerticalStackLayout>
+                            <Border Grid.Column="0" IsVisible="{Binding ShowOtherAvatar}"
+                                    WidthRequest="34" HeightRequest="34" Padding="0"
+                                    Margin="0,2,8,0" VerticalOptions="Start"
+                                    BackgroundColor="{StaticResource SurfaceSunken}" Stroke="{StaticResource BorderDefault}" StrokeThickness="1">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="17"/></Border.StrokeShape>
+                                <Grid>
+                                    <Image Source="{Binding AuthorProfilePhotoPath}"
+                                           IsVisible="{Binding HasAuthorProfilePhoto}"
+                                           Aspect="AspectFill" WidthRequest="34" HeightRequest="34"/>
+                                    <Label Text="{Binding AuthorInitials}"
+                                           IsVisible="{Binding ShowAuthorInitials}"
+                                           FontSize="{StaticResource FontLabel}" FontAttributes="Bold" TextColor="{StaticResource TextPrimary}"
+                                           HorizontalTextAlignment="Center"
+                                           VerticalTextAlignment="Center"/>
+                                </Grid>
                             </Border>
+
+                            <VerticalStackLayout Grid.Column="{Binding MessageColumn}"
+                                                 IsVisible="{Binding IsRegularComment}"
+                                                 MaximumWidthRequest="380"
+                                                 HorizontalOptions="Start"
+                                                 Spacing="5">
+                                <Label Text="{Binding SenderDisplay}"
+                                       IsVisible="{Binding ShowOtherAvatar}"
+                                       FontSize="{StaticResource FontMicro}" FontAttributes="None"
+                                       TextColor="{StaticResource TextTertiary}" Margin="3,0,3,0"
+                                       LineBreakMode="TailTruncation"/>
+                                <Border Padding="12,10"
+                                        HorizontalOptions="Start"
+                                        MaximumWidthRequest="380"
+                                        BackgroundColor="{Binding BubbleColor}"
+                                        Stroke="{Binding BubbleStrokeColor}" StrokeThickness="1">
+                                    <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
+                                    <VerticalStackLayout Spacing="5">
+                                        <Label Text="{Binding CommentText}" FontSize="{StaticResource FontBodySmall}"
+                                               TextColor="{StaticResource TextPrimary}" LineBreakMode="WordWrap"/>
+                                        <Label Text="{Binding CreatedDisplay}" FontSize="{StaticResource FontMicro}" TextColor="{StaticResource TextTertiary}"
+                                               HorizontalOptions="End" HorizontalTextAlignment="End" Margin="16,1,0,0"/>
+                                    </VerticalStackLayout>
+                                </Border>
+                            </VerticalStackLayout>
 
                             <Border Grid.Column="{Binding MessageColumn}"
                                     IsVisible="{Binding IsProofReturn}"
                                     Padding="13,11" MaximumWidthRequest="380"
-                                    BackgroundColor="#FFF8F7" Stroke="#F2C6C2" StrokeThickness="1">
+                                    BackgroundColor="{StaticResource StatusDangerSurface}" Stroke="{StaticResource StatusDangerBorder}" StrokeThickness="1">
                                 <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
                                 <VerticalStackLayout Spacing="9">
                                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="7">
-                                        <Label Text="↩" FontSize="13" FontAttributes="Bold"
-                                               TextColor="#B42318" VerticalOptions="Center"/>
+                                        <Label Text="↩" FontSize="{StaticResource FontBodySmall}" FontAttributes="Bold"
+                                               TextColor="{StaticResource StatusDanger}" VerticalOptions="Center"/>
                                         <Label Grid.Column="1" Text="Revision requested"
-                                               FontSize="12" FontAttributes="Bold" TextColor="#B42318"
+                                               FontSize="{StaticResource FontCaption}" FontAttributes="Bold" TextColor="{StaticResource StatusDanger}"
                                                VerticalOptions="Center"/>
                                         <Border Grid.Column="2" WidthRequest="22" HeightRequest="22" Padding="0"
-                                                BackgroundColor="#F1DEDC" StrokeThickness="0"
+                                                BackgroundColor="{StaticResource StatusDangerSurface}" StrokeThickness="0"
                                                 VerticalOptions="Center">
                                             <Border.StrokeShape><RoundRectangle CornerRadius="11"/></Border.StrokeShape>
-                                            <Label Text="{Binding ReturnSequenceDisplay}" FontSize="9"
-                                                   FontAttributes="Bold" TextColor="#7A271A"
+                                            <Label Text="{Binding ReturnSequenceDisplay}" FontSize="{StaticResource FontMicro}"
+                                                   FontAttributes="Bold" TextColor="{StaticResource StatusDanger}"
                                                    HorizontalTextAlignment="Center"
                                                    VerticalTextAlignment="Center"/>
                                         </Border>
                                     </Grid>
-                                    <Label Text="{Binding CommentText}" FontSize="13"
-                                           TextColor="#202936" LineBreakMode="WordWrap"/>
-                                    <BoxView HeightRequest="1" Color="#F1DEDC"/>
+                                    <Label Text="{Binding CommentText}" FontSize="{StaticResource FontBodySmall}"
+                                           TextColor="{StaticResource TextPrimary}" LineBreakMode="WordWrap"/>
+                                    <BoxView HeightRequest="1" Color="{StaticResource StatusDangerBorder}"/>
                                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                                         <Label Text="{Binding AuthorName, StringFormat='Reviewed by {0}'}"
-                                               FontSize="9" TextColor="#687786"
+                                               FontSize="{StaticResource FontMicro}" TextColor="{StaticResource Slate400}"
                                                LineBreakMode="TailTruncation"/>
                                         <Label Grid.Column="1" Text="{Binding CreatedDisplay}"
-                                               FontSize="9" TextColor="#7A8491"/>
+                                               FontSize="{StaticResource FontMicro}" TextColor="{StaticResource TextTertiary}"/>
                                     </Grid>
                                 </VerticalStackLayout>
                                 <Border.GestureRecognizers>
@@ -113,32 +138,35 @@
         </RefreshView>
 
         <VerticalStackLayout Grid.Row="2" Padding="16,10,16,16"
-                             Spacing="7" BackgroundColor="White">
+                             Spacing="7" BackgroundColor="{StaticResource SurfaceBase}">
             <Border x:Name="ReadOnlyNotice" IsVisible="False"
-                    Padding="12,9" BackgroundColor="#EEF1F4"
-                    Stroke="#D7DCE2" StrokeThickness="1">
+                    Padding="12,9" BackgroundColor="{StaticResource SurfaceSunken}"
+                    Stroke="{StaticResource BorderDefault}" StrokeThickness="1">
                 <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
                 <Label Text="Comments are closed for this task."
-                       FontSize="11" TextColor="#687786" HorizontalOptions="Center"/>
+                       FontSize="{StaticResource FontLabel}" TextColor="{StaticResource Slate400}" HorizontalOptions="Center"/>
             </Border>
 
-            <Border x:Name="CommentComposer" Padding="8,6"
-                    BackgroundColor="#F7F8FA" Stroke="#D7DCE2" StrokeThickness="1">
+            <Border x:Name="CommentComposer" Padding="6,4"
+                    BackgroundColor="{StaticResource SurfaceMuted}" Stroke="{StaticResource BorderDefault}" StrokeThickness="1">
                 <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                     <Editor x:Name="CommentEditor"
                             Placeholder="Add a comment or note..."
-                            PlaceholderColor="#9AA4AF" TextColor="#202936"
-                            FontSize="12" AutoSize="TextChanges"
-                            MinimumHeightRequest="40" MaximumHeightRequest="100"
-                            BackgroundColor="Transparent"/>
+                            PlaceholderColor="{StaticResource TextDisabled}" TextColor="{StaticResource TextPrimary}"
+                            FontSize="{StaticResource FontCaption}" AutoSize="Disabled"
+                            HeightRequest="36" MinimumHeightRequest="36"
+                            MaximumHeightRequest="36" Margin="0"
+                            BackgroundColor="Transparent" VerticalOptions="Center"/>
                     <Button x:Name="SendButton" Grid.Column="1" Text="Send"
-                            Clicked="OnSendClicked" FontSize="11" FontAttributes="Bold"
-                            HeightRequest="38" Padding="16,6" CornerRadius="8"
-                            BackgroundColor="#243447" TextColor="White"
-                            VerticalOptions="End"/>
+                            Clicked="OnSendClicked" FontSize="{StaticResource FontLabel}" FontAttributes="Bold"
+                            WidthRequest="64" HeightRequest="36"
+                            MinimumWidthRequest="64" MinimumHeightRequest="36"
+                            Padding="8,0" Margin="0" CornerRadius="8"
+                            BackgroundColor="{StaticResource Brand900}" TextColor="{StaticResource TextInverse}"
+                            VerticalOptions="Center"/>
                 </Grid>
             </Border>
         </VerticalStackLayout>
     </Grid>
-</ContentPage>
+</base:EduTaskPage>

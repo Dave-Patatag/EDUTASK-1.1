@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<base:EduTaskPage xmlns:base="clr-namespace:EDUTASK_1._1.Views.Base" xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="EDUTASK_1._1.Views.RegisterRolePage"
+             NavigationPage.HasNavigationBar="False"
+             BackgroundColor="{StaticResource SurfaceBase}">
+
+    <!-- The outer grid is the overlay layer. It fills the page, so the role menu
+         parked in it can hang over the form without its height feeding back into
+         the layout: the Confirm button below stays where it is whether the menu
+         is open or closed. The horizontal padding lives out here so the menu
+         lines up with the field without repeating the inset. -->
+    <Grid Padding="16,0">
+
+        <Grid Padding="0,18,0,24"
+              RowDefinitions="Auto,Auto,Auto,Auto,*"
+              RowSpacing="14">
+
+            <Grid ColumnDefinitions="40,*,40">
+                <ImageButton Source="authback.png"
+                             Clicked="OnBackClicked"
+                             WidthRequest="34"
+                             HeightRequest="34"
+                             Padding="6"
+                             BackgroundColor="Transparent"
+                             HorizontalOptions="Start"/>
+                <Label Grid.Column="1"
+                       Text="Select Role"
+                       FontSize="{StaticResource FontHeading}"
+                       FontAttributes="Bold"
+                       TextColor="{StaticResource TextPrimary}"
+                       VerticalTextAlignment="Center"
+                       HorizontalTextAlignment="Center"/>
+            </Grid>
+
+            <VerticalStackLayout Grid.Row="1"
+                                 Margin="0,10,0,0"
+                                 Spacing="4">
+
+                <Label Text="Role" Style="{StaticResource FieldLabel}"/>
+
+                <Grid x:Name="RoleFieldContainer"
+                      HeightRequest="{StaticResource AuthFieldHeight}">
+
+                    <Border x:Name="RoleBorder"
+                            Style="{StaticResource AuthField}">
+
+                        <Grid ColumnDefinitions="24,*,32"
+                              ColumnSpacing="8">
+
+                            <Image Source="loginusername.png"
+                                   Style="{StaticResource AuthFieldIcon}"/>
+
+                            <Label x:Name="RoleSelectionLabel"
+                                   Grid.Column="1"
+                                   Style="{StaticResource AuthFieldValue}"
+                                   Text="Select your role"
+                                   TextColor="{StaticResource TextTertiary}"/>
+
+                            <ImageButton x:Name="RoleChevron"
+                                         Grid.Column="2"
+                                         Style="{StaticResource AuthFieldTrailingButton}"
+                                         Source="logindropdown.png"
+                                         InputTransparent="True"/>
+
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnRoleFieldTapped"/>
+                            </Grid.GestureRecognizers>
+
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <Label x:Name="RoleErrorLabel"
+                       Style="{StaticResource AuthFieldError}"/>
+
+            </VerticalStackLayout>
+
+            <Button Grid.Row="2"
+                    Text="Confirm"
+                    Clicked="OnConfirmClicked"
+                    HeightRequest="50"
+                    BackgroundColor="{StaticResource Brand800}"
+                    TextColor="{StaticResource TextInverse}"
+                    CornerRadius="8"/>
+
+            <HorizontalStackLayout Grid.Row="3"
+                                   HorizontalOptions="Center"
+                                   Spacing="3">
+
+                <Label Text="Already have an account?"
+                       FontSize="{StaticResource FontMicro}"
+                       TextColor="{StaticResource TextTertiary}"/>
+
+                <Label Text="Sign In"
+                       FontSize="{StaticResource FontMicro}"
+                       TextColor="{StaticResource Accent500}"
+                       TextDecorations="Underline">
+
+                    <Label.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnSignInTapped"/>
+                    </Label.GestureRecognizers>
+
+                </Label>
+            </HorizontalStackLayout>
+
+        </Grid>
+
+        <!-- Declared last so it paints over the form, and outside the row grid
+             so its height is nobody else's business. The controller drops it
+             under the field on open. -->
+        <Border x:Name="RoleDropdownPanel"
+                ZIndex="100"
+                Style="{StaticResource DropdownPanel}">
+
+            <VerticalStackLayout Spacing="2">
+
+                <Border x:Name="StaffOption" Style="{StaticResource DropdownOption}">
+                    <Grid>
+                        <Label x:Name="StaffOptionLabel" Text="Staff"
+                               Style="{StaticResource DropdownOptionLabel}"/>
+                        <Button x:Name="StaffOptionButton"
+                                Clicked="OnRoleOptionClicked"
+                                BackgroundColor="Transparent" BorderWidth="0" CornerRadius="0"/>
+                    </Grid>
+                </Border>
+
+                <Border x:Name="TeacherOption" Style="{StaticResource DropdownOption}">
+                    <Grid>
+                        <Label x:Name="TeacherOptionLabel" Text="Teacher"
+                               Style="{StaticResource DropdownOptionLabel}"/>
+                        <Button x:Name="TeacherOptionButton"
+                                Clicked="OnRoleOptionClicked"
+                                BackgroundColor="Transparent" BorderWidth="0" CornerRadius="0"/>
+                    </Grid>
+                </Border>
+
+            </VerticalStackLayout>
+        </Border>
+
+    </Grid>
+</base:EduTaskPage>

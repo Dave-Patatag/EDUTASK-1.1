@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "Android + LocalDB API",
+    "Projects": [
+      {
+        "Path": "EduTask.Api\\EduTask.Api.csproj",
+        "Action": "StartWithoutDebugging"
+      },
+      {
+        "Path": "EDUTASK 1.1\\EDUTASK 1.1.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

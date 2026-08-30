@@ -1,48 +1,84 @@
 using EDUTASK_1._1.Models;
+using EDUTASK_1._1.Helpers;
 
 namespace EDUTASK_1._1.Views;
 
 public sealed class CompletionHistoryPage : ContentPage
 {
-    private static readonly Color Accent = Color.FromArgb("#687786");
-    private static readonly Color Text = Color.FromArgb("#243447");
-    private static readonly Color Muted = Color.FromArgb("#8190A2");
+    private static readonly Color Accent = AppColors.Slate400;
+    private static readonly Color Text = AppColors.TextPrimary;
+    private static readonly Color Muted = AppColors.Slate300;
 
     public CompletionHistoryPage(IReadOnlyList<DashboardTaskItem> tasks, bool showTeacherFilter = false)
     {
-        Title = "Completion Time";
-        BackgroundColor = Color.FromArgb("#FBFEFF");
+        Title = "Completion History";
+        BackgroundColor = AppColors.SurfaceMuted;
         NavigationPage.SetHasNavigationBar(this, false);
 
+        string selectedTeacher = "All teachers";
         var backButton = new ImageButton
         {
             Source = "backicon.png",
-            BackgroundColor = Colors.Transparent,
-            Padding = 6,
-            WidthRequest = 36,
-            HeightRequest = 36,
-            HorizontalOptions = LayoutOptions.Start
+            BackgroundColor = AppColors.SurfaceBase,
+            Padding = 10,
+            WidthRequest = 42,
+            HeightRequest = 42,
+            CornerRadius = 12,
+            BorderWidth = 0,
+            HorizontalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Center
         };
         SemanticProperties.SetDescription(backButton, "Go back");
-        backButton.Clicked += async (_, _) => await Navigation.PopAsync();
-
-        var header = new VerticalStackLayout
+        backButton.Pressed += (_, _) =>
         {
-            Padding = new Thickness(16, 10, 18, 14),
-            Spacing = 4,
+            backButton.BackgroundColor = AppColors.TextSecondary;
+            backButton.Source = "whitebackicon.png";
+        };
+        backButton.Released += (_, _) =>
+        {
+            backButton.BackgroundColor = AppColors.SurfaceBase;
+            backButton.Source = "backicon.png";
+        };
+        backButton.Clicked += async (_, _) =>
+        {
+            if (Navigation.ModalStack.Contains(this))
+                await Navigation.PopModalAsync(false);
+            else
+                DashboardFlyoutPage.Current?.ShowTasks();
+        };
+
+        var headerText = new VerticalStackLayout
+        {
+            Spacing = 2,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Center,
             Children =
             {
-                backButton,
                 new Label
                 {
-                    Text = "Completion Time",
-                    FontSize = 18,
+                    Text = "Completion History",
+                    FontSize = AppTypography.Heading,
                     FontAttributes = FontAttributes.Bold,
                     TextColor = Text,
-                    Margin = new Thickness(10, 6, 0, 0)
+                    HorizontalOptions = LayoutOptions.Fill,
+                    HorizontalTextAlignment = TextAlignment.Center,
+                    VerticalTextAlignment = TextAlignment.Center
                 }
             }
         };
+        var header = new Grid
+        {
+            Padding = new Thickness(18, 14),
+            BackgroundColor = AppColors.SurfaceMuted,
+            ColumnDefinitions =
+            {
+                new ColumnDefinition(new GridLength(44)),
+                new ColumnDefinition(GridLength.Star),
+                new ColumnDefinition(new GridLength(44))
+            }
+        };
+        header.Add(backButton);
+        header.Add(headerText, 1);
 
         var completedTasks = tasks.Where(task => task.CompletedAt.HasValue).ToList();
         var teachers = completedTasks
@@ -50,14 +86,6 @@ public sealed class CompletionHistoryPage : ContentPage
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(name => name)
             .ToList();
-        string selectedTeacher = "All teachers";
-        var selectedTeacherLabel = new Label
-        {
-            Text = selectedTeacher,
-            FontSize = 12,
-            TextColor = Muted,
-            Margin = new Thickness(10, 0, 0, 2)
-        };
         var timeline = new VerticalStackLayout { Padding = new Thickness(18, 6, 18, showTeacherFilter ? 80 : 28), Spacing = 0 };
 
         void RenderTimeline()
@@ -73,7 +101,7 @@ public sealed class CompletionHistoryPage : ContentPage
                 timeline.Children.Add(new Label
                 {
                     Text = allTeachers ? "No completed tasks yet." : "No completed tasks found for this teacher.",
-                    FontSize = 13,
+                    FontSize = AppTypography.BodySmall,
                     TextColor = Muted,
                     HorizontalTextAlignment = TextAlignment.Center,
                     Margin = new Thickness(0, 50)
@@ -93,7 +121,7 @@ public sealed class CompletionHistoryPage : ContentPage
                 {
                     WidthRequest = 11,
                     HeightRequest = 11,
-                    BackgroundColor = Color.FromArgb("#EEF1F4"),
+                    BackgroundColor = AppColors.SurfaceSunken,
                     Stroke = Accent,
                     StrokeThickness = 2,
                     HorizontalOptions = LayoutOptions.Center,
@@ -114,7 +142,7 @@ public sealed class CompletionHistoryPage : ContentPage
                 groupContent.Children.Add(new Label
                 {
                     Text = dateGroup.Key.ToString("yyyy/MM/dd"),
-                    FontSize = 14,
+                    FontSize = AppTypography.Body,
                     FontAttributes = FontAttributes.Bold,
                     TextColor = Accent
                 });
@@ -125,24 +153,24 @@ public sealed class CompletionHistoryPage : ContentPage
                     {
                         WidthRequest = 22,
                         HeightRequest = 22,
-                        BackgroundColor = Color.FromArgb("#DCE5EA"),
+                        BackgroundColor = AppColors.Slate100,
                         StrokeThickness = 0,
                         VerticalOptions = LayoutOptions.Center,
                         StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 11 },
                         Content = new Label
                         {
                             Text = "\u2713",
-                            FontSize = 12,
-                            TextColor = Colors.White,
+                            FontSize = AppTypography.Caption,
+                            TextColor = AppColors.SurfaceBase,
                             HorizontalTextAlignment = TextAlignment.Center,
                             VerticalTextAlignment = TextAlignment.Center
                         }
                     };
                     var labels = new VerticalStackLayout { Spacing = 1 };
-                    labels.Children.Add(new Label { Text = task.Title, FontSize = 13, TextColor = Color.FromArgb("#596574"), TextDecorations = TextDecorations.Strikethrough });
+                    labels.Children.Add(new Label { Text = task.Title, FontSize = AppTypography.BodySmall, TextColor = AppColors.TextSecondary, TextDecorations = TextDecorations.Strikethrough });
                     if (showTeacherFilter && allTeachers)
-                        labels.Children.Add(new Label { Text = task.TeacherName, FontSize = 10, TextColor = Accent });
-                    labels.Children.Add(new Label { Text = task.CompletedAt!.Value.ToString("h:mm tt"), FontSize = 10, TextColor = Color.FromArgb("#9AA6B2") });
+                        labels.Children.Add(new Label { Text = task.TeacherName, FontSize = AppTypography.Micro, TextColor = Accent });
+                    labels.Children.Add(new Label { Text = task.CompletedAt!.Value.ToString("h:mm tt"), FontSize = AppTypography.Micro, TextColor = AppColors.TextDisabled });
 
                     var row = new Grid
                     {
@@ -151,12 +179,13 @@ public sealed class CompletionHistoryPage : ContentPage
                     };
                     row.Add(check);
                     row.Add(labels, 1);
-                    row.Add(new Label { Text = "\u203A", FontSize = 22, TextColor = Color.FromArgb("#B8C2CC"), VerticalTextAlignment = TextAlignment.Center }, 2);
+                    row.Add(new Label { Text = "\u203A", FontSize = 22, TextColor = AppColors.Slate200, VerticalTextAlignment = TextAlignment.Center }, 2);
 
                     var card = new Border
                     {
-                        BackgroundColor = Color.FromArgb("#F4F8FA"),
-                        StrokeThickness = 0,
+                        BackgroundColor = AppColors.SurfaceBase,
+                        Stroke = AppColors.BorderSubtle,
+                        StrokeThickness = 1,
                         Padding = new Thickness(12, 10),
                         StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
                         Content = row
@@ -171,9 +200,6 @@ public sealed class CompletionHistoryPage : ContentPage
             }
         }
 
-        if (showTeacherFilter)
-            header.Children.Add(selectedTeacherLabel);
-
         var main = new Grid
         {
             RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star) }
@@ -186,40 +212,113 @@ public sealed class CompletionHistoryPage : ContentPage
 
         var selectorContent = new Label
         {
-            Text = "Select teacher",
-            FontSize = 12,
-            FontAttributes = FontAttributes.Bold,
-            TextColor = Colors.White,
+            Text = "Select a Teacher",
+            FontSize = AppTypography.Caption,
+            TextColor = AppColors.Brand800,
             VerticalTextAlignment = TextAlignment.Center,
             HorizontalTextAlignment = TextAlignment.Center
         };
         var selector = new Border
         {
             IsVisible = showTeacherFilter,
-            Margin = new Thickness(0, 0, 20, 20),
-            Padding = new Thickness(13, 9),
-            BackgroundColor = Accent,
+            Margin = new Thickness(0, 0, 16, 14),
+            Padding = new Thickness(14, 0),
+            HeightRequest = 38,
+            MinimumHeightRequest = 38,
+            BackgroundColor = AppColors.SurfaceSunken,
+            Stroke = Colors.Transparent,
             StrokeThickness = 0,
             HorizontalOptions = LayoutOptions.End,
             VerticalOptions = LayoutOptions.End,
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 18 },
-            Shadow = new Shadow { Brush = Color.FromArgb("#40000000"), Offset = new Point(0, 3), Radius = 7, Opacity = 0.3f },
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 9 },
             Content = selectorContent
         };
+
+        void ApplySelectorState(bool active)
+        {
+            selector.BackgroundColor = active ? AppColors.Brand800 : AppColors.SurfaceSunken;
+            selector.Stroke = Colors.Transparent;
+            selectorContent.TextColor = active ? AppColors.TextInverse : AppColors.TextPrimary;
+            selectorContent.FontAttributes = active ? FontAttributes.Bold : FontAttributes.None;
+        }
+
+        ApplySelectorState(active: false);
         pageRoot.Add(selector);
-        var results = new VerticalStackLayout { Spacing = 4 };
-        var search = new SearchBar
+        var results = new VerticalStackLayout { Spacing = 2 };
+        var search = new Entry
         {
             Placeholder = "Search teacher name",
-            FontSize = 14,
+            FontSize = AppTypography.BodySmall,
             TextColor = Text,
             PlaceholderColor = Muted,
-            BackgroundColor = Color.FromArgb("#F4F6F8")
+            BackgroundColor = Colors.Transparent,
+            VerticalTextAlignment = TextAlignment.Center,
+            VerticalOptions = LayoutOptions.Fill,
+            HorizontalOptions = LayoutOptions.Fill,
+            Margin = 0,
+            ClearButtonVisibility = ClearButtonVisibility.Never
+        };
+        search.HandlerChanged += (_, _) =>
+        {
+#if WINDOWS
+            if (search.Handler?.PlatformView is Microsoft.UI.Xaml.Controls.TextBox windowsEntry)
+            {
+                windowsEntry.BorderThickness = new Microsoft.UI.Xaml.Thickness(0);
+                var transparent = new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Transparent);
+                windowsEntry.Resources["TextControlBorderBrush"] = transparent;
+                windowsEntry.Resources["TextControlBorderBrushPointerOver"] = transparent;
+                windowsEntry.Resources["TextControlBorderBrushFocused"] = transparent;
+            }
+#elif ANDROID
+            if (search.Handler?.PlatformView is Android.Widget.EditText androidEntry)
+                androidEntry.BackgroundTintList =
+                    Android.Content.Res.ColorStateList.ValueOf(Android.Graphics.Color.Transparent);
+#elif IOS || MACCATALYST
+            if (search.Handler?.PlatformView is UIKit.UITextField appleEntry)
+                appleEntry.BorderStyle = UIKit.UITextBorderStyle.None;
+#endif
+        };
+
+        var searchIcon = new Image
+        {
+            Source = "search.png",
+            WidthRequest = 18,
+            HeightRequest = 18,
+            Aspect = Aspect.AspectFit,
+            VerticalOptions = LayoutOptions.Center,
+            HorizontalOptions = LayoutOptions.End
+        };
+        var focusSearch = new TapGestureRecognizer();
+        focusSearch.Tapped += (_, _) => search.Focus();
+        searchIcon.GestureRecognizers.Add(focusSearch);
+
+        var searchContent = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition(GridLength.Star),
+                new ColumnDefinition(new GridLength(18))
+            },
+            ColumnSpacing = 8
+        };
+        searchContent.Add(search);
+        searchContent.Add(searchIcon, 1);
+
+        var searchField = new Border
+        {
+            HeightRequest = 44,
+            MinimumHeightRequest = 44,
+            Padding = new Thickness(12, 0),
+            BackgroundColor = AppColors.SurfaceMuted,
+            Stroke = AppColors.BorderDefault,
+            StrokeThickness = 1,
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 10 },
+            Content = searchContent
         };
         var overlay = new Grid
         {
             IsVisible = false,
-            BackgroundColor = Color.FromArgb("#66000000"),
+            BackgroundColor = AppColors.ScrimLight,
             Padding = new Thickness(24)
         };
         var outsideButton = new Button
@@ -234,6 +333,7 @@ public sealed class CompletionHistoryPage : ContentPage
             overlay.IsVisible = false;
             search.Unfocus();
             search.Text = string.Empty;
+            ApplySelectorState(!string.Equals(selectedTeacher, "All teachers", StringComparison.Ordinal));
         }
 
         void RenderTeacherResults(string query = "")
@@ -248,15 +348,15 @@ public sealed class CompletionHistoryPage : ContentPage
                 var name = new Label
                 {
                     Text = teacher,
-                    FontSize = 14,
+                    FontSize = AppTypography.BodySmall,
                     FontAttributes = teacher == selectedTeacher ? FontAttributes.Bold : FontAttributes.None,
                     TextColor = Text,
                     VerticalTextAlignment = TextAlignment.Center
                 };
                 var row = new Border
                 {
-                    Padding = new Thickness(12, 11),
-                    BackgroundColor = teacher == selectedTeacher ? Color.FromArgb("#E8EEF3") : Colors.Transparent,
+                    Padding = new Thickness(10, 7),
+                    BackgroundColor = teacher == selectedTeacher ? AppColors.SurfaceSunken : Colors.Transparent,
                     StrokeThickness = 0,
                     StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
                     Content = name
@@ -265,7 +365,6 @@ public sealed class CompletionHistoryPage : ContentPage
                 choose.Tapped += (_, _) =>
                 {
                     selectedTeacher = teacher;
-                    selectedTeacherLabel.Text = teacher;
                     RenderTimeline();
                     HideSelector();
                 };
@@ -274,33 +373,50 @@ public sealed class CompletionHistoryPage : ContentPage
             }
 
             if (results.Children.Count == 0)
-                results.Children.Add(new Label { Text = "No teachers found.", FontSize = 13, TextColor = Muted, HorizontalTextAlignment = TextAlignment.Center, Margin = new Thickness(0, 24) });
+                results.Children.Add(new Label { Text = "No teachers found.", FontSize = AppTypography.BodySmall, TextColor = Muted, HorizontalTextAlignment = TextAlignment.Center, Margin = new Thickness(0, 24) });
         }
+
+        var dialogTitle = new Label
+        {
+            Text = "Select a Teacher",
+            FontSize = AppTypography.Body,
+            FontAttributes = FontAttributes.None,
+            TextColor = Text,
+            HorizontalOptions = LayoutOptions.Fill,
+            HorizontalTextAlignment = TextAlignment.Center
+        };
+        var resultScroller = new ScrollView
+        {
+            Content = results,
+            MaximumHeightRequest = 360
+        };
+        var dialogContent = new Grid
+        {
+            RowDefinitions =
+            {
+                new RowDefinition(GridLength.Auto),
+                new RowDefinition(GridLength.Auto),
+                new RowDefinition(GridLength.Star)
+            },
+            RowSpacing = 8
+        };
+        dialogContent.Add(dialogTitle);
+        dialogContent.Add(searchField, 0, 1);
+        dialogContent.Add(resultScroller, 0, 2);
 
         var dialog = new Border
         {
-            MaximumWidthRequest = 420,
+            MaximumWidthRequest = 400,
             MaximumHeightRequest = 520,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
-            Padding = new Thickness(18),
-            BackgroundColor = Colors.White,
-            Stroke = Color.FromArgb("#E0E5EA"),
-            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 18 },
-            Content = new Grid
-            {
-                RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star) },
-                RowSpacing = 12,
-                Children =
-                {
-                    new Label { Text = "Select teacher", FontSize = 20, FontAttributes = FontAttributes.Bold, TextColor = Text },
-                    search,
-                    new ScrollView { Content = results, MaximumHeightRequest = 360 }
-                }
-            }
+            Padding = new Thickness(14),
+            BackgroundColor = AppColors.SurfaceBase,
+            Stroke = AppColors.BorderSubtle,
+            StrokeThickness = 0,
+            StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 16 },
+            Content = dialogContent
         };
-        Grid.SetRow(search, 1);
-        Grid.SetRow((BindableObject)((Grid)dialog.Content).Children[2], 2);
         overlay.Add(dialog);
         pageRoot.Add(overlay);
 
@@ -310,13 +426,28 @@ public sealed class CompletionHistoryPage : ContentPage
         openSelector.Tapped += (_, _) =>
         {
             RenderTeacherResults();
+            ApplySelectorState(active: true);
             overlay.IsVisible = true;
             search.Focus();
         };
         selector.GestureRecognizers.Add(openSelector);
 
         RenderTimeline();
-        Content = pageRoot;
+
+        var shell = new Grid
+        {
+            RowDefinitions =
+            {
+                new RowDefinition(GridLength.Star),
+                new RowDefinition(GridLength.Auto)
+            }
+        };
+        shell.Add(pageRoot);
+        // History is a detail destination, not the active task dashboard.
+        // Leaving the task tab unselected also keeps the destination state
+        // consistent with the back button and the shared navigation bar.
+        shell.Add(new BottomNavigationBar { ActiveTab = BottomNavigationTab.None }, 0, 1);
+        Content = shell;
     }
 
     private static IEnumerable<string> TeacherNames(string teacherNames) =>

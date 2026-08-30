@@ -1,10 +1,11 @@
 using System.Collections.ObjectModel;
+using EDUTASK_1._1.Views.Base;
 using EDUTASK_1._1.Models;
 using EDUTASK_1._1.Services;
 
 namespace EDUTASK_1._1.Views;
 
-public partial class SubtaskProofDraftPage : ContentPage
+public partial class SubtaskProofDraftPage : EduTaskPage
 {
     private readonly DatabaseService _db = new();
     private readonly SubtaskDisplayItem _subtask;
@@ -87,7 +88,7 @@ public partial class SubtaskProofDraftPage : ContentPage
             }
             if (_onSubmitted is not null)
                 await _onSubmitted();
-            await Navigation.PopModalAsync();
+            await Navigation.PopModalAsync(false);
         }
         catch
         {
@@ -100,7 +101,7 @@ public partial class SubtaskProofDraftPage : ContentPage
     }
 
     private async void OnCloseClicked(object sender, EventArgs e) =>
-        await Navigation.PopModalAsync();
+        await Navigation.PopModalAsync(false);
 
     private async void OnRemoveClicked(object sender, EventArgs e)
     {
@@ -117,7 +118,7 @@ public partial class SubtaskProofDraftPage : ContentPage
 
             if (_onSubmitted is not null)
                 await _onSubmitted();
-            await Navigation.PopModalAsync();
+            await Navigation.PopModalAsync(false);
         }
         catch
         {

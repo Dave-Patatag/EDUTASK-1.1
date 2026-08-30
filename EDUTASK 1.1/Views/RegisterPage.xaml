@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<base:EduTaskPage xmlns:base="clr-namespace:EDUTASK_1._1.Views.Base" xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="EDUTASK_1._1.Views.RegisterPage"
+             NavigationPage.HasNavigationBar="False" BackgroundColor="{StaticResource SurfaceBase}">
+    <ScrollView VerticalScrollBarVisibility="Never"
+                HorizontalScrollBarVisibility="Never">
+        <Border BackgroundColor="{StaticResource SurfaceBase}" StrokeThickness="0" Padding="16,18,16,24">
+            <VerticalStackLayout Spacing="14">
+                <Grid ColumnDefinitions="40,*,40">
+                    <ImageButton Source="authback.png" Clicked="OnBackClicked"
+                                 WidthRequest="34" HeightRequest="34" Padding="6"
+                                 BackgroundColor="Transparent" HorizontalOptions="Start"/>
+                    <Label Grid.Column="1" Text="Create Account"
+                           FontSize="{StaticResource FontHeading}" FontAttributes="Bold" TextColor="{StaticResource TextPrimary}"
+                           HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                </Grid>
+                <ContentView ZIndex="100">
+                    <Grid x:Name="RegistrationOverlayHost">
+                    <VerticalStackLayout x:Name="RegistrationForm" Spacing="4">
+                        <Label Text="Fullname" Style="{StaticResource FieldLabel}"/>
+                        <Border x:Name="FullNameBorder" Style="{StaticResource AuthField}">
+                            <Grid ColumnDefinitions="24,*" ColumnSpacing="8">
+                                <Image Source="loginusername.png" Style="{StaticResource AuthFieldIcon}"/>
+                                <Entry x:Name="FullNameEntry" Grid.Column="1"
+                                       Style="{StaticResource AuthFieldEntry}"
+                                       Placeholder="Enter your fullname"
+                                       TextChanged="OnFullNameChanged"/>
+                            </Grid>
+                        </Border>
+                        <Label x:Name="FullNameErrorLabel" Style="{StaticResource AuthFieldError}"/>
+
+                        <Label Text="Username" Style="{StaticResource FieldLabel}" Margin="0,1,0,0"/>
+                        <Border x:Name="UsernameBorder" Style="{StaticResource AuthField}">
+                            <Grid ColumnDefinitions="24,*" ColumnSpacing="8">
+                                <Image Source="loginusername.png" Style="{StaticResource AuthFieldIcon}"/>
+                                <Entry x:Name="UsernameEntry" Grid.Column="1"
+                                       Style="{StaticResource AuthFieldEntry}"
+                                       Placeholder="Create a username" MaxLength="30"
+                                       TextChanged="OnUsernameChanged"/>
+                            </Grid>
+                        </Border>
+                        <Label x:Name="UsernameErrorLabel" Style="{StaticResource AuthFieldError}"/>
+
+                        <Label Text="Email" Style="{StaticResource FieldLabel}" Margin="0,1,0,0"/>
+                        <Border x:Name="EmailBorder" Style="{StaticResource AuthField}">
+                            <Grid ColumnDefinitions="24,*" ColumnSpacing="8">
+                                <Image Source="loginusername.png" Style="{StaticResource AuthFieldIcon}"/>
+                                <Entry x:Name="EmailEntry" Grid.Column="1"
+                                       Style="{StaticResource AuthFieldEntry}"
+                                       Placeholder="Enter your email" Keyboard="Email"
+                                       TextChanged="OnEmailChanged"/>
+                            </Grid>
+                        </Border>
+                        <Label x:Name="EmailErrorLabel" Style="{StaticResource AuthFieldError}"/>
+
+                        <Label Text="Password" Style="{StaticResource FieldLabel}" Margin="0,1,0,0"/>
+                        <Border x:Name="PasswordBorder" Style="{StaticResource AuthField}">
+                            <Grid ColumnDefinitions="24,*,32" ColumnSpacing="8">
+                                <Image Source="loginpassword.png" Style="{StaticResource AuthFieldIcon}"/>
+                                <Entry x:Name="PasswordEntry" Grid.Column="1"
+                                       Style="{StaticResource AuthFieldEntry}"
+                                       Placeholder="Password" IsPassword="True"
+                                       IsTextPredictionEnabled="False"
+                                       IsSpellCheckEnabled="False"
+                                       TextChanged="OnRegisterPasswordChanged"/>
+                                <Entry x:Name="VisiblePasswordEntry" Grid.Column="1"
+                                       Style="{StaticResource AuthFieldEntry}"
+                                       Placeholder="Password" IsVisible="False"
+                                       IsTextPredictionEnabled="False"
+                                       IsSpellCheckEnabled="False"
+                                       TextChanged="OnVisibleRegisterPasswordChanged"/>
+                                <ImageButton x:Name="PasswordToggleButton" Grid.Column="2"
+                                             Style="{StaticResource AuthFieldTrailingButton}"
+                                             Source="loginshowpassword.png" Clicked="OnTogglePassword"
+                                             ToolTipProperties.Text="Show password"
+                                             SemanticProperties.Description="Show password"/>
+                            </Grid>
+                        </Border>
+                        <Label x:Name="PasswordErrorLabel" Style="{StaticResource AuthFieldError}"/>
+
+                        <Label Text="Confirm Password" Style="{StaticResource FieldLabel}" Margin="0,1,0,0"/>
+                        <Border x:Name="ConfirmPasswordBorder" Style="{StaticResource AuthField}">
+                            <Grid ColumnDefinitions="24,*,32" ColumnSpacing="8">
+                                <Image Source="loginpassword.png" Style="{StaticResource AuthFieldIcon}"/>
+                                <Entry x:Name="ConfirmPasswordEntry" Grid.Column="1"
+                                       Style="{StaticResource AuthFieldEntry}"
+                                       Placeholder="Confirm password" IsPassword="True"
+                                       IsTextPredictionEnabled="False"
+                                       IsSpellCheckEnabled="False"
+                                       TextChanged="OnConfirmPasswordChanged"/>
+                                <Entry x:Name="VisibleConfirmPasswordEntry" Grid.Column="1"
+                                       Style="{StaticResource AuthFieldEntry}"
+                                       Placeholder="Confirm password" IsVisible="False"
+                                       IsTextPredictionEnabled="False"
+                                       IsSpellCheckEnabled="False"
+                                       TextChanged="OnVisibleConfirmPasswordChanged"/>
+                                <ImageButton x:Name="ConfirmPasswordToggleButton" Grid.Column="2"
+                                             Style="{StaticResource AuthFieldTrailingButton}"
+                                             Source="loginshowpassword.png" Clicked="OnToggleConfirmPassword"
+                                             ToolTipProperties.Text="Show password"
+                                             SemanticProperties.Description="Show password"/>
+                            </Grid>
+                        </Border>
+                        <Label x:Name="ConfirmPasswordErrorLabel" Style="{StaticResource AuthFieldError}"/>
+
+                        <Label Text="Security Questions" Style="{StaticResource FieldLabel}" Margin="0,1,0,0"/>
+                        <VerticalStackLayout x:Name="QuestionFieldContainer"
+                                             HeightRequest="{StaticResource AuthFieldHeight}" Spacing="4">
+                            <Border x:Name="SecurityQuestionsBorder" Style="{StaticResource AuthField}" ZIndex="1">
+                                <Grid ColumnDefinitions="24,*,32" ColumnSpacing="8">
+                                    <Image Source="loginsecurityquestion.png" Style="{StaticResource AuthFieldIcon}"/>
+                                    <Label x:Name="SelectedQuestionsLabel" Grid.Column="1"
+                                           Style="{StaticResource AuthFieldValue}"
+                                           Text="Choose 2 security questions"
+                                           TextColor="{StaticResource TextTertiary}"/>
+                                    <ImageButton x:Name="QuestionsChevron" Grid.Column="2"
+                                                 Style="{StaticResource AuthFieldTrailingButton}"
+                                                 Source="logindropdown.png"
+                                                 InputTransparent="True"/>
+                                    <Grid.GestureRecognizers>
+                                        <TapGestureRecognizer Tapped="OnSelectQuestionsTapped"/>
+                                    </Grid.GestureRecognizers>
+                                </Grid>
+                            </Border>
+                            <Border x:Name="QuestionDropdownPanel"
+                                    IsVisible="False"
+                                    HeightRequest="228"
+                                    Style="{StaticResource DropdownPanel}">
+                                <CollectionView x:Name="QuestionOptionsView"
+                                                VerticalScrollBarVisibility="Never"
+                                                HorizontalScrollBarVisibility="Never"
+                                                SelectionMode="None">
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Style="{StaticResource DropdownOption}"
+                                                    BackgroundColor="{Binding BackgroundColor}"
+                                                    Margin="0,1">
+                                                <Grid>
+                                                    <Label Text="{Binding Text}"
+                                                           Style="{StaticResource DropdownOptionLabel}"
+                                                           FontSize="{StaticResource FontCaption}"
+                                                           TextColor="{Binding TextColor}"
+                                                           FontAttributes="{Binding FontAttributes}"
+                                                           LineBreakMode="TailTruncation"/>
+                                                    <Button CommandParameter="{Binding .}"
+                                                            Clicked="OnQuestionOptionClicked"
+                                                            SemanticProperties.Description="{Binding Text}"
+                                                            BackgroundColor="Transparent"
+                                                            BorderWidth="0" CornerRadius="0"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                            </Border>
+                        </VerticalStackLayout>
+                        <Label x:Name="SecurityErrorLabel" Style="{StaticResource AuthFieldError}"/>
+                        <Entry x:Name="Answer1Entry" Placeholder="Answer to question 1" IsPassword="True"
+                               IsVisible="False" Style="{StaticResource AuthFieldEntry}"/>
+                        <Entry x:Name="Answer2Entry" Placeholder="Answer to question 2" IsPassword="True"
+                               IsVisible="False" Style="{StaticResource AuthFieldEntry}"/>
+                    </VerticalStackLayout>
+                    </Grid>
+                </ContentView>
+                <Button Text="Create account" Clicked="OnCreateClicked"
+                        Margin="0,20,0,0"
+                        BackgroundColor="{StaticResource Brand800}" TextColor="{StaticResource TextInverse}"
+                        CornerRadius="8" HeightRequest="50"/>
+                <HorizontalStackLayout HorizontalOptions="Center" Spacing="3">
+                    <Label Text="Already have an account?" FontSize="{StaticResource FontMicro}" TextColor="{StaticResource TextTertiary}"/>
+                    <Label Text="Sign In" FontSize="{StaticResource FontMicro}" TextColor="{StaticResource Accent500}" TextDecorations="Underline">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnSignInTapped"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+        </Border>
+    </ScrollView>
+</base:EduTaskPage>

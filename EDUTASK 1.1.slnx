@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="EDUTASK 1.1/EDUTASK 1.1.csproj" />
+  <Project Path="EduTask.Api/EduTask.Api.csproj" />
 </Solution>

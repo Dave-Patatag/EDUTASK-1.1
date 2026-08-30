@@ -9,10 +9,6 @@ IF COL_LENGTH(N'dbo.[User]', N'Username') IS NULL
     ALTER TABLE dbo.[User] ADD Username NVARCHAR(50) NULL;
 GO
 
-IF COL_LENGTH(N'dbo.[User]', N'Birthdate') IS NULL
-    ALTER TABLE dbo.[User] ADD Birthdate DATE NULL;
-GO
-
 IF COL_LENGTH(N'dbo.[User]', N'ProfilePhotoPath') IS NULL
     ALTER TABLE dbo.[User] ADD ProfilePhotoPath NVARCHAR(500) NULL;
 GO
@@ -28,7 +24,7 @@ IF NOT EXISTS (SELECT 1 FROM dbo.[User] WHERE UserID = 1)
 GO
 
 SELECT UserID, FirstName, LastName, Email, ContactNumber,
-       Username, Birthdate, ProfilePhotoPath
+       Username, ProfilePhotoPath
 FROM dbo.[User]
 WHERE UserID = 1;
 GO

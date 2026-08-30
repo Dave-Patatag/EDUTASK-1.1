@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using System.Windows.Input;
+using EDUTASK_1._1.Helpers;
 
 namespace EDUTASK_1._1.Models;
 
@@ -11,8 +11,39 @@ public sealed class AdministratorTaskItem
     public string DeadlineDisplay { get; init; } = string.Empty;
     public string Priority { get; init; } = string.Empty;
     public string Status { get; init; } = string.Empty;
-    public Color PriorityColor { get; init; } = Colors.Gray;
-    public Color StatusColor { get; init; } = Colors.Gray;
+    public Color PriorityColor { get; init; } = AppColors.StatusNeutral;
+    public Color StatusColor { get; init; } = AppColors.StatusNeutral;
+
+    /// <summary>
+    /// The raw deadline. Kept alongside <see cref="DeadlineDisplay"/> so the
+    /// task list can filter by period and work out what is overdue without
+    /// re-parsing the formatted string.
+    /// </summary>
+    public DateTime? Deadline { get; init; }
+
+    /// <summary>Prefixed form used on the task cards.</summary>
+    public string DueDisplay => Deadline.HasValue ? $"Due {DeadlineDisplay}" : "No deadline";
+
+    public bool IsOverdue =>
+        Status != "Completed" && Deadline.HasValue && Deadline.Value.Date < DateTime.Today;
+
+    public string CardStatus => IsOverdue ? "Overdue" : Status;
+    public Color CardStatusColor => IsOverdue ? AppColors.StatusDanger : StatusColor;
+    public Color CardStatusSurface => CardStatus switch
+    {
+        "Completed" => AppColors.StatusSuccessSurface,
+        "Overdue" => AppColors.StatusDangerSurface,
+        "Acknowledged" => AppColors.StatusInfoSurface,
+        _ => AppColors.StatusWarningSurface
+    };
+    public Color CardStatusBorder => CardStatus switch
+    {
+        "Completed" => AppColors.StatusSuccessBorder,
+        "Overdue" => AppColors.StatusDangerBorder,
+        "Acknowledged" => AppColors.StatusInfoBorder,
+        _ => AppColors.StatusWarningBorder
+    };
+    public Color DueTextColor => IsOverdue ? AppColors.StatusDanger : AppColors.TextSecondary;
 }
 
 public sealed class DashboardTaskItem : INotifyPropertyChanged
@@ -29,9 +60,9 @@ public sealed class DashboardTaskItem : INotifyPropertyChanged
     public string TeacherName { get; set; } = string.Empty;
     public string DeadlineDisplay { get; set; } = string.Empty;
     public string Priority { get; set; } = string.Empty;
-    public Color PriorityColor { get; set; } = Colors.Gray;
+    public Color PriorityColor { get; set; } = AppColors.StatusNeutral;
     public string Status { get; set; } = string.Empty;
-    public Color StatusColor { get; set; } = Colors.Gray;
+    public Color StatusColor { get; set; } = AppColors.StatusNeutral;
     public DateTime? Deadline { get; set; }
     public DateTime? CompletedAt { get; set; }
     public string DeadlineMonth => Deadline?.ToString("MMM").ToUpperInvariant() ?? "â€”";
@@ -143,11 +174,11 @@ public sealed class SubtaskDisplayItem : INotifyPropertyChanged
     };
     public Color ProofStatusColor => ProofStatus switch
     {
-        "Approved" => Color.FromArgb("#16803A"),
-        "Returned" => Color.FromArgb("#DC2626"),
-        "Draft" => Color.FromArgb("#2563EB"),
-        "Pending" => Color.FromArgb("#D97706"),
-        _ => Color.FromArgb("#6B7280")
+        "Approved" => AppColors.StatusSuccess,
+        "Returned" => AppColors.StatusDanger,
+        "Draft" => AppColors.Accent500,
+        "Pending" => AppColors.StatusWarning,
+        _ => AppColors.TextTertiary
     };
     public bool IsCompleted
     {
@@ -164,8 +195,8 @@ public sealed class SubtaskDisplayItem : INotifyPropertyChanged
         }
     }
     public string Marker => IsCompleted ? string.Empty : "\u25CB";
-    public Color MarkerColor => IsCompleted ? Color.FromArgb("#27AE60") : Color.FromArgb("#6B7280");
-    public Color TitleColor => IsCompleted ? Color.FromArgb("#6B7280") : Color.FromArgb("#4B5563");
+    public Color MarkerColor => IsCompleted ? AppColors.StatusSuccess : AppColors.TextTertiary;
+    public Color TitleColor => IsCompleted ? AppColors.TextTertiary : AppColors.TextSecondary;
     public TextDecorations TitleDecoration => IsCompleted ? TextDecorations.Strikethrough : TextDecorations.None;
     public event PropertyChangedEventHandler? PropertyChanged;
 }
@@ -178,7 +209,14 @@ public sealed class DeadlineTaskGroup : INotifyPropertyChanged
     public string DeadlineDisplay { get; init; } = string.Empty;
     public string TeacherSummary { get; init; } = string.Empty;
     public List<DashboardTaskItem> Tasks { get; init; } = [];
-    public Color PriorityColor { get; init; } = Colors.Gray;
+    public int UnreadDiscussionCount => Tasks.Sum(task => task.Subtasks.Sum(subtask => subtask.UnreadDiscussionCount));
+    public bool HasUnreadDiscussion => UnreadDiscussionCount > 0;
+    // Keep the aggregate unread badge visible in the task header even when the
+    // task details are collapsed. The individual subtask badge is still shown
+    // inside the expanded content.
+    public bool ShowUnreadDiscussion => HasUnreadDiscussion;
+    public string UnreadDiscussionDisplay => UnreadDiscussionCount > 9 ? "9+" : UnreadDiscussionCount.ToString();
+    public Color PriorityColor { get; init; } = AppColors.StatusNeutral;
     public string StateSummary
     {
         get
@@ -198,14 +236,14 @@ public sealed class DeadlineTaskGroup : INotifyPropertyChanged
         get
         {
             if (Tasks.Count > 0 && Tasks.All(task => task.IsCompleted))
-                return Color.FromArgb("#16803A");
+                return AppColors.StatusSuccess;
             if (Tasks.Any(task => task.Status == "Needs Revision"))
-                return Color.FromArgb("#DC2626");
+                return AppColors.StatusDanger;
             if (Tasks.Any(task => task.IsAwaitingValidation))
-                return Color.FromArgb("#6554C0");
+                return AppColors.StatusValidation;
             if (Tasks.Any(task => task.Status == "Acknowledged"))
-                return Color.FromArgb("#2563EB");
-            return Color.FromArgb("#D97706");
+                return AppColors.Accent500;
+            return AppColors.StatusWarning;
         }
     }
     public int TotalSubtasks => Tasks.Sum(task => task.TotalProgressItems);
@@ -231,20 +269,23 @@ public sealed class DeadlineTaskGroup : INotifyPropertyChanged
     public bool IsCollapsed => !IsExpanded;
     public double ArrowRotation => IsExpanded ? 90d : 0d;
     public event PropertyChangedEventHandler? PropertyChanged;
-}
 
-public sealed class TeacherTaskItem
-{
-    public int AssignmentID { get; set; }
-    public int CreatedByUserID { get; set; }
-    public string Title { get; set; } = string.Empty;
-    public string Deadline { get; set; } = string.Empty;
-    public string Priority { get; set; } = string.Empty;
-    public string Status { get; set; } = string.Empty;
-    public Color PriorityColor { get; set; } = Colors.Gray;
-    public Color StatusColor { get; set; } = Colors.Gray;
-    public bool ShowAcknowledge { get; set; }
-    public ICommand? AcknowledgeCommand { get; set; }
+    /// <summary>
+    /// Header text for a group of tasks sharing a deadline: the weekday alone
+    /// inside the current Mon-Sun week, the fuller date beyond it. Shared by
+    /// both dashboards so their group headers cannot drift apart.
+    /// </summary>
+    public static string FormatHeader(DateTime deadline)
+    {
+        DateTime today = DateTime.Today;
+        int daysSinceMonday = ((int)today.DayOfWeek + 6) % 7;
+        DateTime currentWeekStart = today.AddDays(-daysSinceMonday);
+        DateTime nextWeekStart = currentWeekStart.AddDays(7);
+
+        return deadline.Date >= currentWeekStart && deadline.Date < nextWeekStart
+            ? deadline.ToString("dddd")
+            : deadline.ToString("dddd, MMMM d");
+    }
 }
 
 public sealed class PreparedProofImage
@@ -267,13 +308,13 @@ public sealed class SubtaskProofHistoryItem
     public string? ReturnRemarks { get; init; }
     public string AttemptDisplay => AttemptNumber.ToString();
     public string SubmittedAtDisplay => SubmittedAt.ToString("MMM d, yyyy h:mm tt");
+    public string SubmittedDateDisplay => SubmittedAt.ToString("MMM d, yyyy");
+    public string SubmittedTimeDisplay => SubmittedAt.ToString("h:mm tt");
     public Color StatusColor => ValidationStatus switch
     {
-        "Approved" => Color.FromArgb("#16803A"),
-        "Returned" => Color.FromArgb("#DC2626"),
-        "Pending" => Color.FromArgb("#D97706"),
-        _ => Color.FromArgb("#6B7280")
+        "Approved" => AppColors.StatusSuccess,
+        "Returned" => AppColors.StatusDanger,
+        "Pending" => AppColors.StatusWarning,
+        _ => AppColors.TextTertiary
     };
 }
-
-

@@ -7,11 +7,32 @@
        Shell.NavBarIsVisible="False">
 
     <Shell.FlyoutHeader>
-        <Border BackgroundColor="#1A252F" Padding="20">
-            <VerticalStackLayout Spacing="5">
-                <Label Text="📚 EduTask" FontSize="22" FontAttributes="Bold" TextColor="White"/>
-                <Label Text="Task Management System" FontSize="12" TextColor="#BDC3C7"/>
-            </VerticalStackLayout>
+        <Border Background="{StaticResource BrandGradient}"
+                StrokeThickness="0"
+                Padding="20,24">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+
+                <!-- The EduTask mark. The full lockup (loginlogo.png) can't sit
+                     here: its wordmark ink is this header's own navy, on an
+                     opaque white plate. -->
+                <Image Grid.Column="0"
+                       Source="edutaskmark.png"
+                       WidthRequest="42" HeightRequest="42"
+                       Aspect="AspectFit"
+                       VerticalOptions="Center"
+                       SemanticProperties.Description="EduTask"/>
+
+                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                    <Label Text="EduTask"
+                           FontSize="{StaticResource FontTitle}"
+                           FontAttributes="Bold"
+                           TextColor="{StaticResource TextInverse}"
+                           SemanticProperties.HeadingLevel="Level1"/>
+                    <Label Text="Task Management System"
+                           FontSize="{StaticResource FontCaption}"
+                           TextColor="{StaticResource TextInverseMuted}"/>
+                </VerticalStackLayout>
+            </Grid>
         </Border>
     </Shell.FlyoutHeader>
 

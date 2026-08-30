@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<base:EduTaskPage xmlns:base="clr-namespace:EDUTASK_1._1.Views.Base" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+ x:Class="EDUTASK_1._1.Views.DueDateSelectionPage"
+             Transition="Dialog" NavigationPage.HasNavigationBar="False" Shell.NavBarIsVisible="False"
+ BackgroundColor="{StaticResource Scrim}" Padding="0">
+ <Border MaximumWidthRequest="520" HorizontalOptions="Fill" VerticalOptions="End"
+         Margin="0" MaximumHeightRequest="620"
+         BackgroundColor="{StaticResource SurfaceBase}" Stroke="{StaticResource BorderDefault}" StrokeThickness="1" Padding="0">
+  <Border.StrokeShape><RoundRectangle CornerRadius="20,20,0,0"/></Border.StrokeShape>
+  <VerticalStackLayout Spacing="0">
+   <Grid Padding="18,16,18,10" ColumnDefinitions="44,*,44">
+    <Button Text="&#x2039;" Clicked="OnCancelClicked" WidthRequest="42" HeightRequest="42" Padding="0" FontSize="28" BackgroundColor="{StaticResource SurfaceSubtle}" TextColor="{StaticResource TextSecondary}" CornerRadius="12"/>
+    <Label x:Name="YearLabel" Grid.Column="1" FontSize="{StaticResource FontHeading}" FontAttributes="Bold" TextColor="{StaticResource TextPrimary}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+    <HorizontalStackLayout Grid.Column="2" Spacing="2" HorizontalOptions="End" VerticalOptions="Center">
+     <ImageButton Source="calendarleft.png" Clicked="OnPreviousMonthClicked" WidthRequest="24" HeightRequest="24" Padding="4" BackgroundColor="Transparent"/>
+     <ImageButton Source="calendarright.png" Clicked="OnNextMonthClicked" WidthRequest="24" HeightRequest="24" Padding="4" BackgroundColor="Transparent"/>
+    </HorizontalStackLayout>
+   </Grid>
+   <Label x:Name="MonthLabel" FontSize="{StaticResource FontBody}" TextColor="{StaticResource TextSecondary}" HorizontalOptions="Center" Margin="0,0,0,8"/>
+   <Grid x:Name="CalendarGrid" Padding="18,0,18,16" ColumnDefinitions="*,*,*,*,*,*,*" RowSpacing="8" ColumnSpacing="0"/>
+   <Grid Padding="18,0,18,16">
+    <Button Text="Cancel" Clicked="OnCancelClicked" BackgroundColor="{StaticResource SurfaceSubtle}" TextColor="{StaticResource TextSecondary}" FontSize="{StaticResource FontCaption}" HeightRequest="40" CornerRadius="8"/>
+   </Grid>
+  </VerticalStackLayout>
+ </Border>
+</base:EduTaskPage>

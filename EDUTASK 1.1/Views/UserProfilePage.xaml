@@ -1,0 +1,630 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<base:EduTaskPage xmlns:base="clr-namespace:EDUTASK_1._1.Views.Base" xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:EDUTASK_1._1.Views"
+             x:Class="EDUTASK_1._1.Views.UserProfilePage"
+             NavigationPage.HasNavigationBar="False" Shell.NavBarIsVisible="False"
+             BackgroundColor="{StaticResource SurfaceMuted}">
+
+    <!--
+        Profile.
+
+        Flat: no unnecessary panel borders. The sections are told apart by their
+        headings and spacing while the shared muted app canvas remains visible.
+
+        That is also why the app bar is light. It was navy, which made Profile the
+        only bottom-tab destination not matching Dashboard, Notification and Calendar —
+        all of which carry a light bar with dark text.
+
+        Three sections, in the order someone reads them: who this is, how to reach
+        them, and what their workload looks like.
+
+        The page is a tab rather than a pushed page, so the bar carries no back
+        arrow — there is nothing beneath it on the stack. The overflow menu holds
+        the actions instead.
+    -->
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <Grid x:Name="ProfileAppBar" Grid.Row="0" Padding="18,14"
+              BackgroundColor="{StaticResource SurfaceMuted}">
+            <ImageButton x:Name="ProfileBackButton"
+                         IsVisible="False"
+                         ZIndex="2"
+                         Source="backicon.png" Clicked="OnProfileBackClicked"
+                         Pressed="OnProfileBackPressed" Released="OnProfileBackReleased"
+                         WidthRequest="42" HeightRequest="42" Padding="10"
+                         CornerRadius="12" BackgroundColor="{StaticResource SurfaceBase}"
+                         BorderWidth="0"
+                         HorizontalOptions="Start" VerticalOptions="Center"
+                         SemanticProperties.Description="Back to Teachers and Staff"
+                         ToolTipProperties.Text="Back to Teachers and Staff"/>
+            <Label x:Name="ProfilePageTitleLabel" Text="Profile"
+                   InputTransparent="True"
+                   FontSize="{StaticResource FontHeading}" FontAttributes="Bold"
+                   TextColor="{StaticResource TextPrimary}"
+                   HorizontalTextAlignment="Center" VerticalTextAlignment="Center"
+                   SemanticProperties.HeadingLevel="Level1"/>
+
+            <Border HorizontalOptions="End"
+                    VerticalOptions="Center"
+                    Padding="0"
+                    WidthRequest="84"
+                    HeightRequest="42"
+                    BackgroundColor="{StaticResource SurfaceBase}"
+                    StrokeThickness="0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="8"/>
+                </Border.StrokeShape>
+                <HorizontalStackLayout Spacing="0">
+                    <ImageButton x:Name="ProfileEditButton"
+                                 Source="profiledit.png"
+                                 Clicked="OnProfileEditClicked"
+                                 Pressed="OnProfileEditPressed"
+                                 Released="OnProfileEditReleased"
+                                 BackgroundColor="{StaticResource SurfaceBase}"
+                                 BorderWidth="0"
+                                 Padding="10"
+                                 WidthRequest="42"
+                                 HeightRequest="42"
+                                 CornerRadius="8"
+                                 Aspect="AspectFit"
+                                 SemanticProperties.Description="Edit profile"
+                                 ToolTipProperties.Text="Edit profile"/>
+                    <ImageButton x:Name="ProfileMenuButton"
+                                 Source="dotmenu.png"
+                                 Clicked="OnProfileMenuClicked"
+                                 Pressed="OnProfileMenuPressed"
+                                 Released="OnProfileMenuReleased"
+                                 BackgroundColor="{StaticResource SurfaceBase}"
+                                 BorderWidth="0"
+                                 Padding="10"
+                                 WidthRequest="42"
+                                 HeightRequest="42"
+                                 CornerRadius="8"
+                                 Aspect="AspectFit"
+                                 SemanticProperties.Description="Profile options"
+                                 ToolTipProperties.Text="Profile options"/>
+                </HorizontalStackLayout>
+            </Border>
+        </Grid>
+
+        <ScrollView x:Name="ProfileScrollView" Grid.Row="1"
+                    VerticalScrollBarVisibility="Never">
+            <VerticalStackLayout Padding="20,6,20,28" Spacing="0">
+
+                <!-- Identity -->
+                <Grid ColumnDefinitions="88,*" ColumnSpacing="16">
+                    <Border WidthRequest="88" HeightRequest="88" StrokeThickness="0"
+                            BackgroundColor="{Binding AvatarColor}" VerticalOptions="Center">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="44"/>
+                        </Border.StrokeShape>
+                        <Grid>
+                            <Label Text="{Binding AvatarInitials}" FontSize="{StaticResource FontDisplay}" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextInverse}"
+                                   HorizontalOptions="Center" VerticalOptions="Center"
+                                   IsVisible="{Binding ShowInitials}"/>
+                            <Image Source="{Binding ProfilePhotoPath}" Aspect="AspectFill"
+                                   IsVisible="{Binding HasProfilePhoto}"/>
+                        </Grid>
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                        <Label Text="{Binding FullName}" FontSize="{StaticResource FontTitleLarge}"
+                               FontAttributes="Bold" TextColor="{StaticResource TextPrimary}"
+                               LineBreakMode="TailTruncation"/>
+                        <Label Text="{Binding UsernameDisplay}"
+                               FontSize="{StaticResource FontBody}"
+                               TextColor="{StaticResource TextTertiary}"
+                               LineBreakMode="TailTruncation"/>
+                    </VerticalStackLayout>
+                </Grid>
+
+                <!-- Information -->
+                <Label x:Name="InformationHeadingLabel" Text="Information"
+                       Style="{StaticResource ReportSectionHeading}" Margin="0,28,0,10"/>
+
+                <!-- Email and phone read as links because they are: tapping either
+                     copies it, the same as the overflow menu does. -->
+                <Grid ColumnDefinitions="30,*" ColumnSpacing="10" HeightRequest="32">
+                    <Image Source="profileemail.png" WidthRequest="18" HeightRequest="18"
+                           Aspect="AspectFit" VerticalOptions="Center"/>
+                    <Label Grid.Column="1" Text="{Binding Email}"
+                           FontSize="{StaticResource FontBody}" TextColor="{StaticResource Accent500}"
+                           VerticalTextAlignment="Center" LineBreakMode="TailTruncation"
+                           SemanticProperties.Description="Email address, tap to copy"/>
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnCopyEmailTapped"/>
+                    </Grid.GestureRecognizers>
+                </Grid>
+
+                <Grid ColumnDefinitions="30,*" ColumnSpacing="10" HeightRequest="32">
+                    <Image Source="profilephone.png" WidthRequest="18" HeightRequest="18"
+                           Aspect="AspectFit" VerticalOptions="Center"/>
+                    <Label Grid.Column="1" Text="{Binding ContactNumber}"
+                           FontSize="{StaticResource FontBody}" TextColor="{StaticResource TextPrimary}"
+                           VerticalTextAlignment="Center" LineBreakMode="TailTruncation"
+                           SemanticProperties.Description="Phone number, tap to copy"/>
+                    <Grid.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnCopyPhoneTapped"/>
+                    </Grid.GestureRecognizers>
+                </Grid>
+
+                <Label x:Name="BioLabel"
+                       Text="{Binding BioDisplay}" Style="{StaticResource BodyText}"
+                       Margin="0,6,0,0"/>
+
+                <!-- Useful account information for the director's own profile.
+                     Workload statistics stay out of this view. -->
+                <VerticalStackLayout x:Name="DirectorProfileSection"
+                                     IsVisible="False" Spacing="10">
+                    <Label Text="Account Details"
+                           Style="{StaticResource ReportSectionHeading}"
+                           Margin="0,28,0,2"/>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <Border Padding="12,10"
+                                BackgroundColor="{StaticResource Accent100}"
+                                Stroke="{StaticResource Accent200}"
+                                StrokeThickness="1">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="3">
+                                <Label Text="Role" FontSize="{StaticResource FontCaption}"
+                                       TextColor="{StaticResource TextSecondary}"/>
+                                <Label x:Name="DirectorRoleLabel"
+                                       FontSize="{StaticResource FontBody}"
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource Accent600}"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Border Grid.Column="1" Padding="12,10"
+                                BackgroundColor="{StaticResource StatusSuccessSurface}"
+                                Stroke="{StaticResource StatusSuccessBorder}"
+                                StrokeThickness="1">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="3">
+                                <Label Text="Status" FontSize="{StaticResource FontCaption}"
+                                       TextColor="{StaticResource TextSecondary}"/>
+                                <Label x:Name="DirectorStatusLabel"
+                                       FontSize="{StaticResource FontBody}"
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource StatusSuccess}"/>
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+
+                    <Border Padding="14,11"
+                            BackgroundColor="{StaticResource SurfaceBase}"
+                            Stroke="{StaticResource BorderSubtle}"
+                            StrokeThickness="1">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                        <Grid RowDefinitions="Auto,1,Auto" ColumnDefinitions="*,Auto" RowSpacing="9">
+                            <Label Text="Username" FontSize="{StaticResource FontCaption}"
+                                   TextColor="{StaticResource TextSecondary}"/>
+                            <Label x:Name="DirectorUsernameLabel" Grid.Column="1"
+                                   FontSize="{StaticResource FontBodySmall}"
+                                   FontAttributes="Bold" TextColor="{StaticResource TextPrimary}"/>
+                            <BoxView Grid.Row="1" Grid.ColumnSpan="2"
+                                     Color="{StaticResource BorderSubtle}"/>
+                            <Label Grid.Row="2" Text="Member since"
+                                   FontSize="{StaticResource FontCaption}"
+                                   TextColor="{StaticResource TextSecondary}"/>
+                            <Label x:Name="DirectorMemberSinceLabel" Grid.Row="2" Grid.Column="1"
+                                   FontSize="{StaticResource FontBodySmall}"
+                                   TextColor="{StaticResource TextPrimary}"/>
+                        </Grid>
+                    </Border>
+
+                </VerticalStackLayout>
+
+                <!-- Staff profiles do not have task workload metrics. Show the
+                     account facts that are useful instead. -->
+                <VerticalStackLayout x:Name="StaffProfileSection"
+                                     IsVisible="False" Spacing="10">
+                    <Label Text="Account Details"
+                           Style="{StaticResource ReportSectionHeading}"
+                           Margin="0,28,0,2"/>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <Border Padding="12,10"
+                                BackgroundColor="{StaticResource Accent100}"
+                                Stroke="{StaticResource Accent200}" StrokeThickness="1">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="3">
+                                <Label Text="Role" FontSize="{StaticResource FontCaption}"
+                                       TextColor="{StaticResource TextSecondary}"/>
+                                <Label x:Name="StaffRoleLabel"
+                                       FontSize="{StaticResource FontBody}"
+                                       FontAttributes="Bold" TextColor="{StaticResource Accent600}"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Border Grid.Column="1" Padding="12,10"
+                                BackgroundColor="{StaticResource StatusSuccessSurface}"
+                                Stroke="{StaticResource StatusSuccessBorder}" StrokeThickness="1">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="3">
+                                <Label Text="Account status" FontSize="{StaticResource FontCaption}"
+                                       TextColor="{StaticResource TextSecondary}"/>
+                                <Label x:Name="StaffStatusLabel"
+                                       FontSize="{StaticResource FontBody}"
+                                       FontAttributes="Bold" TextColor="{StaticResource StatusSuccess}"/>
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+
+                    <Border Padding="14,11"
+                            BackgroundColor="{StaticResource SurfaceBase}"
+                            Stroke="{StaticResource BorderSubtle}" StrokeThickness="1">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                        <Grid RowDefinitions="Auto,1,Auto,1,Auto" ColumnDefinitions="*,Auto" RowSpacing="9">
+                            <Label Text="Username" FontSize="{StaticResource FontCaption}"
+                                   TextColor="{StaticResource TextSecondary}"/>
+                            <Label x:Name="StaffUsernameLabel" Grid.Column="1"
+                                   FontSize="{StaticResource FontBodySmall}" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextPrimary}"/>
+                            <BoxView Grid.Row="1" Grid.ColumnSpan="2" Color="{StaticResource BorderSubtle}"/>
+                            <Label Grid.Row="2" Text="Member since"
+                                   FontSize="{StaticResource FontCaption}"
+                                   TextColor="{StaticResource TextSecondary}"/>
+                            <Label x:Name="StaffMemberSinceLabel" Grid.Row="2" Grid.Column="1"
+                                   FontSize="{StaticResource FontBodySmall}" TextColor="{StaticResource TextPrimary}"/>
+                            <BoxView Grid.Row="3" Grid.ColumnSpan="2" Color="{StaticResource BorderSubtle}"/>
+                            <Label Grid.Row="4" Text="Last activity"
+                                   FontSize="{StaticResource FontCaption}"
+                                   TextColor="{StaticResource TextSecondary}"/>
+                            <Label x:Name="StaffLastActivityLabel" Grid.Row="4" Grid.Column="1"
+                                   FontSize="{StaticResource FontBodySmall}" TextColor="{StaticResource TextPrimary}"/>
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- Director viewing a teacher from the account directory. -->
+                <VerticalStackLayout x:Name="TeacherDirectoryAccountSection"
+                                     IsVisible="False" Spacing="10">
+                    <Label Text="Account Details"
+                           Style="{StaticResource ReportSectionHeading}"
+                           Margin="0,28,0,2"/>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <Border Padding="12,10"
+                                BackgroundColor="{StaticResource Accent100}"
+                                Stroke="{StaticResource Accent200}" StrokeThickness="1">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="3">
+                                <Label Text="Role" FontSize="{StaticResource FontCaption}"
+                                       TextColor="{StaticResource TextSecondary}"/>
+                                <Label Text="Teacher" FontSize="{StaticResource FontBody}"
+                                       FontAttributes="Bold" TextColor="{StaticResource Accent600}"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Border x:Name="TeacherDirectoryStatusCard" Grid.Column="1"
+                                Padding="12,10" StrokeThickness="1">
+                            <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                            <VerticalStackLayout Spacing="3">
+                                <Label Text="Status" FontSize="{StaticResource FontCaption}"
+                                       TextColor="{StaticResource TextSecondary}"/>
+                                <Label x:Name="TeacherDirectoryStatusLabel"
+                                       FontSize="{StaticResource FontBody}" FontAttributes="Bold"/>
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+
+                    <Border Padding="14,11"
+                            BackgroundColor="{StaticResource SurfaceBase}"
+                            Stroke="{StaticResource BorderSubtle}" StrokeThickness="1">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
+                        <Grid RowDefinitions="Auto,1,Auto" ColumnDefinitions="*,Auto" RowSpacing="9">
+                            <Label Text="Username" FontSize="{StaticResource FontCaption}"
+                                   TextColor="{StaticResource TextSecondary}"/>
+                            <Label x:Name="TeacherDirectoryUsernameLabel" Grid.Column="1"
+                                   FontSize="{StaticResource FontBodySmall}" FontAttributes="Bold"
+                                   TextColor="{StaticResource TextPrimary}"/>
+                            <BoxView Grid.Row="1" Grid.ColumnSpan="2"
+                                     Color="{StaticResource BorderSubtle}"/>
+                            <Label Grid.Row="2" Text="Member since"
+                                   FontSize="{StaticResource FontCaption}"
+                                   TextColor="{StaticResource TextSecondary}"/>
+                            <Label x:Name="TeacherDirectoryMemberSinceLabel"
+                                   Grid.Row="2" Grid.Column="1"
+                                   FontSize="{StaticResource FontBodySmall}"
+                                   TextColor="{StaticResource TextPrimary}"/>
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
+
+                <!-- Director-only controls when this profile was opened from
+                     Teachers & Staff. This stays inside the existing account
+                     directory flow instead of creating a second admin area. -->
+                <VerticalStackLayout x:Name="AccountManagementSection"
+                                     IsVisible="False" Spacing="10">
+                    <Label Text="Account Management"
+                           Style="{StaticResource ReportSectionHeading}"
+                           Margin="0,28,0,2"/>
+
+                    <!-- Equal summary tiles stay readable on narrow phones;
+                         neither label competes with a long value in one row. -->
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <Border Padding="12,10"
+                                BackgroundColor="{StaticResource Accent100}"
+                                Stroke="{StaticResource Accent200}"
+                                StrokeThickness="1">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12"/>
+                            </Border.StrokeShape>
+                            <VerticalStackLayout Spacing="3">
+                                <Label Text="Role"
+                                       FontSize="{StaticResource FontCaption}"
+                                       TextColor="{StaticResource TextSecondary}"/>
+                                <Label x:Name="ManagedRoleLabel"
+                                       FontSize="{StaticResource FontBody}"
+                                       FontAttributes="Bold"
+                                       TextColor="{StaticResource Accent600}"/>
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Border x:Name="ManagedStatusCard" Grid.Column="1"
+                                Padding="12,10" StrokeThickness="1">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12"/>
+                            </Border.StrokeShape>
+                            <VerticalStackLayout Spacing="3">
+                                <Label Text="Status"
+                                       FontSize="{StaticResource FontCaption}"
+                                       TextColor="{StaticResource TextSecondary}"/>
+                                <Label x:Name="ManagedStatusLabel"
+                                       FontSize="{StaticResource FontBody}"
+                                       FontAttributes="Bold"/>
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+
+                    <!-- Approval gets the full width because its date may wrap
+                         on a phone or when the system font is enlarged. -->
+                    <Border Padding="14,12"
+                            BackgroundColor="{StaticResource SurfaceBase}"
+                            Stroke="{StaticResource BorderSubtle}"
+                            StrokeThickness="1">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="12"/>
+                        </Border.StrokeShape>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Approval"
+                                   FontSize="{StaticResource FontCaption}"
+                                   TextColor="{StaticResource TextSecondary}"/>
+                            <Label x:Name="ManagedApprovalLabel"
+                                   FontSize="{StaticResource FontBodySmall}"
+                                   TextColor="{StaticResource TextPrimary}"
+                                   LineBreakMode="WordWrap"/>
+                        </VerticalStackLayout>
+                    </Border>
+
+                </VerticalStackLayout>
+
+                <VerticalStackLayout x:Name="OverviewSection" Spacing="0">
+                <!-- Overview -->
+                <Grid ColumnDefinitions="*,Auto" Margin="0,30,0,14">
+                    <Label Text="Overview" Style="{StaticResource ReportSectionHeading}"/>
+                    <Label x:Name="LastUpdatedLabel" Grid.Column="1" Text="Updated just now"
+                           FontSize="{StaticResource FontCaption}" TextColor="{StaticResource TextTertiary}"
+                           VerticalOptions="End"/>
+                </Grid>
+
+                <!--
+                    Pie on the left, legend on the right.
+
+                    The chart is drawn by MAUI's built-in GraphicsView. Keeping
+                    the drawing in the app's own canvas avoids creating a native
+                    third-party chart handler when this tab opens, while the
+                    legend below carries the exact values as ordinary XAML.
+
+                    The chart column is Auto and the legend column is star, so
+                    the legend absorbs whatever is left. The pie itself is sized
+                    against the row's real width in OnTaskOverviewSizeChanged —
+                    a fixed square either crowds the legend off a 320dp phone or
+                    looks lost on a tablet. The 140 below is only the size it
+                    draws at before the first layout pass measures the row.
+                -->
+                <Border BackgroundColor="{StaticResource SurfaceBase}"
+                        Stroke="{StaticResource BorderSubtle}" StrokeThickness="1"
+                        Padding="14,16">
+                    <Border.StrokeShape><RoundRectangle CornerRadius="14"/></Border.StrokeShape>
+                    <Grid x:Name="TaskOverviewRow" ColumnDefinitions="Auto,*" ColumnSpacing="20"
+                          SizeChanged="OnTaskOverviewSizeChanged">
+                    <Grid VerticalOptions="Center" HorizontalOptions="Center">
+                        <GraphicsView x:Name="TaskChart"
+                                      WidthRequest="140" HeightRequest="140"
+                                      HorizontalOptions="Center"
+                                      BackgroundColor="Transparent"/>
+
+                        <Label Text="{Binding CompletedPercentage, StringFormat='{0}%'}"
+                               IsVisible="{Binding HasTasks}"
+                               FontSize="{StaticResource FontTitle}" FontAttributes="Bold"
+                               TextColor="{StaticResource TextPrimary}"
+                               HorizontalOptions="Center" VerticalOptions="Center"
+                               HorizontalTextAlignment="Center" VerticalTextAlignment="Center"
+                               InputTransparent="True"/>
+
+                        <Label Text="No tasks yet" IsVisible="{Binding HasNoTasks}"
+                               FontSize="{StaticResource FontBodySmall}"
+                               TextColor="{StaticResource TextTertiary}"
+                               HorizontalOptions="Center" VerticalOptions="Center"
+                               HorizontalTextAlignment="Center" VerticalTextAlignment="Center"
+                               InputTransparent="True"/>
+                    </Grid>
+
+                    <!--
+                        Legend. Swatches use the same ChartCompleted /
+                        ChartOngoing / ChartOverdue fills as the wedges, not the
+                        Status tokens — a swatch that does not match its slice is
+                        worse than no swatch at all.
+
+                        ApplySummary collapses each row into one semantic node so
+                        a screen reader reads "Completed, 6 tasks" instead of
+                        spelling out a decorative square and then a bare number.
+                        That happens in the code-behind rather than here because
+                        the middle row's wording depends on the person: a teacher
+                        has Pending tasks, a staff member has Ongoing ones.
+                    -->
+                    <VerticalStackLayout Grid.Column="1" Spacing="14" VerticalOptions="Center">
+                        <Grid x:Name="CompletedLegendRow" ColumnDefinitions="12,*,Auto" ColumnSpacing="12">
+                            <Border WidthRequest="12" HeightRequest="12" StrokeThickness="0"
+                                    BackgroundColor="{StaticResource ChartCompleted}" VerticalOptions="Center">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="6"/></Border.StrokeShape>
+                            </Border>
+                            <Label Grid.Column="1" Text="Completed" FontSize="{StaticResource FontBody}"
+                                   TextColor="{StaticResource TextSecondary}" VerticalOptions="Center"
+                                   LineBreakMode="TailTruncation"/>
+                            <Label Grid.Column="2" Text="{Binding CompletedCount}" FontSize="{StaticResource FontBody}"
+                                   FontAttributes="Bold" TextColor="{StaticResource TextPrimary}" VerticalOptions="Center"/>
+                        </Grid>
+                        <Grid x:Name="PendingLegendRow" ColumnDefinitions="12,*,Auto" ColumnSpacing="12">
+                            <Border WidthRequest="12" HeightRequest="12" StrokeThickness="0"
+                                    BackgroundColor="{StaticResource ChartOngoing}" VerticalOptions="Center">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="6"/></Border.StrokeShape>
+                            </Border>
+                            <Label Grid.Column="1" Text="{Binding PendingLabel}" FontSize="{StaticResource FontBody}"
+                                   TextColor="{StaticResource TextSecondary}" VerticalOptions="Center"
+                                   LineBreakMode="TailTruncation"/>
+                            <Label Grid.Column="2" Text="{Binding PendingCount}" FontSize="{StaticResource FontBody}"
+                                   FontAttributes="Bold" TextColor="{StaticResource TextPrimary}" VerticalOptions="Center"/>
+                        </Grid>
+                        <Grid x:Name="OverdueLegendRow" ColumnDefinitions="12,*,Auto" ColumnSpacing="12">
+                            <Border WidthRequest="12" HeightRequest="12" StrokeThickness="0"
+                                    BackgroundColor="{StaticResource ChartOverdue}" VerticalOptions="Center">
+                                <Border.StrokeShape><RoundRectangle CornerRadius="6"/></Border.StrokeShape>
+                            </Border>
+                            <Label Grid.Column="1" Text="Overdue" FontSize="{StaticResource FontBody}"
+                                   TextColor="{StaticResource TextSecondary}" VerticalOptions="Center"
+                                   LineBreakMode="TailTruncation"/>
+                            <Label Grid.Column="2" Text="{Binding OverdueCount}" FontSize="{StaticResource FontBody}"
+                                   FontAttributes="Bold" TextColor="{StaticResource TextPrimary}" VerticalOptions="Center"/>
+                        </Grid>
+
+                        <BoxView Style="{StaticResource Divider}" Margin="0,2"/>
+
+                        <Grid ColumnDefinitions="12,*,Auto" ColumnSpacing="12">
+                            <Label Grid.Column="1" Text="{Binding TotalLabel}" FontSize="{StaticResource FontBody}"
+                                   TextColor="{StaticResource TextSecondary}" VerticalOptions="Center"
+                                   LineBreakMode="TailTruncation"/>
+                            <Label Grid.Column="2" Text="{Binding TotalCount}" FontSize="{StaticResource FontBody}"
+                                   FontAttributes="Bold" TextColor="{StaticResource TextPrimary}" VerticalOptions="Center"/>
+                        </Grid>
+                    </VerticalStackLayout>
+                    </Grid>
+                </Border>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+        <!-- Account actions stay reachable at the bottom of the available
+             content area. The scroll view receives a matching bottom inset in
+             code so these controls never cover information on short screens. -->
+        <Border x:Name="ManagedActionsFooter"
+                Grid.Row="1" ZIndex="10"
+                IsVisible="False"
+                Padding="20,12,20,18"
+                BackgroundColor="{StaticResource SurfaceMuted}"
+                StrokeThickness="0"
+                VerticalOptions="End">
+            <VerticalStackLayout Spacing="10">
+                <Button x:Name="PromoteToDirectorButton"
+                        Text="Promote to Director"
+                        Clicked="OnPromoteToDirectorClicked"
+                        HeightRequest="50"
+                        CornerRadius="25"
+                        BackgroundColor="{StaticResource Accent500}"
+                        TextColor="{StaticResource TextInverse}"
+                        FontAttributes="Bold"/>
+
+                <Button x:Name="ManagedAccountStateButton"
+                        Clicked="OnManagedAccountStateClicked"
+                        HeightRequest="50"
+                        CornerRadius="25"
+                        BorderWidth="1"
+                        FontAttributes="Bold"/>
+            </VerticalStackLayout>
+        </Border>
+
+        <local:BottomNavigationBar x:Name="BottomTabBar"
+                                   Grid.Row="2"
+                                   ActiveTab="Profile"/>
+
+        <!-- Copy confirmation. A copy is silent otherwise, and an alert dialog for
+             it would take a tap to dismiss something the user already knows. -->
+        <Border x:Name="Toast" Grid.Row="1" ZIndex="20" IsVisible="False" Opacity="0"
+                InputTransparent="True"
+                BackgroundColor="{StaticResource Brand800}" StrokeThickness="0"
+                Padding="18,10" Margin="0,0,0,18"
+                HorizontalOptions="Center" VerticalOptions="End">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="20"/>
+            </Border.StrokeShape>
+            <Label x:Name="ToastLabel" FontSize="{StaticResource FontBodySmall}"
+                   TextColor="{StaticResource TextInverse}"/>
+        </Border>
+
+        <!-- Profile actions use a modal bottom sheet. The backdrop spans the
+             complete page (including the tab bar), so tapping anywhere outside
+             the sheet dismisses it without activating content underneath. -->
+        <Grid x:Name="ProfileMenuOverlay" Grid.RowSpan="3" ZIndex="100"
+              IsVisible="False" InputTransparent="False">
+            <BoxView x:Name="ProfileMenuBackdrop" Color="{StaticResource ScrimLight}">
+                <BoxView.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnProfileMenuBackdropTapped"/>
+                </BoxView.GestureRecognizers>
+            </BoxView>
+
+            <Border x:Name="ProfileMenuSheet"
+                    Padding="0,10,0,18"
+                    BackgroundColor="{StaticResource SurfaceBase}"
+                    Stroke="Transparent"
+                    StrokeThickness="0"
+                    VerticalOptions="End">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="24,24,0,0"/>
+                </Border.StrokeShape>
+                <Border.Shadow>
+                    <Shadow Brush="{StaticResource ShadowOverlay}"
+                            Offset="0,-4" Radius="16" Opacity="0.55"/>
+                </Border.Shadow>
+
+                <VerticalStackLayout Spacing="0">
+                    <BoxView WidthRequest="42" HeightRequest="4" CornerRadius="2"
+                             Color="{StaticResource Slate200}"
+                             HorizontalOptions="Center" Margin="0,0,0,8"/>
+
+                    <Border HeightRequest="46" Padding="28,0"
+                            BackgroundColor="Transparent" StrokeThickness="0"
+                            SemanticProperties.Description="Copy email">
+                        <Label Text="Copy email" FontSize="{StaticResource FontBody}"
+                               FontAttributes="Bold" TextColor="{StaticResource TextPrimary}"
+                               VerticalTextAlignment="Center"/>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnCopyEmailOptionTapped"/>
+                        </Border.GestureRecognizers>
+                    </Border>
+
+                    <BoxView HeightRequest="1" Color="{StaticResource BorderDefault}"
+                             HorizontalOptions="Fill"/>
+
+                    <Border HeightRequest="46" Padding="28,0"
+                            BackgroundColor="Transparent" StrokeThickness="0"
+                            SemanticProperties.Description="Copy phone number">
+                        <Label Text="Copy phone number" FontSize="{StaticResource FontBody}"
+                               FontAttributes="Bold" TextColor="{StaticResource TextPrimary}"
+                               VerticalTextAlignment="Center"/>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnCopyPhoneOptionTapped"/>
+                        </Border.GestureRecognizers>
+                    </Border>
+
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+    </Grid>
+</base:EduTaskPage>

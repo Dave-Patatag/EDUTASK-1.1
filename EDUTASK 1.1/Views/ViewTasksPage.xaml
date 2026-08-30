@@ -1,66 +1,206 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:viewModels="clr-namespace:EDUTASK_1._1.ViewModels"
-             xmlns:models="clr-namespace:EDUTASK_1._1.Models"
-             x:Class="EDUTASK_1._1.Views.ViewTasksPage"
-             x:DataType="viewModels:TaskListViewModel"
-             NavigationPage.HasNavigationBar="False"
-             Shell.NavBarIsVisible="False"
-             BackgroundColor="#F5F7FA">
-    <Grid Padding="15" RowDefinitions="Auto,*" RowSpacing="12">
-        <Grid ColumnDefinitions="*,Auto">
-            <VerticalStackLayout>
-                <Label Text="All Tasks" FontSize="24" FontAttributes="Bold" TextColor="#2C3E50"/>
-                <Label Text="Select a task to view or edit its details" FontSize="12" TextColor="Gray"/>
-            </VerticalStackLayout>
-            <Button Grid.Column="1"
-                    Text="Create Task"
-                    Clicked="OnCreateClicked"
-                    BackgroundColor="#27AE60"
-                    TextColor="White"
-                    CornerRadius="8"/>
+<base:EduTaskPage xmlns:base="clr-namespace:EDUTASK_1._1.Views.Base"
+                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                  xmlns:local="clr-namespace:EDUTASK_1._1.Views"
+                  xmlns:models="clr-namespace:EDUTASK_1._1.Models"
+                  xmlns:viewModels="clr-namespace:EDUTASK_1._1.ViewModels"
+                  x:Class="EDUTASK_1._1.Views.ViewTasksPage"
+                  x:DataType="viewModels:TaskListViewModel"
+                  NavigationPage.HasNavigationBar="False"
+                  Shell.NavBarIsVisible="False"
+                  BackgroundColor="{StaticResource SurfaceMuted}">
+
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+
+        <!-- Header: back, centred title, divider. Mirrors the Summary Report
+             this page is reached from, so the two read as one flow. -->
+        <Grid x:Name="PageHeader" Padding="18,14" ColumnDefinitions="44,*,44"
+              BackgroundColor="{StaticResource SurfaceMuted}">
+            <ImageButton x:Name="ViewTasksBackButton"
+                         Source="backicon.png" Clicked="OnBackClicked"
+                         Pressed="OnViewTasksBackPressed" Released="OnViewTasksBackReleased"
+                         WidthRequest="42" HeightRequest="42" Padding="10"
+                         CornerRadius="12" BackgroundColor="{StaticResource SurfaceBase}"
+                         BorderWidth="0"
+                         HorizontalOptions="Start" VerticalOptions="Center"
+                         SemanticProperties.Description="Go back"/>
+
+            <Label Grid.Column="1" Text="Tasks"
+                   FontSize="{StaticResource FontHeading}" FontAttributes="Bold"
+                   TextColor="{StaticResource TextPrimary}"
+                   HorizontalTextAlignment="Center" VerticalTextAlignment="Center"
+                   SemanticProperties.HeadingLevel="Level1"/>
+
         </Grid>
 
-        <RefreshView Grid.Row="1"
-                     x:Name="TaskRefreshView"
-                     Command="{Binding RefreshCommand}">
+        <!-- Filter pills: status, teacher, period. Left-aligned so they read in
+             reading order rather than floating in the middle. All three rest
+             outlined; the one whose panel is open fills in — see SetPillActive. -->
+        <Grid x:Name="FilterRow" Grid.Row="1"
+              ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="8"
+              Padding="14,6"
+              Margin="0,0,0,8"
+              HorizontalOptions="Start"
+              BackgroundColor="{StaticResource SurfaceMuted}">
+
+            <Border x:Name="StatusPill" Style="{StaticResource FilterPill}">
+                <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="6">
+                    <Label x:Name="StatusPillLabel" Text="All Task"
+                           Style="{StaticResource FilterPillLabel}"/>
+                    <Label x:Name="StatusPillChevron" Grid.Column="1" Text="&#x25BC;"
+                           Style="{StaticResource FilterPillChevron}"/>
+                </Grid>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnStatusFilterTapped"/>
+                </Border.GestureRecognizers>
+            </Border>
+
+            <Border x:Name="TeacherPill" Grid.Column="1" Style="{StaticResource FilterPill}">
+                <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="6">
+                    <Label x:Name="TeacherPillLabel" Text="All Teacher"
+                           Style="{StaticResource FilterPillLabel}"/>
+                    <Label x:Name="TeacherPillChevron" Grid.Column="1" Text="&#x25BC;"
+                           Style="{StaticResource FilterPillChevron}"/>
+                </Grid>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnTeacherFilterTapped"/>
+                </Border.GestureRecognizers>
+            </Border>
+
+            <Border x:Name="PeriodPill" Grid.Column="2" Style="{StaticResource FilterPill}">
+                <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="6">
+                    <Label x:Name="PeriodPillLabel" Text="This Week"
+                           Style="{StaticResource FilterPillLabel}"/>
+                    <Label x:Name="PeriodPillChevron" Grid.Column="1" Text="&#x25BC;"
+                           Style="{StaticResource FilterPillChevron}"/>
+                </Grid>
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnPeriodFilterTapped"/>
+                </Border.GestureRecognizers>
+            </Border>
+        </Grid>
+
+        <!-- Task list. The muted page canvas sits behind white cards, matching
+             the task dashboards and keeping each row clearly separated. -->
+        <RefreshView Grid.Row="2" x:Name="TaskRefreshView" Command="{Binding RefreshCommand}"
+                     BackgroundColor="{StaticResource SurfaceMuted}"
+                     Padding="0,2,0,4">
             <CollectionView x:Name="TaskCollectionView"
                             ItemsSource="{Binding Tasks}"
                             SelectionMode="Single"
-                            SelectionChanged="OnTaskSelected">
+                            SelectionChanged="OnTaskSelected"
+                            BackgroundColor="{StaticResource SurfaceMuted}"
+                            Margin="{StaticResource CardListMargin}"
+                            ItemsUpdatingScrollMode="KeepScrollOffset">
+
+                <!-- Spacing lives here rather than on the item, and the side
+                     inset comes from the CollectionView's own margin. -->
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical"
+                                       ItemSpacing="3"/>
+                </CollectionView.ItemsLayout>
+
                 <CollectionView.EmptyView>
-                    <VerticalStackLayout Padding="30" HorizontalOptions="Center">
-                        <Label Text="No tasks found" FontSize="18" HorizontalOptions="Center"/>
-                        <Label Text="Create a task to get started." TextColor="Gray" HorizontalOptions="Center"/>
+                    <VerticalStackLayout Padding="32,56" Spacing="8" HorizontalOptions="Center">
+                        <Label Text="No tasks found" Style="{StaticResource EmptyStateTitle}"/>
+                        <Label x:Name="EmptyStateMessageLabel"
+                               Text="Nothing matches these filters yet."
+                               Style="{StaticResource EmptyStateMessage}"/>
                     </VerticalStackLayout>
                 </CollectionView.EmptyView>
+
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:AdministratorTaskItem">
-                        <Border Margin="0,0,0,10" Padding="14" BackgroundColor="White" Stroke="#E1E8ED">
-                            <Border.StrokeShape>
-                                <RoundRectangle CornerRadius="10"/>
-                            </Border.StrokeShape>
-                            <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="6">
-                                <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="17" TextColor="#2C3E50"/>
-                                <Label Grid.Column="1" Text="{Binding Priority}" TextColor="{Binding PriorityColor}" FontAttributes="Bold"/>
-                                <Label Grid.Row="1" Text="{Binding TeacherName}" TextColor="Gray"/>
-                                <Label Grid.Row="1" Grid.Column="1" Text="{Binding Status}" TextColor="{Binding StatusColor}"/>
-                                <Label Grid.Row="2" Text="{Binding DeadlineDisplay, StringFormat='Deadline: {0}'}" FontSize="12" TextColor="#7F8C8D"/>
-                                <Button Grid.Row="2"
-                                        Grid.Column="1"
-                                        Text="Delete"
-                                        FontSize="12"
-                                        Padding="10,4"
-                                        BackgroundColor="#C0392B"
-                                        TextColor="White"
-                                        CommandParameter="{Binding .}"
-                                        Clicked="OnDeleteClicked"/>
+                        <Border Style="{StaticResource TaskListCard}">
+                            <Grid ColumnDefinitions="4,*">
+                                <!-- The priority stripe now belongs to the card
+                                     edge instead of floating inside its padding. -->
+                                <BoxView
+                                         Color="{Binding PriorityColor}"
+                                         WidthRequest="4"
+                                         VerticalOptions="Fill"/>
+
+                                <Grid Grid.Column="1"
+                                      Padding="12,7"
+                                      RowDefinitions="Auto,Auto"
+                                      ColumnDefinitions="*,Auto"
+                                      ColumnSpacing="10" RowSpacing="3">
+
+                                    <Label Text="{Binding Title}"
+                                           FontSize="{StaticResource FontBody}"
+                                           FontAttributes="Bold"
+                                           TextColor="{StaticResource TextPrimary}"
+                                           VerticalTextAlignment="Center"
+                                           LineBreakMode="TailTruncation"/>
+
+                                    <Border Grid.Column="1"
+                                            Padding="7,2"
+                                            BackgroundColor="{Binding CardStatusSurface}"
+                                            Stroke="{Binding CardStatusBorder}"
+                                            StrokeThickness="1"
+                                            HorizontalOptions="End"
+                                            VerticalOptions="Center">
+                                        <Border.StrokeShape>
+                                            <RoundRectangle CornerRadius="10"/>
+                                        </Border.StrokeShape>
+                                        <Label Text="{Binding CardStatus}"
+                                               FontSize="{StaticResource FontCaption}"
+                                               FontAttributes="Bold"
+                                               TextColor="{Binding CardStatusColor}"
+                                               VerticalTextAlignment="Center"/>
+                                    </Border>
+
+                                    <Label Grid.Row="1"
+                                           Text="{Binding TeacherName, StringFormat='Assigned to {0}'}"
+                                           FontSize="{StaticResource FontLabel}"
+                                           TextColor="{StaticResource TextSecondary}"
+                                           LineBreakMode="TailTruncation"/>
+
+                                    <Label Grid.Row="1" Grid.Column="1"
+                                           Text="{Binding DueDisplay}"
+                                           FontSize="{StaticResource FontLabel}"
+                                           TextColor="{Binding DueTextColor}"
+                                           HorizontalTextAlignment="End"
+                                           VerticalTextAlignment="Center"/>
+                                </Grid>
                             </Grid>
                         </Border>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
+
+                <CollectionView.Footer>
+                    <Grid HeightRequest="4"/>
+                </CollectionView.Footer>
             </CollectionView>
         </RefreshView>
+
+        <ActivityIndicator x:Name="LoadingIndicator" Grid.Row="2"
+                           IsVisible="False" IsRunning="False"
+                           VerticalOptions="Start" Margin="0,24,0,0"
+                           Color="{StaticResource Slate400}"/>
+
+        <!-- Filter panels. Placed in the root grid spanning every row so they
+             can hang over the list, and anchored under FilterRow by the
+             controller. -->
+        <Border x:Name="StatusDropdownPanel" Grid.RowSpan="3" ZIndex="30"
+                WidthRequest="170" HorizontalOptions="Start" Margin="18,0,0,0"
+                Style="{StaticResource DropdownPanel}">
+            <VerticalStackLayout x:Name="StatusOptionsHost" Spacing="2"/>
+        </Border>
+
+        <Border x:Name="TeacherDropdownPanel" Grid.RowSpan="3" ZIndex="30"
+                WidthRequest="200" HorizontalOptions="Center"
+                Style="{StaticResource DropdownPanel}">
+            <VerticalStackLayout x:Name="TeacherOptionsHost" Spacing="2"/>
+        </Border>
+
+        <Border x:Name="PeriodDropdownPanel" Grid.RowSpan="3" ZIndex="30"
+                WidthRequest="170" HorizontalOptions="End" Margin="0,0,18,0"
+                Style="{StaticResource DropdownPanel}">
+            <VerticalStackLayout x:Name="PeriodOptionsHost" Spacing="2"/>
+        </Border>
+
+        <local:BottomNavigationBar Grid.Row="3" ActiveTab="Tasks"/>
     </Grid>
-</ContentPage>
+</base:EduTaskPage>

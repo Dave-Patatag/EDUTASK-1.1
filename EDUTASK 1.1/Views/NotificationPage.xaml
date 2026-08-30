@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<base:EduTaskPage xmlns:base="clr-namespace:EDUTASK_1._1.Views.Base"
+                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                  xmlns:local="clr-namespace:EDUTASK_1._1.Views"
+                  xmlns:models="clr-namespace:EDUTASK_1._1.Models"
+                  x:Class="EDUTASK_1._1.Views.NotificationPage"
+                  NavigationPage.HasNavigationBar="False"
+                  Shell.NavBarIsVisible="False"
+                  BackgroundColor="{StaticResource SurfaceMuted}">
+
+    <Grid x:Name="NotificationRoot"
+          RowDefinitions="Auto,Auto,*,Auto">
+
+        <!-- Compact app header from the original notification design: the
+             title follows the menu button instead of floating in the centre. -->
+        <Grid Grid.Row="0" Padding="16,8" ColumnDefinitions="38,*"
+              HeightRequest="60"
+              BackgroundColor="{StaticResource SurfaceMuted}">
+            <Border WidthRequest="38" HeightRequest="38"
+                    BackgroundColor="{StaticResource SurfaceBase}"
+                    Stroke="{StaticResource BorderSubtle}" StrokeThickness="1"
+                    HorizontalOptions="Start" VerticalOptions="Center"
+                    SemanticProperties.Description="Open navigation menu">
+                <Border.StrokeShape><RoundRectangle CornerRadius="11"/></Border.StrokeShape>
+                <Image Source="menubar.png" WidthRequest="20" HeightRequest="20"
+                       HorizontalOptions="Center" VerticalOptions="Center"/>
+                <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuClicked"/></Border.GestureRecognizers>
+            </Border>
+
+            <Label Grid.Column="1" Text="Notification"
+                   FontSize="{StaticResource FontTitle}"
+                   FontAttributes="Bold"
+                   TextColor="{StaticResource TextPrimary}"
+                   Margin="14,0,0,0"
+                   HorizontalTextAlignment="Start"
+                   VerticalTextAlignment="Center"
+                   SemanticProperties.HeadingLevel="Level1"/>
+
+        </Grid>
+
+        <Grid Grid.Row="1" Padding="13,0"
+              HeightRequest="54"
+              BackgroundColor="{StaticResource Brand800}"
+              IsVisible="True">
+            <Label Text="Recent activity"
+                   TextColor="{StaticResource TextInverse}"
+                   FontSize="{StaticResource FontHeading}"
+                   VerticalTextAlignment="Center"/>
+        </Grid>
+
+        <CollectionView Grid.Row="2"
+                        x:Name="NotificationsView"
+                        IsGrouped="True"
+                        SelectionMode="Single"
+                        SelectionChanged="OnNotificationSelected"
+                        BackgroundColor="{StaticResource SurfaceSunken}"
+                        Margin="0"
+                        ItemsUpdatingScrollMode="KeepScrollOffset">
+
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="0"/>
+            </CollectionView.ItemsLayout>
+
+            <CollectionView.GroupHeaderTemplate>
+                <DataTemplate x:DataType="models:NotificationGroup">
+                    <!-- Full-height date bands separate each day's activity. -->
+                    <Grid HeightRequest="36"
+                          MinimumHeightRequest="36"
+                          MaximumHeightRequest="36"
+                          Margin="-12,0"
+                          Padding="22,0,8,0"
+                          ColumnDefinitions="*,Auto,Auto"
+                          ColumnSpacing="4"
+                          BackgroundColor="{StaticResource SurfaceSunken}">
+                        <Label Text="{Binding DateDisplay}"
+                               FontSize="{StaticResource FontBody}"
+                               TextColor="{StaticResource TextPrimary}"
+                               HorizontalOptions="Start"
+                               HorizontalTextAlignment="Start"
+                               VerticalTextAlignment="Center"/>
+
+                        <Button Grid.Column="1"
+                                Text="Cancel"
+                                IsVisible="{Binding IsSelectionMode}"
+                                Clicked="OnCancelSelectionClicked"
+                                HeightRequest="32"
+                                MinimumHeightRequest="32"
+                                Padding="10,0"
+                                BackgroundColor="Transparent"
+                                BorderWidth="0"
+                                FontSize="{StaticResource FontCaption}"
+                                TextColor="{StaticResource TextSecondary}"/>
+
+                        <Button Grid.Column="2"
+                                Text="{Binding DeleteSelectedText}"
+                                IsVisible="{Binding IsSelectionMode}"
+                                IsEnabled="{Binding HasSelectedItems}"
+                                Clicked="OnDeleteSelectedClicked"
+                                HeightRequest="32"
+                                MinimumHeightRequest="32"
+                                Padding="10,0"
+                                BackgroundColor="Transparent"
+                                BorderWidth="0"
+                                FontSize="{StaticResource FontCaption}"
+                                FontAttributes="Bold"
+                                TextColor="{StaticResource StatusDanger}"/>
+
+                        <ImageButton Grid.Column="2"
+                                     Source="cardmenu.png"
+                                     IsVisible="False"
+                                     Clicked="OnDateMenuClicked"
+                                     WidthRequest="34"
+                                     HeightRequest="34"
+                                     Padding="8"
+                                     BackgroundColor="Transparent"
+                                     BorderWidth="0"
+                                     SemanticProperties.Description="Notification options for this date"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.GroupHeaderTemplate>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="models:NotificationItem">
+                    <Grid BackgroundColor="{Binding CardColor}">
+                        <Grid Padding="16,9,10,9"
+                              HeightRequest="70"
+                              MinimumHeightRequest="70"
+                              BackgroundColor="{Binding CardColor}"
+                              ColumnDefinitions="52,*,34"
+                              ColumnSpacing="13">
+
+                            <Border WidthRequest="52" HeightRequest="52"
+                                    BackgroundColor="{Binding AvatarBackgroundColor}"
+                                    StrokeThickness="0"
+                                    VerticalOptions="Center">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="26"/>
+                                </Border.StrokeShape>
+                                <Grid>
+                                    <Image Source="{Binding ActorPhotoPath}"
+                                           Aspect="AspectFill"
+                                           IsVisible="{Binding HasActorPhoto}"/>
+                                    <Label Text="{Binding ActorInitials}"
+                                           TextColor="{StaticResource TextSecondary}"
+                                           FontSize="{StaticResource FontBodySmall}"
+                                           FontAttributes="Bold"
+                                           IsVisible="{Binding ShowActorInitials}"
+                                           HorizontalTextAlignment="Center"
+                                           VerticalTextAlignment="Center"/>
+
+                                    <!-- Nobody sent this one — it is the system
+                                         reporting a deadline or a completion.
+                                         The glyph repeats what the dot says in
+                                         colour, for anyone the four hues do not
+                                         separate. -->
+                                    <Label Text="{Binding IconText}"
+                                           TextColor="{Binding IconTextColor}"
+                                           FontSize="{StaticResource FontHeading}"
+                                           FontAttributes="Bold"
+                                           IsVisible="{Binding ShowStatusIcon}"
+                                           HorizontalTextAlignment="Center"
+                                           VerticalTextAlignment="Center"/>
+                                </Grid>
+                            </Border>
+
+                            <VerticalStackLayout Grid.Column="1" Spacing="1"
+                                                 VerticalOptions="Center">
+                                <Label FontSize="{StaticResource FontBody}"
+                                       MaxLines="2" LineBreakMode="TailTruncation">
+                                    <Label.FormattedText>
+                                        <FormattedString>
+                                            <Span Text="{Binding TitleDisplay}"
+                                                  FontAttributes="Bold"
+                                                  TextColor="{StaticResource TextPrimary}"/>
+                                            <Span Text=" — "
+                                                  TextColor="{StaticResource TextSecondary}"/>
+                                            <Span Text="{Binding Message}"
+                                                  TextColor="{StaticResource TextSecondary}"/>
+                                        </FormattedString>
+                                    </Label.FormattedText>
+                                </Label>
+                                <Label Text="{Binding TimeDisplay}"
+                                       IsVisible="{Binding ShowTime}"
+                                       FontSize="{StaticResource FontMicro}"
+                                       TextColor="{StaticResource TextTertiary}"/>
+                            </VerticalStackLayout>
+
+                            <Grid Grid.Column="2" WidthRequest="34"
+                                  HorizontalOptions="End">
+                                <ImageButton Source="cardmenu.png"
+                                             Clicked="OnNotificationMenuClicked"
+                                             CommandParameter="{Binding .}"
+                                             WidthRequest="34"
+                                             HeightRequest="34"
+                                             Padding="8"
+                                             BackgroundColor="Transparent"
+                                             BorderWidth="0"
+                                             SemanticProperties.Description="Notification options"/>
+                                <CheckBox IsVisible="{Binding IsSelectionMode}"
+                                          IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                          Color="{StaticResource StatusDanger}"
+                                          HorizontalOptions="End"
+                                          VerticalOptions="Center"
+                                          SemanticProperties.Description="Select notification"/>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <CollectionView.Footer>
+                <VerticalStackLayout Spacing="0">
+                    <Button x:Name="SeePreviousNotificationsButton"
+                            Text="See previous notifications"
+                            Clicked="OnSeePreviousNotificationsClicked"
+                            IsVisible="False"
+                            Margin="14,10,14,14"
+                            HeightRequest="42"
+                            CornerRadius="10"
+                            BorderWidth="0"
+                            BackgroundColor="{StaticResource SurfaceSunken}"
+                            TextColor="{StaticResource TextPrimary}"
+                            FontSize="{StaticResource FontBodySmall}"
+                            FontAttributes="Bold"/>
+                    <BoxView HeightRequest="12" Color="Transparent"/>
+                </VerticalStackLayout>
+            </CollectionView.Footer>
+        </CollectionView>
+
+        <VerticalStackLayout x:Name="EmptyState"
+                             Grid.Row="2"
+                             Spacing="6"
+                             Padding="20"
+                             HorizontalOptions="Fill"
+                             VerticalOptions="Center">
+            <Image Source="nonotificationimage.png"
+                   WidthRequest="150"
+                   HeightRequest="150"
+                   Aspect="AspectFit"
+                   HorizontalOptions="Center"
+                   SemanticProperties.Description="No notifications illustration"/>
+            <Label x:Name="EmptyStateTitleLabel"
+                   Text="You're all caught up"
+                   Style="{StaticResource EmptyStateTitle}"
+                   IsVisible="False"
+                   HorizontalTextAlignment="Center"/>
+            <Label x:Name="EmptyStateMessageLabel"
+                   Text="Task updates will appear here."
+                   Style="{StaticResource EmptyStateMessage}"
+                   FontSize="{StaticResource FontBody}"
+                   IsVisible="True"
+                   HorizontalTextAlignment="Center"/>
+        </VerticalStackLayout>
+
+        <Grid x:Name="DateMenuOverlay"
+              Grid.RowSpan="4"
+              IsVisible="False"
+              ZIndex="100">
+            <Button Clicked="OnDateMenuDismissClicked"
+                    BackgroundColor="Transparent"
+                    BorderWidth="0"/>
+
+            <Border x:Name="DateMenuPanel"
+                    WidthRequest="154"
+                    HeightRequest="100"
+                    Margin="0,0,12,0"
+                    Padding="6"
+                    HorizontalOptions="End"
+                    VerticalOptions="Start"
+                    BackgroundColor="{StaticResource SurfaceBase}"
+                    Stroke="{StaticResource BorderSubtle}"
+                    StrokeThickness="1">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="14"/>
+                </Border.StrokeShape>
+                <Border.Shadow>
+                    <Shadow Brush="{StaticResource ShadowAmbient}"
+                            Offset="0,3"
+                            Radius="8"
+                            Opacity="0.45"/>
+                </Border.Shadow>
+                <VerticalStackLayout Spacing="0">
+                    <Grid HeightRequest="44"
+                          Padding="12,0">
+                        <Label Text="Select"
+                               FontSize="{StaticResource FontBody}"
+                               TextColor="{StaticResource TextPrimary}"
+                               HorizontalOptions="Start"
+                               VerticalTextAlignment="Center"/>
+                        <Button Clicked="OnSelectDateNotificationsClicked"
+                                BackgroundColor="Transparent"
+                                BorderWidth="0"
+                                SemanticProperties.Description="Select notifications from this date"/>
+                    </Grid>
+                    <Grid HeightRequest="44"
+                          Padding="12,0">
+                        <Label Text="Delete All"
+                               FontSize="{StaticResource FontBody}"
+                               TextColor="{StaticResource StatusDanger}"
+                               HorizontalOptions="Start"
+                               VerticalTextAlignment="Center"/>
+                        <Button Clicked="OnDeleteAllDateNotificationsClicked"
+                                BackgroundColor="Transparent"
+                                BorderWidth="0"
+                                SemanticProperties.Description="Delete all notifications from this date"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+
+        <local:BottomNavigationBar Grid.Row="3" ActiveTab="Notification"/>
+
+    </Grid>
+</base:EduTaskPage>

@@ -1,3 +1,5 @@
+using EDUTASK_1._1.Helpers;
+
 namespace EDUTASK_1._1.Services;
 
 public static class ProofFileViewerService
@@ -34,7 +36,7 @@ public static class ProofFileViewerService
         var previewPage = new ContentPage
         {
             Title = file.FileName,
-            BackgroundColor = Colors.Black,
+            BackgroundColor = AppColors.ViewerBackdrop,
             Content = new Grid
             {
                 RowDefinitions = { new RowDefinition(GridLength.Star), new RowDefinition(GridLength.Auto) },
@@ -43,7 +45,7 @@ public static class ProofFileViewerService
             }
         };
         Grid.SetRow(closeButton, 1);
-        closeButton.Clicked += async (_, _) => await owner.Navigation.PopModalAsync();
-        await owner.Navigation.PushModalAsync(previewPage);
+        closeButton.Clicked += async (_, _) => await owner.Navigation.PopModalAsync(false);
+        await owner.Navigation.PushModalAsync(previewPage, false);
     }
 }
