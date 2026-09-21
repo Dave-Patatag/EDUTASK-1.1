@@ -1431,7 +1431,7 @@ public class DatabaseService
             historyCommand.Parameters.Add("@Task_id", SqlDbType.Int).Value = taskID;
             await historyCommand.ExecuteNonQueryAsync(cancellationToken);
 
-            const string deleteDiscussions = "DELETE FROM dbo.TaskDiscussion WHERE Task_id = @Task_id";
+            const string deleteDiscussions = "DELETE d FROM dbo.TaskDiscussion d INNER JOIN dbo.Subtask s ON s.Subtask_id = d.Subtask_id WHERE s.Task_id = @Task_id";
             await using var discussionCommand = new SqlCommand(deleteDiscussions, connection, transaction);
             discussionCommand.Parameters.Add("@Task_id", SqlDbType.Int).Value = taskID;
             await discussionCommand.ExecuteNonQueryAsync(cancellationToken);
@@ -2024,10 +2024,7 @@ public class DatabaseService
     public async Task<HashSet<int>> GetTasksWithPreviousDiscussionsAsync(CancellationToken cancellationToken = default)
     {
         await EnsureTaskDiscussionTableAsync(cancellationToken);
-        DataTable table = await ExecuteQueryAsync(
-            "SELECT DISTINCT Task_id FROM dbo.TaskDiscussion WHERE Subtask_id IS NULL",
-            cancellationToken: cancellationToken);
-        return table.AsEnumerable().Select(row => row.Field<int>("Task_id")).ToHashSet();
+        return [];
     }
 
     public Task<List<TaskDiscussionItem>> GetTaskDiscussionsAsync(
@@ -2061,8 +2058,9 @@ public class DatabaseService
             LEFT JOIN dbo.Teacher teacher ON c.Sender_type = N'Teacher' AND teacher.Teacher_id = c.Sender_id
             LEFT JOIN dbo.[User] appUser ON c.Sender_type = N'User' AND appUser.User_id = c.Sender_id
             LEFT JOIN dbo.Roles userRole ON userRole.Role_id = appUser.Role_id
-            WHERE c.Task_id = @Task_id
-              AND (c.Subtask_id = @Subtask_id OR (@Subtask_id IS NULL AND c.Subtask_id IS NULL))
+            INNER JOIN dbo.Subtask subtask ON subtask.Subtask_id = c.Subtask_id
+            WHERE subtask.Task_id = @Task_id
+              AND c.Subtask_id = @Subtask_id
             ORDER BY c.Created_at, c.Discussion_id
             """;
         DataTable table = await ExecuteQueryAsync(
@@ -2108,8 +2106,8 @@ public class DatabaseService
         await EnsureTaskDiscussionTableAsync(cancellationToken);
         const string query = """
             INSERT INTO dbo.TaskDiscussion
-                (Task_id, Subtask_id, Sender_id, Sender_type, Message_text, Message_type, Created_at)
-            SELECT @Task_id, @Subtask_id, @Sender_id, @Sender_type, @Message_text, @Message_type, GETDATE()
+                (Subtask_id, Sender_id, Sender_type, Message_text, Message_type, Created_at)
+            SELECT @Subtask_id, @Sender_id, @Sender_type, @Message_text, @Message_type, GETDATE()
             FROM dbo.Subtask WITH (HOLDLOCK)
             WHERE Task_id = @Task_id AND Subtask_id = @Subtask_id
               AND ((@Sender_type = N'User' AND EXISTS

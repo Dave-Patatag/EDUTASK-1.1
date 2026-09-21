@@ -60,15 +60,12 @@ BEGIN TRY
         CREATE TABLE dbo.TaskDiscussion
         (
             Discussion_id int IDENTITY(1,1) NOT NULL CONSTRAINT PK_TaskDiscussion PRIMARY KEY,
-            Task_id int NOT NULL,
-            Subtask_id int NULL,
+            Subtask_id int NOT NULL,
             Sender_id int NOT NULL,
             Sender_type nvarchar(10) NOT NULL,
             Message_text nvarchar(1000) NOT NULL,
             Message_type nvarchar(20) NOT NULL CONSTRAINT DF_TaskDiscussion_MessageType DEFAULT ('Discussion'),
             Created_at datetime NOT NULL CONSTRAINT DF_TaskDiscussion_CreatedAt DEFAULT (GETDATE()),
-            CONSTRAINT FK_TaskDiscussion_Task FOREIGN KEY (Task_id)
-                REFERENCES dbo.[Task](Task_id) ON DELETE CASCADE,
             CONSTRAINT CK_TaskDiscussion_SenderType
                 CHECK (Sender_type IN (N'User', N'Teacher'))
         );
@@ -175,26 +172,27 @@ BEGIN TRY
         EXEC(N'ALTER TABLE dbo.TaskDiscussion ADD CONSTRAINT DF_TaskDiscussion_MessageType DEFAULT (''Discussion'') FOR Message_type;');
     END;
 
+    -- TaskDiscussion is scoped by Subtask_id. Legacy task-level rows cannot be
+    -- represented after Task_id is removed, so discard only those obsolete rows.
+    IF COL_LENGTH(N'dbo.TaskDiscussion', N'Subtask_id') IS NOT NULL
+        DELETE FROM dbo.TaskDiscussion WHERE Subtask_id IS NULL;
+    IF OBJECT_ID(N'dbo.FK_TaskDiscussion_Task_Subtask', N'F') IS NOT NULL
+        ALTER TABLE dbo.TaskDiscussion DROP CONSTRAINT FK_TaskDiscussion_Task_Subtask;
+    IF OBJECT_ID(N'dbo.FK_TaskDiscussion_Task', N'F') IS NOT NULL
+        ALTER TABLE dbo.TaskDiscussion DROP CONSTRAINT FK_TaskDiscussion_Task;
+    IF EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.TaskDiscussion') AND name = N'IX_TaskDiscussion_Task_Subtask')
+        DROP INDEX IX_TaskDiscussion_Task_Subtask ON dbo.TaskDiscussion;
+    IF COL_LENGTH(N'dbo.TaskDiscussion', N'Task_id') IS NOT NULL
+        ALTER TABLE dbo.TaskDiscussion DROP COLUMN Task_id;
+    IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id=OBJECT_ID(N'dbo.TaskDiscussion') AND name=N'Subtask_id' AND is_nullable=1)
+        ALTER TABLE dbo.TaskDiscussion ALTER COLUMN Subtask_id int NOT NULL;
+
     IF OBJECT_ID(N'dbo.FK_TaskDiscussion_Subtask', N'F') IS NULL
         EXEC(N'ALTER TABLE dbo.TaskDiscussion ADD CONSTRAINT FK_TaskDiscussion_Subtask
-            FOREIGN KEY (Subtask_id) REFERENCES dbo.Subtask(Subtask_id);');
+            FOREIGN KEY (Subtask_id) REFERENCES dbo.Subtask(Subtask_id) ON DELETE CASCADE;');
 
-    -- Preserve legacy task-level messages, but enforce ownership for subtask messages.
-    -- Stop without changing data if an earlier writer supplied inconsistent IDs.
-    EXEC(N'IF EXISTS (
-        SELECT 1 FROM dbo.TaskDiscussion d
-        JOIN dbo.Subtask s ON s.Subtask_id = d.Subtask_id
-        WHERE d.Task_id <> s.Task_id)
-        THROW 50004, ''Discussion task/subtask IDs do not match. Reconcile these records before upgrading.'', 1;');
-
-    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.Subtask') AND name = N'UQ_Subtask_Task_Subtask')
-        CREATE UNIQUE INDEX UQ_Subtask_Task_Subtask ON dbo.Subtask(Task_id, Subtask_id);
-    IF OBJECT_ID(N'dbo.FK_TaskDiscussion_Task_Subtask', N'F') IS NULL
-        EXEC(N'ALTER TABLE dbo.TaskDiscussion WITH CHECK ADD CONSTRAINT FK_TaskDiscussion_Task_Subtask
-            FOREIGN KEY (Task_id, Subtask_id) REFERENCES dbo.Subtask(Task_id, Subtask_id);');
-
-    -- NULL remains available only for existing legacy rows. New messages need a subtask;
-    -- legacy messages cannot be edited or reassigned through an older client.
+    -- New messages always require a subtask; legacy task-level messages were
+    -- discarded above because Task_id is no longer part of this table.
     EXEC(N'CREATE OR ALTER TRIGGER dbo.TR_TaskDiscussion_RequireSubtask
         ON dbo.TaskDiscussion AFTER INSERT, UPDATE AS
         BEGIN
@@ -218,9 +216,9 @@ BEGIN TRY
         );
 
     IF EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.TaskDiscussion') AND name = N'IX_TaskComment_Task_Subtask')
-        EXEC sys.sp_rename N'dbo.TaskDiscussion.IX_TaskComment_Task_Subtask', N'IX_TaskDiscussion_Task_Subtask', N'INDEX';
-    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.TaskDiscussion') AND name = N'IX_TaskDiscussion_Task_Subtask')
-        EXEC(N'CREATE INDEX IX_TaskDiscussion_Task_Subtask ON dbo.TaskDiscussion(Task_id, Subtask_id);');
+        EXEC sys.sp_rename N'dbo.TaskDiscussion.IX_TaskComment_Task_Subtask', N'IX_TaskDiscussion_Subtask', N'INDEX';
+    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.TaskDiscussion') AND name = N'IX_TaskDiscussion_Subtask')
+        EXEC(N'CREATE INDEX IX_TaskDiscussion_Subtask ON dbo.TaskDiscussion(Subtask_id);');
     IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.TaskDiscussion') AND name = N'IX_TaskDiscussion_Sender')
         EXEC(N'CREATE INDEX IX_TaskDiscussion_Sender ON dbo.TaskDiscussion(Sender_type, Sender_id);');
 

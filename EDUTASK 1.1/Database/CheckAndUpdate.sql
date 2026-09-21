@@ -61,7 +61,7 @@ SELECT expected.name AS MissingIndex
 FROM (VALUES
     ('IX_User_RoleID'),('IX_Teacher_RoleID'),('IX_Task_CreatedByUserID'),
     ('IX_Task_ApprovedByUserID'),('IX_TaskAssignment_Task_Teacher'),
-    ('IX_TaskDiscussion_Task_Subtask')
+    ('IX_TaskDiscussion_Subtask')
 ) AS expected(name)
 WHERE NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = expected.name);
 

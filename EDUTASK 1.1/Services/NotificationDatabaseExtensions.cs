@@ -80,18 +80,20 @@ public static class NotificationDatabaseExtensions
                                       WHERE ta2.Task_id=ta.Task_id AND ta2.Completion_status<>N'Completed' AND ta2.Deadline<=DATEADD(day,1,CAST(GETDATE()AS date)))
               UNION ALL
               SELECT CONCAT('comment-owner:',c.Discussion_id),N'New discussion message',
-                CONCAT(te.First_name,N' ',te.Last_name,N' commented on â€œ',t.Title,N'â€.'),N'Action',c.Task_id,c.Created_at,N'User',t.Createdby_user_id,
+                CONCAT(te.First_name,N' ',te.Last_name,N' commented on â€œ',t.Title,N'â€.'),N'Action',s.Task_id,c.Created_at,N'User',t.Createdby_user_id,
                 te.Profile_photo,CONCAT(LEFT(te.First_name,1),LEFT(te.Last_name,1))
               FROM dbo.TaskDiscussion c
-              JOIN dbo.[Task] t ON t.Task_id=c.Task_id
+              JOIN dbo.Subtask s ON s.Subtask_id=c.Subtask_id
+              JOIN dbo.[Task] t ON t.Task_id=s.Task_id
               JOIN dbo.Teacher te ON c.Sender_type=N'Teacher' AND te.Teacher_id=c.Sender_id
               UNION ALL
               SELECT CONCAT('comment-teacher:',c.Discussion_id,'-',ta.Teacher_id),N'New discussion message',
-                CONCAT(u.First_name,N' ',u.Last_name,N' commented on â€œ',t.Title,N'â€.'),N'Action',c.Task_id,c.Created_at,N'Teacher',ta.Teacher_id,
+                CONCAT(u.First_name,N' ',u.Last_name,N' commented on â€œ',t.Title,N'â€.'),N'Action',s.Task_id,c.Created_at,N'Teacher',ta.Teacher_id,
                 u.Profile_photo,CONCAT(LEFT(u.First_name,1),LEFT(u.Last_name,1))
               FROM dbo.TaskDiscussion c
-              JOIN dbo.[Task] t ON t.Task_id=c.Task_id
-              JOIN dbo.TaskAssignment ta ON ta.Task_id=c.Task_id
+              JOIN dbo.Subtask s ON s.Subtask_id=c.Subtask_id
+              JOIN dbo.[Task] t ON t.Task_id=s.Task_id
+              JOIN dbo.TaskAssignment ta ON ta.Task_id=s.Task_id
               JOIN dbo.[User] u ON c.Sender_type=N'User' AND u.User_id=c.Sender_id
             )
             SELECT TOP(100)a.Notification_key,a.Title,a.Message,a.Category,a.Task_id,a.Created_at,a.ActorPhotoPath,a.ActorInitials,

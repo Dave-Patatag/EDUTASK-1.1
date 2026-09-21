@@ -28,7 +28,8 @@ BEGIN TRY
         CREATE UNIQUE INDEX UQ_Teacher_Username ON dbo.Teacher(Username);
 
     -- Supporting indexes for columns filtered/joined on every dashboard, inbox, and discussion query.
-    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.TaskDiscussion') AND name = N'IX_TaskDiscussion_Task_Subtask')
+    IF COL_LENGTH(N'dbo.TaskDiscussion', N'Task_id') IS NOT NULL
+       AND NOT EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.TaskDiscussion') AND name = N'IX_TaskDiscussion_Task_Subtask')
         CREATE INDEX IX_TaskDiscussion_Task_Subtask ON dbo.TaskDiscussion(Task_id, Subtask_id);
     IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.TaskAssignment') AND name = N'IX_TaskAssignment_Task_Teacher')
         CREATE INDEX IX_TaskAssignment_Task_Teacher ON dbo.TaskAssignment(Task_id, Teacher_id);
