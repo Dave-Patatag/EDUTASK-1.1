@@ -16,9 +16,9 @@ public partial class TeacherSelectionPage : EduTaskPage
     {
         InitializeComponent();
         _minimumSelection = Math.Max(1, minimumSelection);
-        var selectedIds = selectedTeachers.Select(teacher => teacher.TeacherID).ToHashSet();
+        var selectedIds = selectedTeachers.Select(teacher => teacher.Teacher_id).ToHashSet();
         _teachers = teachers
-            .Select(teacher => new SelectableTeacher(teacher, selectedIds.Contains(teacher.TeacherID), UpdateCount))
+            .Select(teacher => new SelectableTeacher(teacher, selectedIds.Contains(teacher.Teacher_id), UpdateCount))
             .ToList();
         TeachersView.ItemsSource = _teachers;
         UpdateCount();

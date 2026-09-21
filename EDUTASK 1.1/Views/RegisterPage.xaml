@@ -8,9 +8,9 @@
         <Border BackgroundColor="{StaticResource SurfaceBase}" StrokeThickness="0" Padding="16,18,16,24">
             <VerticalStackLayout Spacing="14">
                 <Grid ColumnDefinitions="40,*,40">
-                    <ImageButton Source="authback.png" Clicked="OnBackClicked"
+                    <ImageButton Source="whitebackicon.png" Clicked="OnBackClicked"
                                  WidthRequest="34" HeightRequest="34" Padding="6"
-                                 BackgroundColor="Transparent" HorizontalOptions="Start"/>
+                                 BackgroundColor="{StaticResource ActionDismiss}" CornerRadius="17" HorizontalOptions="Start"/>
                     <Label Grid.Column="1" Text="Create Account"
                            FontSize="{StaticResource FontHeading}" FontAttributes="Bold" TextColor="{StaticResource TextPrimary}"
                            HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
@@ -165,7 +165,7 @@
                 </ContentView>
                 <Button Text="Create account" Clicked="OnCreateClicked"
                         Margin="0,20,0,0"
-                        BackgroundColor="{StaticResource Brand800}" TextColor="{StaticResource TextInverse}"
+                        BackgroundColor="{StaticResource ActionPrimary}" TextColor="{StaticResource TextInverse}"
                         CornerRadius="8" HeightRequest="50"/>
                 <HorizontalStackLayout HorizontalOptions="Center" Spacing="3">
                     <Label Text="Already have an account?" FontSize="{StaticResource FontMicro}" TextColor="{StaticResource TextTertiary}"/>

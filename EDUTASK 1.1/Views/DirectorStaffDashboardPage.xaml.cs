@@ -1,4 +1,4 @@
-﻿using EDUTASK_1._1.Services;
+using EDUTASK_1._1.Services;
 using System.Data;
 using EDUTASK_1._1.Helpers;
 using EDUTASK_1._1.Views.Base;
@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Data.SqlClient;
 using DashboardTaskItem = EDUTASK_1._1.Models.DashboardTaskItem;
 using DeadlineTaskGroup = EDUTASK_1._1.Models.DeadlineTaskGroup;
+using PreparedProofImage = EDUTASK_1._1.Models.PreparedProofImage;
 using EDUTASK_1._1.ViewModels;
 
 namespace EDUTASK_1._1.Views
@@ -26,7 +27,8 @@ namespace EDUTASK_1._1.Views
         private CancellationTokenSource? _monitoringCancellation;
         private bool _isLoadingTasks;
         private bool _isRefreshingProgress;
-        private readonly HashSet<int> _expandedTaskGroups = [];
+        private bool _hasLoadedDashboard;
+        private int? _expandedTaskID;
 
         public DirectorStaffDashboardPage()
         {
@@ -100,9 +102,12 @@ namespace EDUTASK_1._1.Views
         {
             base.OnAppearing();
             UpdateGreeting();
-            await LoadDashboardDataAsync();
+            if (!_hasLoadedDashboard)
+                _hasLoadedDashboard = await LoadDashboardDataAsync();
             StartProgressMonitoring();
         }
+
+        internal void RequestDataRefresh() => _hasLoadedDashboard = false;
 
         protected override void OnDisappearing()
         {
@@ -146,10 +151,10 @@ namespace EDUTASK_1._1.Views
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
-                    var subtasks = await _db.GetTaskSubtasksAsync(task.TaskID);
+                    var subtasks = await _db.GetTaskSubtasksAsync(task.Task_id);
                     object? completionValue = await _db.ExecuteScalarAsync(
-                        "SELECT CompletionStatus FROM TaskAssignment WHERE AssignmentID = @AssignmentID",
-                        [new SqlParameter("@AssignmentID", SqlDbType.Int) { Value = task.AssignmentID }]);
+                        "SELECT Completion_status FROM TaskAssignment WHERE Assignment_id = @Assignment_id",
+                        [new SqlParameter("@Assignment_id", SqlDbType.Int) { Value = task.Assignment_id }]);
                     string completion = completionValue?.ToString() ?? "Pending";
                     int submittedItems = subtasks.Count(subtask => subtask.IsProofPending || subtask.IsProofApproved);
                     int verifiedItems = subtasks.Count(subtask => subtask.IsProofApproved);
@@ -169,36 +174,38 @@ namespace EDUTASK_1._1.Views
             }
         }
 
-        private async Task LoadDashboardDataAsync()
+        private async Task<bool> LoadDashboardDataAsync()
         {
             try
             {
                 if (await UserSessionService.GetCurrentUserAsync() is { } currentUser)
                 {
-                    string role = string.IsNullOrWhiteSpace(currentUser.RoleName)
+                    string role = string.IsNullOrWhiteSpace(currentUser.Role_name)
                         ? "Staff"
-                        : currentUser.RoleName.Trim();
-                    DashboardUserNameLabel.Text = $"{role} {currentUser.FirstName}".Trim();
+                        : currentUser.Role_name.Trim();
+                    DashboardUserNameLabel.Text = $"{role} {currentUser.First_name}".Trim();
                 }
 
                 _viewModel.TotalTasks = Convert.ToInt32(
-                    await _db.ExecuteScalarAsync("SELECT COUNT(DISTINCT TaskID) FROM TaskAssignment"));
+                    await _db.ExecuteScalarAsync("SELECT COUNT(DISTINCT Task_id) FROM TaskAssignment"));
 
-                const string completedQuery = "SELECT COUNT(DISTINCT TaskID) FROM TaskAssignment WHERE CompletionStatus = @CompletionStatus";
+                const string completedQuery = "SELECT COUNT(DISTINCT Task_id) FROM TaskAssignment WHERE Completion_status = @Completion_status";
                 _viewModel.CompletedTasks = Convert.ToInt32(await _db.ExecuteScalarAsync(
                     completedQuery,
-                    [new SqlParameter("@CompletionStatus", SqlDbType.NVarChar, 20) { Value = "Completed" }]));
+                    [new SqlParameter("@Completion_status", SqlDbType.NVarChar, 20) { Value = "Completed" }]));
 
-                const string pendingQuery = "SELECT COUNT(DISTINCT TaskID) FROM TaskAssignment WHERE CompletionStatus <> @CompletionStatus OR CompletionStatus IS NULL";
+                const string pendingQuery = "SELECT COUNT(DISTINCT Task_id) FROM TaskAssignment WHERE Completion_status <> @Completion_status OR Completion_status IS NULL";
                 _viewModel.PendingTasks = Convert.ToInt32(await _db.ExecuteScalarAsync(
                     pendingQuery,
-                    [new SqlParameter("@CompletionStatus", SqlDbType.NVarChar, 20) { Value = "Completed" }]));
+                    [new SqlParameter("@Completion_status", SqlDbType.NVarChar, 20) { Value = "Completed" }]));
 
                 await LoadTasks("All");
+                return true;
             }
             catch (Exception ex)
             {
                 await UiAlertService.ShowAsync(this, "Dashboard couldn't load", "We couldn't load the dashboard. Please try again.", "OK");
+                return false;
             }
         }
 
@@ -212,20 +219,21 @@ namespace EDUTASK_1._1.Views
             {
                 _currentFilter = filter;
                 var dt = await _db.GetAllTasksWithTeachersAsync();
+                HashSet<int> previousDiscussionTasks = await _db.GetTasksWithPreviousDiscussionsAsync();
                 _loadedTasks.Clear();
 
-                int[] taskIDs = dt.AsEnumerable().Select(row => row.Field<int>("TaskID")).Distinct().ToArray();
+                int[] taskIDs = dt.AsEnumerable().Select(row => row.Field<int>("Task_id")).Distinct().ToArray();
                 Dictionary<int, System.Threading.Tasks.Task<List<EDUTASK_1._1.Models.SubtaskDisplayItem>>> subtaskLoads =
                     taskIDs.ToDictionary(taskID => taskID, taskID => _db.GetTaskSubtasksAsync(taskID));
-                foreach (IGrouping<int, DataRow> taskGroup in dt.AsEnumerable().GroupBy(row => row.Field<int>("TaskID")))
+                foreach (IGrouping<int, DataRow> taskGroup in dt.AsEnumerable().GroupBy(row => row.Field<int>("Task_id")))
                 {
                     DataRow[] rows = taskGroup.ToArray();
                     bool allAssignmentsAwaitingValidation = rows.Length > 0 && rows.All(row =>
-                        string.Equals(row["CompletionStatus"]?.ToString(), "For Validation", StringComparison.Ordinal));
+                        string.Equals(row["Completion_status"]?.ToString(), "For Validation", StringComparison.Ordinal));
                     bool allAssignmentsCompleted = rows.Length > 0 && rows.All(row =>
-                        string.Equals(row["CompletionStatus"]?.ToString(), "Completed", StringComparison.Ordinal));
+                        string.Equals(row["Completion_status"]?.ToString(), "Completed", StringComparison.Ordinal));
                     string completion = rows
-                        .Select(row => row["CompletionStatus"]?.ToString() ?? "Pending")
+                        .Select(row => row["Completion_status"]?.ToString() ?? "Pending")
                         .OrderByDescending(status => status switch
                         {
                             "Completed" => 4,
@@ -235,15 +243,18 @@ namespace EDUTASK_1._1.Views
                         })
                         .First();
                     DataRow displayRow = rows.FirstOrDefault(row =>
-                        string.Equals(row["CompletionStatus"]?.ToString() ?? "Pending", completion, StringComparison.Ordinal)) ?? rows[0];
-                    bool isAcknowledged = rows.Any(row => !row.IsNull("IsAcknowledged") && Convert.ToBoolean(row["IsAcknowledged"]));
+                        string.Equals(row["Completion_status"]?.ToString() ?? "Pending", completion, StringComparison.Ordinal)) ?? rows[0];
+                    bool isAcknowledged = rows.Any(row => !row.IsNull("Is_acknowledged") && Convert.ToBoolean(row["Is_acknowledged"]));
                     DateTime? deadline = displayRow.IsNull("Deadline")
                         ? null
                         : Convert.ToDateTime(displayRow["Deadline"]);
-                    string teacherSummary = string.Join(", ", rows
+                    string[] teacherNames = rows
                         .Select(row => row["TeacherName"]?.ToString())
                         .Where(name => !string.IsNullOrWhiteSpace(name))
-                        .Distinct(StringComparer.OrdinalIgnoreCase));
+                        .Select(name => name!)
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToArray();
+                    string teacherSummary = string.Join(", ", teacherNames);
                     if (string.IsNullOrWhiteSpace(teacherSummary))
                         teacherSummary = "Unassigned";
 
@@ -257,8 +268,8 @@ namespace EDUTASK_1._1.Views
                         Dictionary<int, int> unreadCounts;
                         try
                         {
-                            unreadCounts = await _db.GetUnreadTaskCommentCountsAsync(
-                                subtasks.Select(subtask => subtask.SubtaskID), "User", UserSessionService.CurrentUserId);
+                            unreadCounts = await _db.GetUnreadTaskDiscussionCountsAsync(
+                                subtasks.Select(subtask => subtask.Subtask_id), "User", UserSessionService.CurrentUserId);
                         }
                         catch (Exception discussionException)
                         {
@@ -268,7 +279,7 @@ namespace EDUTASK_1._1.Views
                         foreach (var subtask in subtasks)
                         {
                             subtask.ReviewIsAvailable = reviewIsAvailable;
-                            subtask.UnreadDiscussionCount = unreadCounts.GetValueOrDefault(subtask.SubtaskID);
+                            subtask.UnreadDiscussionCount = unreadCounts.GetValueOrDefault(subtask.Subtask_id);
                         }
                     }
                     catch (Exception subtaskException)
@@ -289,32 +300,34 @@ namespace EDUTASK_1._1.Views
 
                     _loadedTasks.Add(new DashboardTaskItem
                     {
-                        TaskID = taskID,
-                        AssignmentID = displayRow.IsNull("AssignmentID") ? 0 : Convert.ToInt32(displayRow["AssignmentID"]),
-                        CreatedByUserID = displayRow.IsNull("CreatedByUserID")
-                            ? Convert.ToInt32(displayRow["UserID"])
-                            : Convert.ToInt32(displayRow["CreatedByUserID"]),
+                        Task_id = taskID,
+                        Assignment_id = displayRow.IsNull("Assignment_id") ? 0 : Convert.ToInt32(displayRow["Assignment_id"]),
+                        Createdby_user_id = Convert.ToInt32(displayRow["Createdby_user_id"]),
+                        Created_at = displayRow.Field<DateTime>("Created_at"),
                         Title = displayRow["Title"].ToString(),
                         Description = string.IsNullOrWhiteSpace(displayRow["Description"]?.ToString())
                             ? "No description provided."
                             : displayRow["Description"].ToString()!,
                         TeacherName = teacherSummary,
+                        TeacherNames = teacherNames,
                         DeadlineDisplay = deadline?.ToString("MMM dd, yyyy") ?? "No deadline",
                         Priority = displayRow["Priority"]?.ToString() ?? "Unassigned",
                         PriorityColor = TaskPalette.PriorityColor(displayRow["Priority"]?.ToString() ?? string.Empty),
                         Status = status,
                         StatusColor = TaskPalette.StatusColor(status),
                         Deadline = deadline,
-                        CompletedAt = rows.Where(row => !row.IsNull("CompletedAt"))
-                            .Select(row => row.Field<DateTime>("CompletedAt"))
+                        Completed_at = rows.Where(row => !row.IsNull("Completed_at"))
+                            .Select(row => row.Field<DateTime>("Completed_at"))
                             .DefaultIfEmpty()
                             .Max(),
-                        IsCompleted = allAssignmentsCompleted,
+                        Is_completed = allAssignmentsCompleted,
                         IsAwaitingValidation = allAssignmentsAwaitingValidation,
                         Subtasks = subtasks,
+                        HasPreviousDiscussion = previousDiscussionTasks.Contains(taskID),
                         SubmittedProgressItems = submittedProgressItems,
                         VerifiedProgressItems = verifiedProgressItems,
-                        TotalProgressItems = subtasks.Count
+                        TotalProgressItems = subtasks.Count,
+                        IsExpanded = _expandedTaskID == taskID
                     });
                 }
                 ApplyTaskFilters();
@@ -338,8 +351,8 @@ namespace EDUTASK_1._1.Views
             IEnumerable<DashboardTaskItem> tasks = _loadedTasks.Where(task => _currentFilter switch
             {
                 "Today" => task.Deadline is not null && task.Deadline.Value.Date == DateTime.Today,
-                "Completed" => task.IsCompleted,
-                "Overdue" => !task.IsCompleted && task.Deadline is not null && task.Deadline.Value.Date < DateTime.Today,
+                "Completed" => task.Is_completed,
+                "Overdue" => !task.Is_completed && task.Deadline is not null && task.Deadline.Value.Date < DateTime.Today,
                 _ => true
             });
 
@@ -355,6 +368,12 @@ namespace EDUTASK_1._1.Views
             }
 
             var visibleTasks = new ObservableCollection<DashboardTaskItem>(tasks);
+            if (_expandedTaskID is int expandedTaskID &&
+                visibleTasks.All(task => task.Task_id != expandedTaskID))
+            {
+                SetExpandedTask(null);
+            }
+
             _viewModel.Tasks = visibleTasks;
             PopulateTodayAndCompletedSections(visibleTasks);
         }
@@ -462,55 +481,17 @@ namespace EDUTASK_1._1.Views
                 return;
             try
             {
-                var proof = await _db.GetSubtaskProofImageAsync(subtask.SubtaskID);
-                if (proof is null)
+                List<PreparedProofImage> files = await _db.GetSubtaskProofFilesAsync(subtask.Subtask_id);
+                if (files.Count == 0)
                 {
-                    await UiAlertService.ShowAsync(this, "File unavailable", "We couldn't find the submitted file. It may have been replaced or removed.");
+                    await UiAlertService.ShowAsync(this, "Files unavailable", "We couldn't find the submitted files. They may have been replaced or removed.");
                     return;
                 }
-
-                byte[] bytes = proof.Value.Data;
-                if (string.Equals(proof.Value.ContentType, "application/pdf", StringComparison.OrdinalIgnoreCase))
-                {
-                    string safeFileName = Path.GetFileName(proof.Value.FileName);
-                    if (string.IsNullOrWhiteSpace(safeFileName) || !safeFileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
-                        safeFileName = $"proof-{subtask.SubtaskID}.pdf";
-                    string localPath = Path.Combine(FileSystem.CacheDirectory, safeFileName);
-                    await File.WriteAllBytesAsync(localPath, bytes);
-                    await Launcher.Default.OpenAsync(new OpenFileRequest
-                    {
-                        Title = safeFileName,
-                        File = new ReadOnlyFile(localPath, "application/pdf")
-                    });
-                    return;
-                }
-
-                var image = new Image
-                {
-                    Source = ImageSource.FromStream(() => new MemoryStream(bytes)),
-                    Aspect = Aspect.AspectFit,
-                    HorizontalOptions = LayoutOptions.Fill,
-                    VerticalOptions = LayoutOptions.Fill
-                };
-                var closeButton = new Button { Text = "Close", HorizontalOptions = LayoutOptions.Center };
-                var previewPage = new ContentPage
-                {
-                    Title = proof.Value.FileName,
-                    BackgroundColor = AppColors.TextPrimary,
-                    Content = new Grid
-                    {
-                        RowDefinitions = { new RowDefinition(GridLength.Star), new RowDefinition(GridLength.Auto) },
-                        Padding = new Thickness(12),
-                        Children = { image, closeButton }
-                    }
-                };
-                Grid.SetRow(closeButton, 1);
-                closeButton.Clicked += async (_, _) => await Navigation.PopModalAsync(false);
-                await Navigation.PushModalAsync(previewPage, false);
+                await ProofFileViewerService.OpenManyAsync(this, files, $"proof-{subtask.Subtask_id}");
             }
             catch
             {
-                await UiAlertService.ShowAsync(this, "File couldn't open", "We couldn't open this file. Please try again.");
+                await UiAlertService.ShowAsync(this, "Files couldn't open", "We couldn't open these files. Please try again.");
             }
         }
 
@@ -565,7 +546,7 @@ namespace EDUTASK_1._1.Views
         {
             try
             {
-                bool reviewed = await _db.ReviewSubtaskProofAsync(subtask.SubtaskID, approve, UserSessionService.CurrentUserId, remarks);
+                bool reviewed = await _db.ReviewSubtaskProofAsync(subtask.Subtask_id, approve, UserSessionService.CurrentUserId, remarks);
                 if (!reviewed)
                 {
                     await UiAlertService.ShowAsync(this, "File already updated", "This file was already reviewed or replaced. Refresh the task to see the latest version.");
@@ -573,16 +554,11 @@ namespace EDUTASK_1._1.Views
                 }
                 if (!approve && !string.IsNullOrWhiteSpace(remarks))
                 {
-                    var currentUser = await UserSessionService.GetCurrentUserAsync();
-                    string authorName = currentUser is null
-                        ? "Admin"
-                        : $"{currentUser.FirstName} {currentUser.LastName}".Trim();
-                    await _db.AddTaskCommentAsync(
-                        subtask.TaskID,
-                        subtask.SubtaskID,
+                    await _db.AddTaskDiscussionAsync(
+                        subtask.Task_id,
+                        subtask.Subtask_id,
                         "User",
                         UserSessionService.CurrentUserId,
-                        authorName,
                         remarks.Trim(),
                         "ProofReturn");
                 }
@@ -629,46 +605,131 @@ namespace EDUTASK_1._1.Views
         }
         private async void OnMarkIncompleteClicked(object sender, EventArgs e)
         {
-            if (sender is not Button { CommandParameter: int id }) return;
-            if (await UiAlertService.ConfirmAsync(this, "Mark incomplete", "Return this task to the teacher?", "Return", "Cancel") && await _db.RejectTaskCompletionAsync(id, UserSessionService.CurrentUserId, "Please revise the submitted work.")) await LoadDashboardDataAsync();
-        }
-        private void OnMenuBarClicked(object sender, EventArgs e)
-        {
-            if (DashboardFlyoutPage.Current is { } flyout)
-                flyout.IsPresented = true;
-        }
+            if (sender is not Button { CommandParameter: int id } button)
+                return;
+            if (!await UiAlertService.ConfirmAsync(
+                    this,
+                    "Mark incomplete",
+                    "Return this task to the teacher?",
+                    "Return",
+                    "Cancel"))
+                return;
 
+            button.IsEnabled = false;
+            try
+            {
+                if (await _db.RejectTaskCompletionAsync(id, UserSessionService.CurrentUserId))
+                    await LoadDashboardDataAsync();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Returning task failed: {ex}");
+                await UiAlertService.ShowAsync(
+                    this,
+                    "Task couldn't be returned",
+                    "We couldn't return this task. Please refresh and try again.");
+            }
+            finally
+            {
+                button.IsEnabled = true;
+            }
+        }
         private async void OnTaskSelected(object sender, SelectedItemChangedEventArgs e)
         {
             if (e.SelectedItem is not DashboardTaskItem task)
                 return;
 
-            await Navigation.PushModalAsync(new EditTaskPage(task.TaskID, !task.CanEdit), false);
+            await Navigation.PushModalAsync(new EditTaskPage(task.Task_id, !task.CanEdit), false);
         }
 
-private ObservableCollection<DeadlineTaskGroup> BuildDeadlineGroups(IEnumerable<DashboardTaskItem> tasks)
+        private ObservableCollection<DeadlineTaskGroup> BuildDeadlineGroups(
+            IEnumerable<DashboardTaskItem> tasks,
+            bool organizeByUrgency = false)
         {
-            return new ObservableCollection<DeadlineTaskGroup>(tasks
-                .OrderBy(task => TaskPalette.PriorityRank(task.Priority))
-                .ThenBy(task => task.Deadline?.Date ?? DateTime.MaxValue)
-                .ThenBy(task => task.Title)
-                .Select(task => new DeadlineTaskGroup
+            List<DashboardTaskItem> orderedTasks = organizeByUrgency
+                ? tasks
+                    .OrderBy(UrgencyRank)
+                    .ThenBy(task => task.Deadline?.Date ?? DateTime.MaxValue)
+                    .ThenBy(task => TaskPalette.PriorityRank(task.Priority))
+                    .ThenBy(task => task.Title)
+                    .ToList()
+                : tasks
+                    .OrderBy(task => TaskPalette.PriorityRank(task.Priority))
+                    .ThenBy(task => task.Deadline?.Date ?? DateTime.MaxValue)
+                    .ThenBy(task => task.Title)
+                    .ToList();
+
+            List<List<DashboardTaskItem>> taskCards = orderedTasks
+                .GroupBy(TaskCardKey)
+                .Select(group => group.ToList())
+                .ToList();
+
+            Dictionary<string, int> sectionCounts = taskCards
+                .GroupBy(card => UrgencySection(card.OrderBy(UrgencyRank).First()))
+                .ToDictionary(group => group.Key, group => group.Count());
+            string? previousSection = null;
+            var groups = new List<DeadlineTaskGroup>(taskCards.Count);
+
+            foreach (List<DashboardTaskItem> cardTasks in taskCards)
+            {
+                DashboardTaskItem task = cardTasks.OrderBy(UrgencyRank).First();
+                string section = UrgencySection(task);
+                bool showSectionHeader = organizeByUrgency && section != previousSection;
+                previousSection = section;
+                int sectionCount = sectionCounts[section];
+
+                groups.Add(new DeadlineTaskGroup
                 {
                     Deadline = task.Deadline?.Date,
                     DeadlineDisplay = task.Deadline.HasValue
                         ? DeadlineTaskGroup.FormatHeader(task.Deadline.Value)
                         : "No deadline",
-                    TeacherSummary = task.TeacherName,
-                    Tasks = [task],
-                        IsExpanded = _expandedTaskGroups.Contains(task.TaskID),
+                    TaskTitle = task.Title,
+                    TeacherSummary = FormatTeacherSummary(cardTasks),
+                    ShowSectionHeader = showSectionHeader,
+                    SectionTitle = section,
+                    SectionCountText = $"{sectionCount} {(sectionCount == 1 ? "task" : "tasks")}",
+                    SectionColor = UrgencyColor(section),
+                    Tasks = cardTasks,
+                    IsExpanded = _expandedTaskID.HasValue && cardTasks.Any(item => item.Task_id == _expandedTaskID.Value),
                     PriorityColor = task.PriorityColor
-                }));
+                });
+            }
+
+            return new ObservableCollection<DeadlineTaskGroup>(groups);
         }
+
+        private static int UrgencyRank(DashboardTaskItem task) => UrgencySection(task) switch
+        {
+            "Overdue" => 0,
+            "Due today" => 1,
+            "Upcoming" => 2,
+            _ => 3
+        };
+
+        private static string UrgencySection(DashboardTaskItem task)
+        {
+            if (task.Deadline is not DateTime deadline)
+                return "No deadline";
+            if (deadline.Date < DateTime.Today)
+                return "Overdue";
+            return deadline.Date == DateTime.Today ? "Due today" : "Upcoming";
+        }
+
+        private static Color UrgencyColor(string section) => section switch
+        {
+            "Overdue" => AppColors.StatusDanger,
+            "Due today" => AppColors.Accent500,
+            "Upcoming" => AppColors.StatusSuccess,
+            _ => AppColors.TextSecondary
+        };
 
         private static string FormatTeacherSummary(IEnumerable<DashboardTaskItem> tasks)
         {
             string[] teachers = tasks
-                .Select(task => task.TeacherName)
+                .SelectMany(task => task.TeacherNames.Count > 0
+                    ? task.TeacherNames
+                    : [task.TeacherName])
                 .Where(name => !string.IsNullOrWhiteSpace(name))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
@@ -677,8 +738,24 @@ private ObservableCollection<DeadlineTaskGroup> BuildDeadlineGroups(IEnumerable<
             {
                 0 => "Unassigned",
                 1 => teachers[0],
-                _ => $"{teachers.Length} teachers"
+                2 => string.Join(", ", teachers),
+                _ => $"{string.Join(", ", teachers.Take(2))} +{teachers.Length - 2} more"
             };
+        }
+
+        private static string TaskCardKey(DashboardTaskItem task)
+        {
+            static string Normalize(string? value) => value?.Trim().ToUpperInvariant() ?? string.Empty;
+
+            string subtaskTitles = string.Join("\u001e", task.Subtasks.Select(subtask => Normalize(subtask.Title)));
+            return string.Join("\u001f",
+                task.Createdby_user_id,
+                task.Created_at.Date.ToString("yyyyMMdd"),
+                Normalize(task.Title),
+                Normalize(task.Description),
+                task.Deadline?.Date.ToString("yyyyMMdd") ?? string.Empty,
+                Normalize(task.Priority),
+                subtaskTitles);
         }
 
         private void OnDeadlineGroupTapped(object sender, TappedEventArgs e)
@@ -686,37 +763,54 @@ private ObservableCollection<DeadlineTaskGroup> BuildDeadlineGroups(IEnumerable<
             if (e.Parameter is not DeadlineTaskGroup group || group.Tasks.FirstOrDefault() is not { } task)
                 return;
 
-            group.IsExpanded = !group.IsExpanded;
-            if (group.IsExpanded)
-                _expandedTaskGroups.Add(task.TaskID);
-            else
-                _expandedTaskGroups.Remove(task.TaskID);
+            SetExpandedTask(group.IsExpanded ? null : task.Task_id);
         }
 
         public void ExpandTask(int taskID)
         {
-            _expandedTaskGroups.Add(taskID);
-            DashboardTaskItem? task = _loadedTasks.FirstOrDefault(item => item.TaskID == taskID);
+            SetExpandedTask(taskID);
+            DashboardTaskItem? task = _loadedTasks.FirstOrDefault(item => item.Task_id == taskID);
             if (task is null)
                 return;
 
-            task.IsExpanded = true;
             ApplyTaskFilters();
+        }
+
+        private void SetExpandedTask(int? taskID)
+        {
+            _expandedTaskID = taskID;
+            foreach (DashboardTaskItem task in _loadedTasks)
+                task.IsExpanded = taskID.HasValue && task.Task_id == taskID.Value;
+
+            IEnumerable<DeadlineTaskGroup> visibleGroups = TodayTasksView.Children
+                .Concat(CompletedTodayTasksView.Children)
+                .OfType<Element>()
+                .Select(child => child.BindingContext)
+                .OfType<DeadlineTaskGroup>();
+            foreach (DeadlineTaskGroup visibleGroup in visibleGroups)
+            {
+                visibleGroup.IsExpanded = taskID.HasValue &&
+                    visibleGroup.Tasks.Any(task => task.Task_id == taskID.Value);
+            }
         }
 
         public async Task FocusTaskAsync(int taskID)
         {
+            _currentFilter = "All";
+            _deadlineFilter = DeadlineFilterSelection.AnyDate;
+            if (TaskSearchBar is not null)
+                TaskSearchBar.Text = string.Empty;
             ExpandTask(taskID);
-            for (int attempt = 0; attempt < 8; attempt++)
+            for (int attempt = 0; attempt < 40; attempt++)
             {
                 await Task.Delay(50);
                 Element? target = TodayTasksView.Children.OfType<Element>().FirstOrDefault(child =>
                     child.BindingContext is DeadlineTaskGroup group &&
-                    group.Tasks.Any(task => task.TaskID == taskID));
+                    group.Tasks.Any(task => task.Task_id == taskID));
                 if (target is null)
                     target = CompletedTodayTasksView.Children.OfType<Element>().FirstOrDefault(child =>
                         child.BindingContext is DeadlineTaskGroup group &&
-                        group.Tasks.Any(task => task.TaskID == taskID));
+                        group.Tasks.Any(task => task.Task_id == taskID));
                 if (target is null)
                     continue;
 
@@ -770,19 +864,14 @@ private ObservableCollection<DeadlineTaskGroup> BuildDeadlineGroups(IEnumerable<
             if (sender is not ImageButton { CommandParameter: EDUTASK_1._1.Models.SubtaskDisplayItem subtask })
                 return;
 
-            var user = await UserSessionService.GetCurrentUserAsync();
-            string authorName = user is null
-                ? "Admin"
-                : $"{user.FirstName} {user.LastName}".Trim();
-            DashboardTaskItem? task = _loadedTasks.FirstOrDefault(item => item.TaskID == subtask.TaskID);
+            DashboardTaskItem? task = _loadedTasks.FirstOrDefault(item => item.Task_id == subtask.Task_id);
 
             var discussionPage = new TaskDiscussionPage(
-                subtask.TaskID,
-                subtask.SubtaskID,
-                "User",
+                subtask.Task_id,
+                subtask.Subtask_id,
                 UserSessionService.CurrentUserId,
-                authorName,
-                task?.IsCompleted ?? false);
+                null,
+                task?.Is_completed ?? false);
             discussionPage.Disappearing += (_, _) =>
             {
                 subtask.UnreadDiscussionCount = 0;
@@ -791,45 +880,63 @@ private ObservableCollection<DeadlineTaskGroup> BuildDeadlineGroups(IEnumerable<
             await Navigation.PushModalAsync(discussionPage, false);
         }
 
+        private async void OnPreviousDiscussionClicked(object sender, EventArgs e)
+        {
+            if (sender is not Button { CommandParameter: DashboardTaskItem task })
+                return;
+            var user = await UserSessionService.GetCurrentUserAsync();
+            if (user is null)
+                return;
+            await Navigation.PushModalAsync(new TaskDiscussionPage(
+                task.Task_id, null, user.User_id, null, isReadOnly: true), false);
+        }
+
         private async void OnAdminEditTapped(object sender, TappedEventArgs e)
         {
             if (e.Parameter is not DashboardTaskItem { CanEdit: true } task)
                 return;
 
-            await Navigation.PushModalAsync(new EditTaskPage(task.TaskID), false);
+            await Navigation.PushModalAsync(new EditTaskPage(task.Task_id), false);
         }
 
         private async void OnTaskItemSelected(DashboardTaskItem task)
         {
-            await Navigation.PushModalAsync(new EditTaskPage(task.TaskID, !task.CanEdit), false);
+            await Navigation.PushModalAsync(new EditTaskPage(task.Task_id, !task.CanEdit), false);
         }
 
         private void PopulateTodayAndCompletedSections(IEnumerable<DashboardTaskItem> visibleTasks)
         {
             bool dateFilterActive = _deadlineFilter.Kind != DeadlineFilterKind.AnyDate;
-            var todayTasks = visibleTasks.Where(task => !task.IsCompleted).ToList();
+            var todayTasks = visibleTasks.Where(task => !task.Is_completed).ToList();
             var completedTodayTasks = visibleTasks
-                .Where(task => task.IsCompleted && (dateFilterActive || task.CompletedAt?.Date == DateTime.Today))
+                .Where(task => task.Is_completed && (dateFilterActive || task.Completed_at?.Date == DateTime.Today))
                 .ToList();
 
-            TodayHeaderLabel.Text = $"Active Tasks ({todayTasks.Count})";
-            CompletedTodayHeaderLabel.Text = dateFilterActive
-                ? $"Completed Tasks ({completedTodayTasks.Count})"
-                : $"Completed Today ({completedTodayTasks.Count})";
+            bool organizeByUrgency = !dateFilterActive && _currentFilter == "All";
+            ObservableCollection<DeadlineTaskGroup> activeTaskCards = BuildDeadlineGroups(todayTasks, organizeByUrgency);
+            ObservableCollection<DeadlineTaskGroup> completedTaskCards = BuildDeadlineGroups(completedTodayTasks);
 
-            BindableLayout.SetItemsSource(TodayTasksView, BuildDeadlineGroups(todayTasks));
-            BindableLayout.SetItemsSource(CompletedTodayTasksView, BuildDeadlineGroups(completedTodayTasks));
+            TodayHeaderLabel.Text = $"Active Tasks ({activeTaskCards.Count})";
+            CompletedTodayHeaderLabel.Text = dateFilterActive
+                ? $"Completed Tasks ({completedTaskCards.Count})"
+                : $"Completed Today ({completedTaskCards.Count})";
+
+            BindableLayout.SetItemsSource(TodayTasksView, activeTaskCards);
+            BindableLayout.SetItemsSource(CompletedTodayTasksView, completedTaskCards);
 
             bool hasTodayTasks = todayTasks.Count > 0;
             bool hasCompletedTasks = completedTodayTasks.Count > 0;
             bool hasAnyTasks = hasTodayTasks || hasCompletedTasks;
             TodaySection.IsVisible = hasTodayTasks;
-            CompletedTodaySection.IsVisible = true;
-            CompletedTodaySectionHeader.IsVisible = true;
+            CompletedTodaySection.IsVisible = hasCompletedTasks;
+            CompletedTodaySectionHeader.IsVisible = hasCompletedTasks;
             CompletedTodayTasksView.IsVisible = hasCompletedTasks && _isCompletedTodayExpanded;
-            CompletionHistoryLink.IsVisible = true;
+            CompletionHistoryLink.IsVisible = hasCompletedTasks;
             NoTodayTasksLabel.IsVisible = !hasAnyTasks;
-            int overdueCount = _loadedTasks.Count(task => !task.IsCompleted && task.Deadline?.Date < DateTime.Today);
+            int overdueCount = _loadedTasks
+                .Where(task => !task.Is_completed && task.Deadline?.Date < DateTime.Today)
+                .DistinctBy(TaskCardKey)
+                .Count();
             bool hasSearch = !string.IsNullOrWhiteSpace(TaskSearchBar?.Text);
             bool cleanEmptyState = !hasAnyTasks && !hasSearch
                 && _deadlineFilter.Kind == DeadlineFilterKind.AnyDate
@@ -885,10 +992,18 @@ private ObservableCollection<DeadlineTaskGroup> BuildDeadlineGroups(IEnumerable<
         internal CompletionHistoryPage CreateCompletionHistoryPage()
         {
             var history = _loadedTasks
-                .Where(task => task.IsCompleted && task.CompletedAt?.Date < DateTime.Today)
-                .OrderByDescending(task => task.CompletedAt)
+                .Where(task => task.Is_completed && task.Completed_at?.Date < DateTime.Today)
+                .OrderByDescending(task => task.Completed_at)
                 .ToList();
             return new CompletionHistoryPage(history, showTeacherFilter: true);
+        }
+
+        internal async Task<CompletionHistoryPage> CreateCompletionHistoryPageAsync()
+        {
+            if (_loadedTasks.Count == 0)
+                await LoadTasks("All", showErrors: false);
+
+            return CreateCompletionHistoryPage();
         }
 
     }

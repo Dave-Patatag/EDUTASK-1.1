@@ -8,6 +8,7 @@ namespace EDUTASK_1._1.Views;
 public partial class LoginPage : EduTaskPage
 {
     private readonly DatabaseService _database = new();
+    private bool _isLoggingIn;
 
     public LoginPage()
     {
@@ -49,6 +50,9 @@ public partial class LoginPage : EduTaskPage
 
     private async void OnLoginClicked(object sender, EventArgs e)
     {
+        if (_isLoggingIn)
+            return;
+
         string username = UsernameEntry.Text?.Trim() ?? string.Empty;
         string password = PasswordEntry.Text ?? string.Empty;
         ClearLoginErrors();
@@ -72,6 +76,8 @@ public partial class LoginPage : EduTaskPage
                 PasswordEntry.Focus();
             return;
         }
+        _isLoggingIn = true;
+        LoginButton.IsEnabled = false;
         try
         {
             AuthenticationResult result = await _database.AuthenticateAsync(username, password);
@@ -101,17 +107,22 @@ public partial class LoginPage : EduTaskPage
                 }
                 return;
             }
+
+            // Finish guarded, idempotent schema upgrades before dashboard
+            // buttons can issue queries against the upgraded model.
+            await _database.PrepareOperationalSchemaAsync();
+
             UserSessionService.Clear();
             TeacherSessionService.Clear();
             if (result.Teacher is not null)
             {
                 TeacherSessionService.SetCurrentTeacher(result.Teacher);
-                if (Window is not null) Window.Page = new DashboardFlyoutPage(new TeacherDashboardPage());
+                if (Window is not null) Window.Page = new DashboardFlyoutPage(new HomePage());
             }
             else if (result.User is not null)
             {
                 UserSessionService.SetCurrentUser(result.User);
-                if (Window is not null) Window.Page = new DashboardFlyoutPage(new DirectorStaffDashboardPage());
+                if (Window is not null) Window.Page = new DashboardFlyoutPage(new HomePage());
             }
         }
         catch (Exception exception)
@@ -124,6 +135,11 @@ public partial class LoginPage : EduTaskPage
             System.Diagnostics.Debug.WriteLine($"Login failed: {exception}");
             SetFieldError(PasswordBorder, PasswordErrorLabel, "Login unavailable. Try again.");
 #endif
+        }
+        finally
+        {
+            _isLoggingIn = false;
+            LoginButton.IsEnabled = true;
         }
     }
 

@@ -19,7 +19,7 @@
         rather than approximated by eye:
 
             #111C3A   the EDUTASK wordmark navy   (6,941 px — the dominant ink)
-            #00FF36   the checkmark green         (the one accent the mark carries)
+            #16A34A   the shared action/status green
 
         Those two anchor everything below. Navy carries structure — headers,
         primary actions, active navigation. Green carries completion — the mark
@@ -59,11 +59,11 @@
          BrandGreen is the untouched logo value and belongs on navy only.
          Green600/700 are its accessible steps for light surfaces.
          =================================================================== -->
-    <Color x:Key="BrandGreen">#00FF36</Color>
-    <Color x:Key="Green400">#3DDC6B</Color>
+    <Color x:Key="BrandGreen">#16A34A</Color>
+    <Color x:Key="Green400">#16A34A</Color>
     <Color x:Key="Green500">#16A34A</Color>
-    <Color x:Key="Green600">#0F7A33</Color>
-    <Color x:Key="Green700">#0B6B2B</Color>
+    <Color x:Key="Green600">#16A34A</Color>
+    <Color x:Key="Green700">#16A34A</Color>
     <Color x:Key="Green100">#E8F8ED</Color>
     <Color x:Key="Green200">#BFE8CD</Color>
 
@@ -87,10 +87,17 @@
     <Color x:Key="Accent500">#1D4ED8</Color>
     <Color x:Key="Accent200">#C3D6FA</Color>
     <Color x:Key="Accent100">#E9F0FE</Color>
-    <Color x:Key="CalendarAccent">#0D8EF5</Color>
+    <Color x:Key="CalendarAccent">#111C3A</Color>
 
     <!-- Fill for a selected option in a list or dropdown. -->
     <Color x:Key="SelectionSurface">#DCE7FD</Color>
+
+    <!-- ===================================================================
+         ACTIONS — shared colors for user-facing action buttons.
+         =================================================================== -->
+    <Color x:Key="ActionPrimary">#2563EB</Color>
+    <Color x:Key="ActionDanger">#DC2626</Color>
+    <Color x:Key="ActionDismiss">#6B7280</Color>
 
     <!-- ===================================================================
          TEXT — one hierarchy, four steps. Replaces the six near-identical
@@ -155,9 +162,9 @@
     <Color x:Key="Identity1">#3A56B4</Color>
     <Color x:Key="Identity2">#6B46C1</Color>
     <Color x:Key="Identity3">#A3327A</Color>
-    <Color x:Key="Identity4">#B3261E</Color>
+    <Color x:Key="Identity4">#DC2626</Color>
     <Color x:Key="Identity5">#B45309</Color>
-    <Color x:Key="Identity6">#0F7A33</Color>
+    <Color x:Key="Identity6">#16A34A</Color>
     <Color x:Key="Identity7">#0E6E78</Color>
     <Color x:Key="Identity8">#55637A</Color>
 
@@ -173,17 +180,25 @@
          Success is the brand green: the logo's check and a completed task are
          the same idea, so they are the same colour.
          =================================================================== -->
-    <Color x:Key="StatusSuccess">#0F7A33</Color>
+    <Color x:Key="StatusSuccess">#16A34A</Color>
     <Color x:Key="StatusSuccessSurface">#E8F8ED</Color>
     <Color x:Key="StatusSuccessBorder">#BFE8CD</Color>
 
-    <Color x:Key="StatusDanger">#C62828</Color>
+    <Color x:Key="StatusDanger">#DC2626</Color>
     <Color x:Key="StatusDangerSurface">#FDECEC</Color>
     <Color x:Key="StatusDangerBorder">#F3C6C6</Color>
 
     <Color x:Key="StatusWarning">#B45309</Color>
     <Color x:Key="StatusWarningSurface">#FEF4E4</Color>
     <Color x:Key="StatusWarningBorder">#F3D9A9</Color>
+
+    <Color x:Key="StatusPending">#F59E0B</Color>
+    <Color x:Key="StatusPendingSurface">#FFFBEB</Color>
+    <Color x:Key="StatusPendingBorder">#FDE68A</Color>
+
+    <Color x:Key="StatusOngoing">#0891B2</Color>
+    <Color x:Key="StatusOngoingSurface">#ECFEFF</Color>
+    <Color x:Key="StatusOngoingBorder">#A5F3FC</Color>
 
     <Color x:Key="StatusInfo">#1D4ED8</Color>
     <Color x:Key="StatusInfoSurface">#E9F0FE</Color>
@@ -193,19 +208,18 @@
     <Color x:Key="StatusNeutralSurface">#F0F3F8</Color>
     <Color x:Key="StatusNeutralBorder">#DBE1EA</Color>
 
-    <!-- "For Validation" / "Proof submitted" — awaiting a human decision.
-         Deliberately not green or amber: the work is neither done nor late. -->
-    <Color x:Key="StatusValidation">#5B45B8</Color>
-    <Color x:Key="StatusValidationSurface">#EEEBFA</Color>
-    <Color x:Key="StatusValidationBorder">#CCC4EC</Color>
+    <!-- "For Validation" / "Proof submitted" — review pending. -->
+    <Color x:Key="StatusValidation">#F59E0B</Color>
+    <Color x:Key="StatusValidationSurface">#FFFBEB</Color>
+    <Color x:Key="StatusValidationBorder">#FDE68A</Color>
 
     <!-- ===================================================================
          PRIORITY — deliberately distinct from status so a High-priority
          task is never mistaken for an overdue one.
          =================================================================== -->
-    <Color x:Key="PriorityHigh">#C026D3</Color>
-    <Color x:Key="PriorityMedium">#0891B2</Color>
-    <Color x:Key="PriorityLow">#0F766E</Color>
+    <Color x:Key="PriorityHigh">#DC2626</Color>
+    <Color x:Key="PriorityMedium">#F97316</Color>
+    <Color x:Key="PriorityLow">#16A34A</Color>
 
     <!-- ===================================================================
          CHART — fills for large coloured areas: pie slices, bar segments.
@@ -216,19 +230,19 @@
          on white so it can be read as text inside a badge, and that forces
          all of them dark and low-chroma. Poured into a 140dp circle the
          choice backfires: StatusWarning (#B45309) and StatusDanger
-         (#C62828) measure 1.12:1 against each other and sit 26 degrees
+         (#DC2626) remain close in luminance and sit 26 degrees
          apart in hue, so the amber and red wedges fuse into one dark mass
          and the amber reads brown rather than orange.
 
          A fill has the opposite requirement. Nothing is read on top of it,
          so it needs 3:1 against the page (WCAG 1.4.11) and — the part that
          actually decides whether the chart is legible — distance from its
-         neighbours. These keep the status meaning (green done, amber in
+         neighbours. These keep the status meaning (green completed, cyan in
          progress, red late) with far more room between them:
 
-             ChartCompleted  #16A34A   hue 145 deg   3.30:1 on white
-             ChartOngoing    #D97706   hue  32 deg   3.18:1 on white
-             ChartOverdue    #C62828   hue   0 deg   5.62:1 on white
+             ChartCompleted  #16A34A   shared success green
+             ChartOngoing    #0891B2   shared ongoing cyan
+             ChartOverdue    #DC2626   hue   0 deg   4.83:1 on white
 
          Amber against red is now 1.77:1 rather than 1.12:1, and amber sits
          113 degrees of hue from the green. Luminance alone still does not
@@ -244,8 +258,8 @@
          card and this has to move with it.
          =================================================================== -->
     <Color x:Key="ChartCompleted">#16A34A</Color>
-    <Color x:Key="ChartOngoing">#D97706</Color>
-    <Color x:Key="ChartOverdue">#C62828</Color>
+    <Color x:Key="ChartOngoing">#0891B2</Color>
+    <Color x:Key="ChartOverdue">#DC2626</Color>
 
     <!-- No tasks at all. A flat neutral disc reads as "nothing here yet"
          where three empty slices read as a chart that failed to load. -->

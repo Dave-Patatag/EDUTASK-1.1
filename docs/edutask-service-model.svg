@@ -94,7 +94,7 @@
 <text class="uat op" x="734" y="364">+ UploadSubtaskProofAsync() : bool</text>
 <text class="uat op" x="734" y="381">+ ReviewSubtaskProofAsync() : bool</text>
 <text class="uat op" x="734" y="398">+ GetSubtaskProofHistoryAsync() : List</text>
-<text class="uat op" x="734" y="415">+ AddTaskCommentAsync() : bool</text>
+<text class="uat op" x="734" y="415">+ AddTaskDiscussionAsync() : bool</text>
 <text class="uat op" x="734" y="432">+ GetRecentActivityLogAsync() : List</text>
 </g>
 <g>

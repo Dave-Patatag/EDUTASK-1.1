@@ -2,12 +2,10 @@ IF OBJECT_ID(N'dbo.Subtask', N'U') IS NULL
 BEGIN
     CREATE TABLE dbo.Subtask
     (
-        SubtaskID int IDENTITY(1,1) NOT NULL PRIMARY KEY,
-        TaskID int NOT NULL,
+        Subtask_id int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+        Task_id int NOT NULL,
         Title nvarchar(200) NOT NULL,
-        IsCompleted bit NOT NULL CONSTRAINT DF_Subtask_IsCompleted DEFAULT (0),
-        CreatedAt datetime NOT NULL CONSTRAINT DF_Subtask_CreatedAt DEFAULT (GETDATE()),
-        CONSTRAINT FK_Subtask_Task FOREIGN KEY (TaskID)
-            REFERENCES dbo.[Task](TaskID) ON DELETE CASCADE
+        CONSTRAINT FK_Subtask_Task FOREIGN KEY (Task_id)
+            REFERENCES dbo.[Task](Task_id) ON DELETE CASCADE
     );
 END;

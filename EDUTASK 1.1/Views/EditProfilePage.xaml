@@ -13,10 +13,10 @@
         <Grid Grid.Row="0" Padding="16,8" ColumnDefinitions="44,*,44"
               BackgroundColor="{StaticResource SurfaceMuted}">
             <ImageButton x:Name="EditProfileBackButton"
-                         Source="backicon.png" Clicked="OnBackClicked"
+                         Source="whitebackicon.png" Clicked="OnBackClicked"
                          Pressed="OnEditProfileBackPressed" Released="OnEditProfileBackReleased"
                          WidthRequest="42" HeightRequest="42" Padding="10"
-                         CornerRadius="12" BackgroundColor="{StaticResource SurfaceBase}"
+                         CornerRadius="12" BackgroundColor="{StaticResource ActionDismiss}"
                          BorderWidth="0"
                          HorizontalOptions="Start" VerticalOptions="Center"
                          SemanticProperties.Description="Go back"/>
@@ -47,7 +47,7 @@
                                        TextColor="{StaticResource TextInverse}"
                                        HorizontalOptions="Center" VerticalOptions="Center"
                                        IsVisible="{Binding ShowInitials}"/>
-                                <Image Source="{Binding ProfilePhotoPath}"
+                                <Image Source="{Binding Profile_photo}"
                                        Aspect="AspectFill"
                                        IsVisible="{Binding HasProfilePhoto}"/>
                             </Grid>
@@ -116,7 +116,7 @@
                                     <Image Source="profilephone.png" WidthRequest="18" HeightRequest="18" Aspect="AspectFit"/>
                                 </Border>
                                 <Entry x:Name="PhoneEntry" Grid.Column="1"
-                                       Text="{Binding ContactNumber}"
+                                       Text="{Binding Contact_number}"
                                        Keyboard="Telephone" MaxLength="11"
                                        Style="{StaticResource FieldEntry}"
                                        VerticalOptions="Fill"
@@ -174,23 +174,6 @@
                     </VerticalStackLayout>
 
                 </VerticalStackLayout>
-
-                <Label Text="Bio"
-                       Style="{StaticResource ReportSectionHeading}"
-                       Margin="0,18,0,8"/>
-                <Border Style="{StaticResource FieldBorder}"
-                        Padding="12,6" HeightRequest="104">
-                    <Grid RowDefinitions="*,Auto" RowSpacing="4">
-                        <Editor x:Name="BioEditor" Text="{Binding Bio}"
-                                Placeholder="Say a little about your work — this shows on your profile."
-                                MaxLength="300" AutoSize="Disabled"
-                                Style="{StaticResource FieldEditor}"/>
-                        <Label Grid.Row="1"
-                               Text="{Binding BioLengthDisplay}"
-                               Style="{StaticResource MetaText}"
-                               HorizontalTextAlignment="End"/>
-                    </Grid>
-                </Border>
 
             </VerticalStackLayout>
         </ScrollView>

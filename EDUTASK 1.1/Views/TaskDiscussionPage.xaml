@@ -9,7 +9,7 @@
     <Grid RowDefinitions="Auto,*,Auto" RowSpacing="0">
         <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="14"
               Padding="20,17" BackgroundColor="{StaticResource Brand800}">
-            <ImageButton x:Name="BackButton" Source="whitebackicon.png" Clicked="OnBackClicked" WidthRequest="34" HeightRequest="34" Padding="7" CornerRadius="8" BackgroundColor="Transparent" SemanticProperties.Description="Go back"/>
+            <ImageButton x:Name="BackButton" Source="whitebackicon.png" Clicked="OnBackClicked" WidthRequest="34" HeightRequest="34" Padding="7" CornerRadius="8" BackgroundColor="{StaticResource ActionDismiss}" SemanticProperties.Description="Go back"/>
             <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
                 <Label x:Name="TaskTitleLabel"
                        Text="Task" FontSize="{StaticResource FontHeading}" FontAttributes="Bold"
@@ -20,9 +20,9 @@
             </VerticalStackLayout>
         </Grid>
 
-        <RefreshView x:Name="CommentsRefreshView" Grid.Row="1"
+        <RefreshView x:Name="DiscussionRefreshView" Grid.Row="1"
                      Refreshing="OnRefreshing" Padding="16,14">
-            <CollectionView x:Name="CommentsView">
+            <CollectionView x:Name="DiscussionView">
                 <CollectionView.ItemsLayout>
                     <LinearItemsLayout Orientation="Vertical" ItemSpacing="14"/>
                 </CollectionView.ItemsLayout>
@@ -40,9 +40,9 @@
                                     <Label Text="&#x270E;" FontSize="{StaticResource FontHeading}" TextColor="{StaticResource Slate400}"
                                            HorizontalOptions="Center" VerticalOptions="Center"/>
                                 </Border>
-                                <Label Text="No comments yet" FontSize="{StaticResource FontHeading}" FontAttributes="Bold" Margin="0,3,0,0"
+                                <Label Text="No messages yet" FontSize="{StaticResource FontHeading}" FontAttributes="Bold" Margin="0,3,0,0"
                                        TextColor="{StaticResource TextSecondary}" HorizontalOptions="Center"/>
-                                <Label Text="Start the conversation with a comment or note."
+                                <Label Text="Start the discussion with a message."
                                        FontSize="{StaticResource FontLabel}" TextColor="{StaticResource TextDisabled}"
                                        HorizontalTextAlignment="Center"/>
                             </VerticalStackLayout>
@@ -70,7 +70,7 @@
                             </Border>
 
                             <VerticalStackLayout Grid.Column="{Binding MessageColumn}"
-                                                 IsVisible="{Binding IsRegularComment}"
+                                                 IsVisible="{Binding IsRegularDiscussion}"
                                                  MaximumWidthRequest="380"
                                                  HorizontalOptions="Start"
                                                  Spacing="5">
@@ -86,7 +86,7 @@
                                         Stroke="{Binding BubbleStrokeColor}" StrokeThickness="1">
                                     <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
                                     <VerticalStackLayout Spacing="5">
-                                        <Label Text="{Binding CommentText}" FontSize="{StaticResource FontBodySmall}"
+                                        <Label Text="{Binding Message_text}" FontSize="{StaticResource FontBodySmall}"
                                                TextColor="{StaticResource TextPrimary}" LineBreakMode="WordWrap"/>
                                         <Label Text="{Binding CreatedDisplay}" FontSize="{StaticResource FontMicro}" TextColor="{StaticResource TextTertiary}"
                                                HorizontalOptions="End" HorizontalTextAlignment="End" Margin="16,1,0,0"/>
@@ -96,39 +96,34 @@
 
                             <Border Grid.Column="{Binding MessageColumn}"
                                     IsVisible="{Binding IsProofReturn}"
-                                    Padding="13,11" MaximumWidthRequest="380"
+                                    Padding="10,8" MaximumWidthRequest="320"
+                                    HorizontalOptions="Start"
                                     BackgroundColor="{StaticResource StatusDangerSurface}" Stroke="{StaticResource StatusDangerBorder}" StrokeThickness="1">
                                 <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
-                                <VerticalStackLayout Spacing="9">
-                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="7">
+                                <VerticalStackLayout Spacing="4">
+                                    <Grid ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="6"
+                                          HorizontalOptions="Start">
                                         <Label Text="↩" FontSize="{StaticResource FontBodySmall}" FontAttributes="Bold"
                                                TextColor="{StaticResource StatusDanger}" VerticalOptions="Center"/>
                                         <Label Grid.Column="1" Text="Revision requested"
-                                               FontSize="{StaticResource FontCaption}" FontAttributes="Bold" TextColor="{StaticResource StatusDanger}"
+                                               FontSize="{StaticResource FontLabel}" FontAttributes="Bold" TextColor="{StaticResource StatusDanger}"
                                                VerticalOptions="Center"/>
-                                        <Border Grid.Column="2" WidthRequest="22" HeightRequest="22" Padding="0"
-                                                BackgroundColor="{StaticResource StatusDangerSurface}" StrokeThickness="0"
-                                                VerticalOptions="Center">
-                                            <Border.StrokeShape><RoundRectangle CornerRadius="11"/></Border.StrokeShape>
-                                            <Label Text="{Binding ReturnSequenceDisplay}" FontSize="{StaticResource FontMicro}"
-                                                   FontAttributes="Bold" TextColor="{StaticResource StatusDanger}"
-                                                   HorizontalTextAlignment="Center"
-                                                   VerticalTextAlignment="Center"/>
-                                        </Border>
+                                        <Label Grid.Column="2" Text="{Binding ReturnSequenceDisplay, StringFormat='#{0}'}"
+                                               FontSize="{StaticResource FontMicro}" FontAttributes="Bold"
+                                               TextColor="{StaticResource StatusDanger}" VerticalOptions="Center"/>
                                     </Grid>
-                                    <Label Text="{Binding CommentText}" FontSize="{StaticResource FontBodySmall}"
+                                    <Label Text="{Binding Message_text}" FontSize="{StaticResource FontBodySmall}"
                                            TextColor="{StaticResource TextPrimary}" LineBreakMode="WordWrap"/>
-                                    <BoxView HeightRequest="1" Color="{StaticResource StatusDangerBorder}"/>
-                                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                    <VerticalStackLayout Spacing="1" Margin="0,2,0,0">
                                         <Label Text="{Binding AuthorName, StringFormat='Reviewed by {0}'}"
                                                FontSize="{StaticResource FontMicro}" TextColor="{StaticResource Slate400}"
-                                               LineBreakMode="TailTruncation"/>
-                                        <Label Grid.Column="1" Text="{Binding CreatedDisplay}"
+                                               LineBreakMode="WordWrap"/>
+                                        <Label Text="{Binding CreatedDisplay}"
                                                FontSize="{StaticResource FontMicro}" TextColor="{StaticResource TextTertiary}"/>
-                                    </Grid>
+                                    </VerticalStackLayout>
                                 </VerticalStackLayout>
                                 <Border.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="OnCommentTapped" CommandParameter="{Binding .}"/>
+                                    <TapGestureRecognizer Tapped="OnDiscussionTapped" CommandParameter="{Binding .}"/>
                                 </Border.GestureRecognizers>
                             </Border>
                         </Grid>
@@ -143,16 +138,16 @@
                     Padding="12,9" BackgroundColor="{StaticResource SurfaceSunken}"
                     Stroke="{StaticResource BorderDefault}" StrokeThickness="1">
                 <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
-                <Label Text="Comments are closed for this task."
+                <Label x:Name="ReadOnlyNoticeLabel" Text="Discussion is closed for this task."
                        FontSize="{StaticResource FontLabel}" TextColor="{StaticResource Slate400}" HorizontalOptions="Center"/>
             </Border>
 
-            <Border x:Name="CommentComposer" Padding="6,4"
+            <Border x:Name="DiscussionComposer" Padding="6,4"
                     BackgroundColor="{StaticResource SurfaceMuted}" Stroke="{StaticResource BorderDefault}" StrokeThickness="1">
                 <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                    <Editor x:Name="CommentEditor"
-                            Placeholder="Add a comment or note..."
+                    <Editor x:Name="DiscussionEditor"
+                            Placeholder="Add a message..."
                             PlaceholderColor="{StaticResource TextDisabled}" TextColor="{StaticResource TextPrimary}"
                             FontSize="{StaticResource FontCaption}" AutoSize="Disabled"
                             HeightRequest="36" MinimumHeightRequest="36"
@@ -163,7 +158,7 @@
                             WidthRequest="64" HeightRequest="36"
                             MinimumWidthRequest="64" MinimumHeightRequest="36"
                             Padding="8,0" Margin="0" CornerRadius="8"
-                            BackgroundColor="{StaticResource Brand900}" TextColor="{StaticResource TextInverse}"
+                            BackgroundColor="{StaticResource ActionPrimary}" TextColor="{StaticResource TextInverse}"
                             VerticalOptions="Center"/>
                 </Grid>
             </Border>

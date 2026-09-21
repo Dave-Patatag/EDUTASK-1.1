@@ -17,12 +17,13 @@
               RowSpacing="14">
 
             <Grid ColumnDefinitions="40,*,40">
-                <ImageButton Source="authback.png"
+                <ImageButton Source="whitebackicon.png"
                              Clicked="OnBackClicked"
                              WidthRequest="34"
                              HeightRequest="34"
                              Padding="6"
-                             BackgroundColor="Transparent"
+                             BackgroundColor="{StaticResource ActionDismiss}"
+                             CornerRadius="17"
                              HorizontalOptions="Start"/>
                 <Label Grid.Column="1"
                        Text="Select Role"

@@ -15,6 +15,9 @@ namespace EDUTASK_1._1.Views.Base
         /// <summary>Scrim fades while the card scales up. For modal pages that sit over a scrim.</summary>
         Dialog,
 
+        /// <summary>A modal surface slides up from and returns to the bottom edge.</summary>
+        BottomSheet,
+
         /// <summary>No entrance animation.</summary>
         None
     }
@@ -55,18 +58,11 @@ namespace EDUTASK_1._1.Views.Base
             await PlayEntranceAsync();
         }
 
-        protected override void OnDisappearing()
-        {
-            base.OnDisappearing();
-
-            // Re-arm so returning to this page animates again rather than
-            // snapping in.
-            _hasAnimatedIn = false;
-        }
-
         /// <summary>
         /// Runs the page's entrance animation. Safe to call more than once; only
-        /// the first call per appearance does anything.
+        /// the first call during this page instance's lifetime does anything.
+        /// Cached bottom-navigation pages therefore return immediately instead
+        /// of fading their content and navigation bar on every tab switch.
         /// </summary>
         protected async Task PlayEntranceAsync()
         {
@@ -95,6 +91,9 @@ namespace EDUTASK_1._1.Views.Base
                 case PageTransition.Dialog:
                     await PlayDialogEntranceAsync();
                     break;
+                case PageTransition.BottomSheet:
+                    await PlayBottomSheetEntranceAsync();
+                    break;
             }
         }
 
@@ -114,6 +113,17 @@ namespace EDUTASK_1._1.Views.Base
                 card.ScaleTo(1.0, Motion.Slow, Motion.Emphasis));
         }
 
+        async Task PlayBottomSheetEntranceAsync()
+        {
+            var sheet = DialogCard ?? Content;
+            if (sheet is null)
+                return;
+
+            sheet.Opacity = 1;
+            sheet.TranslationY = Math.Max(sheet.Height, 360);
+            await sheet.TranslateTo(0, 0, Motion.Slow, Motion.Enter);
+        }
+
         /// <summary>
         /// Plays the page's exit animation. Call this immediately before a
         /// navigation pop so the screen leaves the way it arrived.
@@ -129,6 +139,13 @@ namespace EDUTASK_1._1.Views.Base
                 await Task.WhenAll(
                     card.FadeTo(0, Motion.Fast, Motion.Exit),
                     card.ScaleTo(0.96, Motion.Fast, Motion.Exit));
+                return;
+            }
+
+            if (Transition == PageTransition.BottomSheet)
+            {
+                var sheet = DialogCard ?? Content;
+                await sheet.TranslateTo(0, Math.Max(sheet.Height, 360), Motion.Base, Motion.Exit);
                 return;
             }
 

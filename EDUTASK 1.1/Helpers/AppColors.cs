@@ -53,6 +53,11 @@ namespace EDUTASK_1._1.Helpers
         public static Color Accent100 => Get(nameof(Accent100));
         public static Color SelectionSurface => Get(nameof(SelectionSurface));
 
+        // Actions
+        public static Color ActionPrimary => Get(nameof(ActionPrimary));
+        public static Color ActionDanger => Get(nameof(ActionDanger));
+        public static Color ActionDismiss => Get(nameof(ActionDismiss));
+
         // Text
         public static Color TextPrimary => Get(nameof(TextPrimary));
         public static Color TextSecondary => Get(nameof(TextSecondary));
@@ -94,6 +99,12 @@ namespace EDUTASK_1._1.Helpers
         public static Color StatusWarning => Get(nameof(StatusWarning));
         public static Color StatusWarningSurface => Get(nameof(StatusWarningSurface));
         public static Color StatusWarningBorder => Get(nameof(StatusWarningBorder));
+        public static Color StatusPending => Get(nameof(StatusPending));
+        public static Color StatusPendingSurface => Get(nameof(StatusPendingSurface));
+        public static Color StatusPendingBorder => Get(nameof(StatusPendingBorder));
+        public static Color StatusOngoing => Get(nameof(StatusOngoing));
+        public static Color StatusOngoingSurface => Get(nameof(StatusOngoingSurface));
+        public static Color StatusOngoingBorder => Get(nameof(StatusOngoingBorder));
         public static Color StatusInfo => Get(nameof(StatusInfo));
         public static Color StatusInfoSurface => Get(nameof(StatusInfoSurface));
         public static Color StatusInfoBorder => Get(nameof(StatusInfoBorder));

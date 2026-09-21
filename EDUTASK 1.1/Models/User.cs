@@ -8,20 +8,16 @@ namespace EDUTASK_1._1.Models
 {
     public class User
     {
-        public int UserID { get; set; }
-        public string FirstName { get; set; } = string.Empty;
-        public string LastName { get; set; } = string.Empty;
+        public int User_id { get; set; }
+        public string First_name { get; set; } = string.Empty;
+        public string Last_name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-        public string ContactNumber { get; set; } = string.Empty;
-        public DateTime AccountCreated { get; set; }
+        public string Contact_number { get; set; } = string.Empty;
+        public DateTime Account_created { get; set; }
         public string Username { get; set; } = string.Empty;
-        public string ProfilePhotoPath { get; set; } = string.Empty;
-        public int RoleID { get; set; }
-        public string RoleName { get; set; } = string.Empty;
-        public bool IsActive { get; set; }
+        public string Profile_photo { get; set; } = string.Empty;
+        public string Role_name { get; set; } = string.Empty;
+        public bool Is_active { get; set; }
 
-        /// <summary>Short free-text description shown on their profile.</summary>
-        public string Bio { get; set; } = string.Empty;
     }
 }

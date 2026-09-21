@@ -139,27 +139,11 @@ public partial class TaskSummaryPage : EduTaskPage
         _isPeriodSheetAnimating = false;
     }
 
-    private static void SetCircularButtonState(
-        ImageButton button,
-        bool active,
-        string restingIcon,
-        string activeIcon)
-    {
-        button.BackgroundColor = active ? AppColors.TextSecondary : AppColors.SurfaceBase;
-        button.Source = active ? activeIcon : restingIcon;
-    }
-
     private void SetReportMenuState(bool active)
     {
         FilterButton.BackgroundColor = AppColors.Brand800;
         PeriodFilterLabel.TextColor = AppColors.TextInverse;
     }
-
-    private void OnReportBackPressed(object sender, EventArgs e) =>
-        SetCircularButtonState(ReportBackButton, true, "backicon.png", "whitebackicon.png");
-
-    private void OnReportBackReleased(object sender, EventArgs e) =>
-        SetCircularButtonState(ReportBackButton, false, "backicon.png", "whitebackicon.png");
 
     private async void OnPeriodOptionClicked(object sender, EventArgs e)
     {
@@ -248,7 +232,13 @@ public partial class TaskSummaryPage : EduTaskPage
     private async void OnFilteredTaskTapped(object sender, TappedEventArgs e)
     {
         if (e.Parameter is TaskSummaryItem task)
-            await Navigation.PushModalAsync(new EditTaskPage(task.TaskID), false);
+        {
+            // The editor can update or delete the selected task. Mark this
+            // report stale before opening it so the cards and totals are
+            // rebuilt as soon as the modal closes.
+            _loaded = false;
+            await Navigation.PushModalAsync(new EditTaskPage(task.Task_id), false);
+        }
     }
 
     protected override async void OnAppearing()
@@ -263,11 +253,23 @@ public partial class TaskSummaryPage : EduTaskPage
         try
         {
             DataTable table = await _database.GetAllTasksWithTeachersAsync();
+            int[] taskIDs = table.AsEnumerable()
+                .Select(row => row.Field<int>("Task_id"))
+                .Distinct()
+                .ToArray();
+            Dictionary<int, Task<List<SubtaskDisplayItem>>> subtaskLoads = taskIDs
+                .ToDictionary(taskID => taskID, taskID => _database.GetTaskSubtasksAsync(taskID));
+            await Task.WhenAll(subtaskLoads.Values);
+            Dictionary<int, string> subtaskKeys = subtaskLoads.ToDictionary(
+                pair => pair.Key,
+                pair => string.Join("\u001e", pair.Value.Result.Select(subtask => NormalizeKeyPart(subtask.Title))));
+
             _assignments.Clear();
-            foreach (DataRow row in table.Rows) _assignments.Add(ToAssignment(row));
+            foreach (DataRow row in table.Rows)
+                _assignments.Add(ToAssignment(row, subtaskKeys));
             _allTasks.Clear();
             _allTasks.AddRange(_assignments
-                .GroupBy(item => item.TaskID)
+                .GroupBy(BuildCooperativeTaskKey)
                 .Select(ToTaskSummary)
                 .OrderBy(item => TaskPalette.PriorityRank(item.Priority))
                 .ThenBy(item => item.Deadline ?? DateTime.MaxValue));
@@ -330,7 +332,7 @@ public partial class TaskSummaryPage : EduTaskPage
         // A completed report is about when work was completed. Active work
         // continues to use its deadline for the report period.
         DateTime? reportDate = task.ReportCategory == TaskStatusCompleted
-            ? task.CompletedAt
+            ? task.Completed_at
             : task.Deadline;
         return reportDate.HasValue &&
                reportDate.Value.Date >= start.Date &&
@@ -351,19 +353,25 @@ public partial class TaskSummaryPage : EduTaskPage
         };
     }
 
-    private static ReportAssignment ToAssignment(DataRow row)
+    private static ReportAssignment ToAssignment(
+        DataRow row,
+        IReadOnlyDictionary<int, string> subtaskKeys)
     {
-        string completion = row.IsNull("CompletionStatus") ? "Pending" : row.Field<string>("CompletionStatus") ?? "Pending";
-        bool acknowledged = !row.IsNull("IsAcknowledged") && row.Field<bool>("IsAcknowledged");
+        string completion = row.IsNull("Completion_status") ? "Pending" : row.Field<string>("Completion_status") ?? "Pending";
+        bool acknowledged = !row.IsNull("Is_acknowledged") && row.Field<bool>("Is_acknowledged");
+        int taskID = row.Field<int>("Task_id");
         return new ReportAssignment(
-            row.Field<int>("TaskID"),
+            taskID,
+            row.Field<int>("Createdby_user_id"),
             row.Field<string>("Title") ?? "Untitled task",
+            row.Field<string>("Description") ?? string.Empty,
             string.IsNullOrWhiteSpace(row.Field<string>("TeacherName")) ? "Unassigned" : row.Field<string>("TeacherName")!,
             row.Field<string>("Priority") ?? "Unassigned",
-            row.IsNull("CreatedAt") ? DateTime.Today : row.Field<DateTime>("CreatedAt"),
+            row.IsNull("Created_at") ? DateTime.Today : row.Field<DateTime>("Created_at"),
             row.IsNull("Deadline") ? null : row.Field<DateTime>("Deadline"),
-            row.IsNull("CompletedAt") ? null : row.Field<DateTime>("CompletedAt"),
-            NormalizeStatus(completion, acknowledged));
+            row.IsNull("Completed_at") ? null : row.Field<DateTime>("Completed_at"),
+            NormalizeStatus(completion, acknowledged),
+            subtaskKeys.GetValueOrDefault(taskID, string.Empty));
     }
 
     private static string NormalizeStatus(string completion, bool acknowledged) => completion switch
@@ -375,20 +383,53 @@ public partial class TaskSummaryPage : EduTaskPage
         _ => "Pending"
     };
 
-    private static TaskSummaryItem ToTaskSummary(IGrouping<int, ReportAssignment> group)
+    private static TaskSummaryItem ToTaskSummary(IGrouping<string, ReportAssignment> group)
     {
-        ReportAssignment display = group.OrderByDescending(item => StatusRank(item.Status)).First();
+        ReportAssignment display = group.First();
+        string[] statuses = group.Select(item => item.Status).ToArray();
+        string status = statuses.All(item => item == TaskStatusCompleted)
+            ? TaskStatusCompleted
+            : statuses.Any(item => item == "Needs Revision")
+                ? "Needs Revision"
+                : statuses.Any(item => item == "For Validation")
+                    ? "For Validation"
+                    : statuses.Any(item => item == "Acknowledged")
+                        ? "Acknowledged"
+                        : TaskStatusPending;
         string teachers = string.Join(", ", group.Select(item => item.TeacherName).Distinct(StringComparer.OrdinalIgnoreCase));
         string priority = group.OrderBy(item => TaskPalette.PriorityRank(item.Priority)).First().Priority;
-        DateTime? completedAt = group
-            .Where(item => item.Status == TaskStatusCompleted)
-            .Select(item => item.CompletedAt)
-            .Max();
-        return new TaskSummaryItem { TaskID = group.Key, Title = display.Title, TeacherName = teachers, Priority = priority, Deadline = display.Deadline, CompletedAt = completedAt, Status = display.Status, StatusColor = StatusColor(display.Status) };
+        DateTime? completedAt = status == TaskStatusCompleted
+            ? group.Select(item => item.Completed_at).Max()
+            : null;
+        int[] groupedTaskIDs = group.Select(item => item.Task_id).Distinct().ToArray();
+        return new TaskSummaryItem
+        {
+            Task_id = display.Task_id,
+            TaskIDs = groupedTaskIDs,
+            Title = display.Title,
+            TeacherName = teachers,
+            Priority = priority,
+            Deadline = group.Select(item => item.Deadline).Min(),
+            Completed_at = completedAt,
+            Status = status,
+            StatusColor = StatusColor(status)
+        };
     }
 
-    private static int StatusRank(string status) => status switch { "Completed" => 5, "Needs Revision" => 4, "For Validation" => 3, "Acknowledged" => 2, _ => 1 };
     private static Color StatusColor(string status) => TaskPalette.StatusColor(status);
+
+    private static string BuildCooperativeTaskKey(ReportAssignment item) =>
+        string.Join("\u001f",
+            item.Createdby_user_id,
+            item.Created_at.Date.ToString("yyyyMMdd"),
+            NormalizeKeyPart(item.Title),
+            NormalizeKeyPart(item.Description),
+            item.Deadline?.Date.ToString("yyyyMMdd") ?? string.Empty,
+            NormalizeKeyPart(item.Priority),
+            item.SubtaskKey);
+
+    private static string NormalizeKeyPart(string? value) =>
+        value?.Trim().ToUpperInvariant() ?? string.Empty;
 
     private void UpdateOverview(IReadOnlyCollection<TaskSummaryItem> tasks)
     {
@@ -404,12 +445,38 @@ public partial class TaskSummaryPage : EduTaskPage
         UpdateDisplayedPercentage(tasks);
     }
 
-    private static string FormatPercentage(int count, int total) =>
-        total <= 0 ? "0%" : $"{(int)Math.Round(count * 100d / total, MidpointRounding.AwayFromZero)}%";
+    private static string FormatPercentage(string category, IReadOnlyCollection<TaskSummaryItem> tasks)
+    {
+        if (tasks.Count == 0)
+            return "0%";
+
+        string[] categories = [TaskStatusPending, TaskStatusOngoing, TaskStatusCompleted, TaskStatusOverdue];
+        int[] counts = categories.Select(status => tasks.Count(task => task.ReportCategory == status)).ToArray();
+        int[] percentages = counts.Select(count => (int)(count * 100L / tasks.Count)).ToArray();
+
+        // Allocate the remaining points to the largest fractional remainders so
+        // all four displayed percentages total 100. Break ties by count, then
+        // card order, keeping the result stable when switching status cards.
+        var remainderOrder = Enumerable.Range(0, categories.Length)
+            .OrderByDescending(index => counts[index] * 100L % tasks.Count)
+            .ThenByDescending(index => counts[index])
+            .ThenBy(index => index);
+        foreach (int index in remainderOrder.Take(100 - percentages.Sum()))
+            percentages[index]++;
+
+        return $"{percentages[Array.IndexOf(categories, category)]}%";
+    }
 
     private void UpdateDisplayedPercentage(IReadOnlyCollection<TaskSummaryItem> tasks)
     {
         string category = _selectedSummaryStatus ?? TaskStatusCompleted;
+        CompletionHeadingLabel.Text = category switch
+        {
+            TaskStatusPending => "Pending",
+            TaskStatusOngoing => "Ongoing",
+            TaskStatusOverdue => "Overdue",
+            _ => "Completed"
+        };
         int total = tasks.Count;
         int count = tasks.Count(item => item.ReportCategory == category);
         double progress = total <= 0 ? 0 : (double)count / total;
@@ -417,20 +484,21 @@ public partial class TaskSummaryPage : EduTaskPage
             ? AppColors.Accent500
             : category switch
             {
-                TaskStatusPending => AppColors.Accent500,
-                TaskStatusOngoing => AppColors.StatusWarning,
+                TaskStatusPending => AppColors.StatusPending,
+                TaskStatusOngoing => AppColors.StatusOngoing,
                 TaskStatusOverdue => AppColors.StatusDanger,
                 _ => AppColors.StatusSuccess
             };
 
-        CompletionPercentLabel.Text = FormatPercentage(count, total);
+        string percentage = FormatPercentage(category, tasks);
+        CompletionPercentLabel.Text = percentage;
         CompletionPercentLabel.TextColor = progressColor;
         _completionRing.Progress = progress;
         _completionRing.ProgressColor = progressColor;
         CompletionRing.Invalidate();
         SemanticProperties.SetDescription(
             CompletionRing,
-            $"{category}, {FormatPercentage(count, total)} of tasks in {_period.ToLowerInvariant()}");
+            $"{category}, {percentage} of tasks in {_period.ToLowerInvariant()}");
     }
 
     private void UpdateFilteredTasks()
@@ -461,7 +529,7 @@ public partial class TaskSummaryPage : EduTaskPage
 
     private bool MatchesTaskTeacher(TaskSummaryItem task) =>
         _taskTeacher == TaskTeacherAll ||
-        _assignments.Any(item => item.TaskID == task.TaskID &&
+        _assignments.Any(item => task.TaskIDs.Contains(item.Task_id) &&
             item.TeacherName.Equals(_taskTeacher, StringComparison.OrdinalIgnoreCase));
 
     private bool AreTaskFiltersAtDefaults() =>
@@ -477,8 +545,8 @@ public partial class TaskSummaryPage : EduTaskPage
 
         (Border? card, Color? surface, Color? border) = _selectedSummaryStatus switch
         {
-            "Pending" => (PendingCard, AppColors.SelectionSurface, AppColors.StatusInfoBorder),
-            "Ongoing" => (OngoingCard, AppColors.StatusWarningSurface, AppColors.StatusWarningBorder),
+            "Pending" => (PendingCard, AppColors.StatusPendingSurface, AppColors.StatusPendingBorder),
+            "Ongoing" => (OngoingCard, AppColors.StatusOngoingSurface, AppColors.StatusOngoingBorder),
             "Completed" => (CompletedCard, AppColors.StatusSuccessSurface, AppColors.StatusSuccessBorder),
             "Overdue" => (OverdueCard, AppColors.StatusDangerSurface, AppColors.StatusDangerBorder),
             _ => (null, null, null)
@@ -523,11 +591,6 @@ public partial class TaskSummaryPage : EduTaskPage
             else StartDatePicker.Date = EndDatePicker.Date;
         }
         ApplyFilter();
-    }
-
-    private void OnBackClicked(object sender, EventArgs e)
-    {
-        DashboardFlyoutPage.Current?.ShowTasks();
     }
 
     protected override bool OnBackButtonPressed()
@@ -578,7 +641,18 @@ public partial class TaskSummaryPage : EduTaskPage
         TaskTeacherPill.IsEnabled = !busy;
     }
 
-    private sealed record ReportAssignment(int TaskID, string Title, string TeacherName, string Priority, DateTime CreatedAt, DateTime? Deadline, DateTime? CompletedAt, string Status);
+    private sealed record ReportAssignment(
+        int Task_id,
+        int Createdby_user_id,
+        string Title,
+        string Description,
+        string TeacherName,
+        string Priority,
+        DateTime Created_at,
+        DateTime? Deadline,
+        DateTime? Completed_at,
+        string Status,
+        string SubtaskKey);
 
     private sealed class CompletionRingDrawable : IDrawable
     {

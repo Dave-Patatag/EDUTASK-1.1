@@ -1,219 +1,601 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<base:EduTaskPage xmlns:base="clr-namespace:EDUTASK_1._1.Views.Base"
-                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                  xmlns:local="clr-namespace:EDUTASK_1._1.Views"
-                  x:Class="EDUTASK_1._1.Views.CalendarPage"
-                  NavigationPage.HasNavigationBar="False"
-                  Shell.NavBarIsVisible="False"
-                  BackgroundColor="{StaticResource SurfaceMuted}">
 
-    <!--
-        Calendar.
+<base:EduTaskPage
+    xmlns:base="clr-namespace:EDUTASK_1._1.Views.Base"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:EDUTASK_1._1.Views"
+    x:Class="EDUTASK_1._1.Views.CalendarPage"
+    NavigationPage.HasNavigationBar="False"
+    Shell.NavBarIsVisible="False"
+    BackgroundColor="{StaticResource SurfaceMuted}">
 
-        The month is fixed and the day's tasks scroll beneath it, rather than the
-        whole page scrolling as one block. That is what lets the day panel own the
-        rest of the screen: an empty day now centres its message in the space it
-        actually has instead of leaving a screenful of nothing below it, and a busy
-        day scrolls its tasks without dragging the month off the top.
 
-        Both sections share one centred column (see ContentColumn in code-behind),
-        so the month and the day heading line up on every width.
-
-        The month is drawn straight onto the page — no card, no border. The only
-        boxes left are the task cards, which is now the one thing a border means
-        here: something you can tap through to.
-    -->
+    <!-- ========================================================= -->
+    <!-- PAGE RESOURCES                                            -->
+    <!-- ========================================================= -->
 
     <base:EduTaskPage.Resources>
-        <!--
-            A task on the selected day.
 
-            The priority colour runs down the whole left edge rather than sitting
-            as a 4pt bar floating inside the padding: the card is drawn with no
-            padding of its own and clips to its own corner radius, so the stripe
-            reaches the rounded edge and reads as part of the card.
 
-            The two chips are deliberately different shapes. Priority is an
-            outline, status is a tint — so they are still telling apart at a
-            glance for someone who cannot separate the hues, and neither is the
-            heavy saturated fill the status pill used to be.
-        -->
+        <!-- ===================================================== -->
+        <!-- CALENDAR TASK CARD                                    -->
+        <!-- ===================================================== -->
+
         <DataTemplate x:Key="CalendarTaskCardTemplate">
-            <!-- Only the vertical half of CardStackMargin: ContentColumn
-                 already insets this list by 18 so the cards line up with the
-                 month grid above them, and a side margin here would inset it
-                 twice. -->
-            <Border Style="{StaticResource TaskListCard}"
-                    SemanticProperties.Description="{Binding CardDescription}">
-                <Grid ColumnDefinitions="5,*">
-                    <BoxView Color="{Binding PriorityColor}"/>
-                    <Grid Grid.Column="1" Padding="12,9"
-                          RowDefinitions="Auto,Auto"
-                          ColumnDefinitions="*,Auto"
-                          ColumnSpacing="8" RowSpacing="4"
-                          VerticalOptions="Center">
-                        <Label Text="{Binding Title}"
-                               FontSize="{StaticResource FontLabel}"
-                               FontAttributes="Bold"
-                               TextColor="{StaticResource TextPrimary}"
-                               MaxLines="1" LineBreakMode="TailTruncation"
-                               VerticalTextAlignment="Center"/>
 
-                        <Border Grid.Column="1" Padding="7,3"
-                                BackgroundColor="{Binding StatusColor}"
-                                StrokeThickness="0"
-                                HorizontalOptions="End"
-                                VerticalOptions="Center">
-                            <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
-                            <Label Text="{Binding Status}"
-                                   FontSize="{StaticResource FontMicro}"
-                                   FontAttributes="Bold"
-                                   TextColor="{StaticResource TextInverse}"/>
-                        </Border>
 
-                        <Label Grid.Row="1"
-                               Text="{Binding OwnerDisplay, StringFormat='Assigned to {0}'}"
-                               IsVisible="{Binding HasOwnerDisplay}"
-                               FontSize="{StaticResource FontMicro}"
-                               TextColor="{StaticResource TextSecondary}"
-                               MaxLines="1" LineBreakMode="TailTruncation"/>
+            <!-- ================================================= -->
+            <!-- CARD                                              -->
+            <!-- ================================================= -->
+
+            <Border
+                Style="{StaticResource TaskListCard}"
+                SemanticProperties.Description="{Binding CardDescription}">
+
+                <Grid ColumnDefinitions="4,*">
+
+
+                    <!-- ================================================= -->
+                    <!-- LEFT STATUS STRIPE                                -->
+                    <!-- ================================================= -->
+
+                    <BoxView
+                        Grid.Column="0"
+                        WidthRequest="4"
+                        Margin="0,6,0,6"
+                        CornerRadius="2"
+                        Color="{Binding StatusColor}">
+
+
+                        <BoxView.Triggers>
+
+
+                            <!-- COMPLETED -->
+
+                            <DataTrigger
+                                TargetType="BoxView"
+                                Binding="{Binding Status}"
+                                Value="Completed">
+
+                                <Setter
+                                    Property="Color"
+                                    Value="{StaticResource StatusSuccess}"/>
+
+                            </DataTrigger>
+
+
+                            <!-- OVERDUE -->
+
+                            <DataTrigger
+                                TargetType="BoxView"
+                                Binding="{Binding Status}"
+                                Value="Overdue">
+
+                                <Setter
+                                    Property="Color"
+                                    Value="{StaticResource StatusDanger}"/>
+
+                            </DataTrigger>
+
+
+                            <!-- PENDING -->
+
+                            <DataTrigger
+                                TargetType="BoxView"
+                                Binding="{Binding Status}"
+                                Value="Pending">
+
+                                <Setter
+                                    Property="Color"
+                                    Value="{StaticResource StatusPending}"/>
+
+                            </DataTrigger>
+
+
+                        </BoxView.Triggers>
+
+                    </BoxView>
+
+
+                    <!-- ================================================= -->
+                    <!-- CARD CONTENT                                      -->
+                    <!-- ================================================= -->
+
+                    <Grid
+                        Grid.Column="1"
+                        Padding="12,9"
+                        RowDefinitions="Auto,Auto"
+                        ColumnDefinitions="*,Auto"
+                        ColumnSpacing="8"
+                        RowSpacing="3"
+                        VerticalOptions="Center">
+
+
+                        <!-- ================================================= -->
+                        <!-- TASK TITLE                                        -->
+                        <!-- ================================================= -->
+
+                        <Label
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            Text="{Binding Title}"
+                            FontSize="{StaticResource FontLabel}"
+                            FontAttributes="Bold"
+                            TextColor="{StaticResource TextPrimary}"
+                            MaxLines="1"
+                            LineBreakMode="TailTruncation"
+                            VerticalTextAlignment="Center"
+                            VerticalOptions="Center"/>
+
+
+                        <!-- ================================================= -->
+                        <!-- STATUS TEXT                                       -->
+                        <!-- ================================================= -->
+
+                        <Label
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            Text="{Binding Status}"
+                            FontSize="{StaticResource FontMicro}"
+                            FontAttributes="Bold"
+                            TextColor="{Binding StatusColor}"
+                            HorizontalTextAlignment="End"
+                            VerticalTextAlignment="Center"
+                            HorizontalOptions="End"
+                            VerticalOptions="Center"
+                            TranslationY="6">
+
+
+                            <Label.Triggers>
+
+
+                                <!-- PENDING -->
+
+                                <DataTrigger
+                                    TargetType="Label"
+                                    Binding="{Binding Status}"
+                                    Value="Pending">
+
+                                    <Setter
+                                        Property="TextColor"
+                                        Value="{StaticResource StatusPending}"/>
+
+                                </DataTrigger>
+
+
+                                <!-- COMPLETED -->
+
+                                <DataTrigger
+                                    TargetType="Label"
+                                    Binding="{Binding Status}"
+                                    Value="Completed">
+
+                                    <Setter
+                                        Property="TextColor"
+                                        Value="{StaticResource StatusSuccess}"/>
+
+                                </DataTrigger>
+
+
+                                <!-- OVERDUE -->
+
+                                <DataTrigger
+                                    TargetType="Label"
+                                    Binding="{Binding Status}"
+                                    Value="Overdue">
+
+                                    <Setter
+                                        Property="TextColor"
+                                        Value="{StaticResource StatusDanger}"/>
+
+                                </DataTrigger>
+
+
+                            </Label.Triggers>
+
+                        </Label>
+
+
+                        <!-- ================================================= -->
+                        <!-- ASSIGNED TO                                       -->
+                        <!-- ================================================= -->
+
+                        <Label
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Grid.ColumnSpan="2"
+                            Text="{Binding OwnerDisplay, StringFormat='Assigned to {0}'}"
+                            IsVisible="{Binding HasOwnerDisplay}"
+                            FontSize="{StaticResource FontMicro}"
+                            TextColor="{StaticResource TextSecondary}"
+                            MaxLines="1"
+                            LineBreakMode="TailTruncation"
+                            VerticalTextAlignment="Center"/>
 
                     </Grid>
+
                 </Grid>
+
+
+                <!-- ================================================= -->
+                <!-- TASK TAP                                         -->
+                <!-- ================================================= -->
 
                 <Border.GestureRecognizers>
-                    <TapGestureRecognizer Tapped="OnTaskTapped" CommandParameter="{Binding TaskID}"/>
+
+                    <TapGestureRecognizer
+                        Tapped="OnTaskTapped"
+                        CommandParameter="{Binding Task_id}"/>
+
                 </Border.GestureRecognizers>
+
             </Border>
+
         </DataTemplate>
+
     </base:EduTaskPage.Resources>
 
-    <Grid RowDefinitions="*,Auto">
 
-        <!-- One centred column for the month and the day panel. Its side margins
-             are set in code so the column fills a phone and centres on a wide
-             desktop window. -->
-        <Grid x:Name="ContentColumn" Grid.Row="0"
-              RowDefinitions="Auto,*" RowSpacing="16"
-              Padding="18,16,18,0">
+    <!-- ========================================================= -->
+    <!-- PAGE ROOT                                                  -->
+    <!-- ========================================================= -->
 
-            <!--
-                The month sits straight on the page, with no card around it.
+    <Grid
+        RowDefinitions="Auto,*,Auto"
+        RowSpacing="0">
 
-                That also decided how the arrows look. Every surface fill in the
-                palette lands within about 1.1:1 of SurfaceMuted, so the round
-                grey buttons only ever read because a white card was behind them.
-                On the page they would have been invisible discs, so the chevron
-                itself carries the control: transparent target, glyph in
-                TextSecondary at 5.6:1, still a full 44pt to hit.
-            -->
-            <VerticalStackLayout Grid.Row="0" Spacing="12">
+        <Grid Grid.Row="0"
+              Padding="15,13"
+              ColumnDefinitions="42,*,42"
+              BackgroundColor="{StaticResource SurfaceMuted}">
 
-                <Grid ColumnDefinitions="44,*,44" ColumnSpacing="6">
-                    <ImageButton Source="calendarleft.png" Clicked="OnPreviousMonthClicked"
-                                 WidthRequest="44" HeightRequest="44" Padding="12"
-                                 BackgroundColor="Transparent" BorderWidth="0"
-                                 Aspect="AspectFit"
-                                 SemanticProperties.Description="Previous month"/>
-                    <Label x:Name="MonthLabel" Grid.Column="1"
-                           FontSize="{StaticResource FontTitle}" FontAttributes="Bold"
-                           TextColor="{StaticResource TextPrimary}"
-                           HorizontalTextAlignment="Center"
-                           VerticalTextAlignment="Center"
-                           SemanticProperties.Description="Choose calendar month and year">
+            <local:FlyoutMenuButton/>
+
+            <Label Grid.Column="1"
+                   Text="Calendar"
+                   FontSize="{StaticResource FontHeading}"
+                   FontAttributes="Bold"
+                   TextColor="{StaticResource TextPrimary}"
+                   HorizontalTextAlignment="Center"
+                   VerticalTextAlignment="Center"
+                   SemanticProperties.HeadingLevel="Level1"/>
+
+            <BoxView Grid.Column="2"
+                     WidthRequest="38"
+                     HeightRequest="38"
+                     Color="Transparent"/>
+        </Grid>
+
+
+        <!-- ===================================================== -->
+        <!-- CALENDAR + TASK CONTENT                               -->
+        <!-- ===================================================== -->
+
+        <Grid
+            x:Name="ContentColumn"
+            Grid.Row="1"
+            RowDefinitions="Auto,*"
+            RowSpacing="16"
+            Padding="18,8,18,0">
+
+
+            <!-- ================================================= -->
+            <!-- CALENDAR                                          -->
+            <!-- ================================================= -->
+
+            <VerticalStackLayout
+                Grid.Row="0"
+                Spacing="12">
+
+
+                <!-- ================================================= -->
+                <!-- MONTH HEADER                                      -->
+                <!-- ================================================= -->
+
+                <Grid
+                    ColumnDefinitions="44,*,44"
+                    ColumnSpacing="6">
+
+
+                    <!-- PREVIOUS MONTH -->
+
+                    <ImageButton
+                        Source="calendarleft.png"
+                        Clicked="OnPreviousMonthClicked"
+                        WidthRequest="44"
+                        HeightRequest="44"
+                        Padding="12"
+                        BackgroundColor="Transparent"
+                        BorderWidth="0"
+                        Aspect="AspectFit"
+                        SemanticProperties.Description="Previous month"/>
+
+
+                    <!-- MONTH / YEAR -->
+
+                    <Label
+                        x:Name="MonthLabel"
+                        Grid.Column="1"
+                        FontSize="{StaticResource FontTitle}"
+                        FontAttributes="Bold"
+                        TextColor="{StaticResource TextPrimary}"
+                        HorizontalTextAlignment="Center"
+                        VerticalTextAlignment="Center"
+                        SemanticProperties.Description="Choose calendar month and year">
+
                         <Label.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnMonthYearTapped"/>
+
+                            <TapGestureRecognizer
+                                Tapped="OnMonthYearTapped"/>
+
                         </Label.GestureRecognizers>
+
                     </Label>
-                    <ImageButton Grid.Column="2" Source="calendarright.png" Clicked="OnNextMonthClicked"
-                                 WidthRequest="44" HeightRequest="44" Padding="12"
-                                 BackgroundColor="Transparent" BorderWidth="0"
-                                 Aspect="AspectFit"
-                                 SemanticProperties.Description="Next month"/>
+
+
+                    <!-- NEXT MONTH -->
+
+                    <ImageButton
+                        Grid.Column="2"
+                        Source="calendarright.png"
+                        Clicked="OnNextMonthClicked"
+                        WidthRequest="44"
+                        HeightRequest="44"
+                        Padding="12"
+                        BackgroundColor="Transparent"
+                        BorderWidth="0"
+                        Aspect="AspectFit"
+                        SemanticProperties.Description="Next month"/>
+
                 </Grid>
 
-                <Grid ColumnDefinitions="*,*,*,*,*,*,*" ColumnSpacing="2">
+
+                <!-- ================================================= -->
+                <!-- DAYS OF WEEK                                      -->
+                <!-- ================================================= -->
+
+                <Grid
+                    ColumnDefinitions="*,*,*,*,*,*,*"
+                    ColumnSpacing="2">
+
                     <Grid.Resources>
+
                         <Style TargetType="Label">
-                            <Setter Property="FontSize" Value="{StaticResource FontLabel}"/>
-                            <Setter Property="FontAttributes" Value="Bold"/>
-                            <Setter Property="CharacterSpacing" Value="0.6"/>
-                            <Setter Property="TextColor" Value="{StaticResource TextTertiary}"/>
-                            <Setter Property="HorizontalTextAlignment" Value="Center"/>
+
+                            <Setter
+                                Property="FontSize"
+                                Value="{StaticResource FontLabel}"/>
+
+                            <Setter
+                                Property="FontAttributes"
+                                Value="Bold"/>
+
+                            <Setter
+                                Property="CharacterSpacing"
+                                Value="0.6"/>
+
+                            <Setter
+                                Property="TextColor"
+                                Value="{StaticResource TextTertiary}"/>
+
+                            <Setter
+                                Property="HorizontalTextAlignment"
+                                Value="Center"/>
+
                         </Style>
+
                     </Grid.Resources>
-                    <Label Text="MON"/>
-                    <Label Grid.Column="1" Text="TUE"/>
-                    <Label Grid.Column="2" Text="WED"/>
-                    <Label Grid.Column="3" Text="THU"/>
-                    <Label Grid.Column="4" Text="FRI"/>
-                    <Label Grid.Column="5" Text="SAT"/>
-                    <Label Grid.Column="6" Text="SUN"/>
+
+
+                    <Label
+                        Grid.Column="0"
+                        Text="MON"/>
+
+                    <Label
+                        Grid.Column="1"
+                        Text="TUE"/>
+
+                    <Label
+                        Grid.Column="2"
+                        Text="WED"/>
+
+                    <Label
+                        Grid.Column="3"
+                        Text="THU"/>
+
+                    <Label
+                        Grid.Column="4"
+                        Text="FRI"/>
+
+                    <Label
+                        Grid.Column="5"
+                        Text="SAT"/>
+
+                    <Label
+                        Grid.Column="6"
+                        Text="SUN"/>
+
                 </Grid>
 
-                <Grid x:Name="CalendarGrid"
-                      ColumnDefinitions="*,*,*,*,*,*,*"
-                      RowSpacing="2" ColumnSpacing="2"/>
-                <BoxView HeightRequest="1" Color="{StaticResource BorderDefault}"
-                         Margin="0,6,0,0"/>
+
+                <!-- ================================================= -->
+                <!-- CALENDAR DAYS                                     -->
+                <!-- ================================================= -->
+
+                <Grid
+                    x:Name="CalendarGrid"
+                    ColumnDefinitions="*,*,*,*,*,*,*"
+                    RowSpacing="2"
+                    ColumnSpacing="2"/>
+
+
+                <!-- DIVIDER -->
+
+                <BoxView
+                    HeightRequest="1"
+                    Color="{StaticResource BorderDefault}"
+                    Margin="0,6,0,0"/>
+
             </VerticalStackLayout>
 
-            <!-- Day panel. Takes the rest of the screen, so its empty state has
-                 somewhere to centre and its task list has somewhere to scroll. -->
-            <Grid Grid.Row="1" RowDefinitions="Auto,*" RowSpacing="12">
 
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                    <Label x:Name="SelectedDateLabel"
-                           FontSize="{StaticResource FontHeading}" FontAttributes="Bold"
-                           TextColor="{StaticResource TextPrimary}"
-                           VerticalTextAlignment="Center"
-                           LineBreakMode="TailTruncation"/>
-                    <Border Grid.Column="1" Padding="10,4" StrokeThickness="0"
-                            BackgroundColor="{StaticResource SurfaceSunken}"
-                            VerticalOptions="Center">
-                        <Border.StrokeShape><RoundRectangle CornerRadius="10"/></Border.StrokeShape>
-                        <Label x:Name="TaskCountLabel"
-                               FontSize="{StaticResource FontLabel}" FontAttributes="Bold"
-                               TextColor="{StaticResource TextSecondary}"/>
+            <!-- ================================================= -->
+            <!-- SELECTED DATE PANEL                               -->
+            <!-- ================================================= -->
+
+            <Grid
+                Grid.Row="1"
+                RowDefinitions="Auto,*"
+                RowSpacing="12">
+
+
+                <!-- ================================================= -->
+                <!-- SELECTED DATE HEADER                              -->
+                <!-- ================================================= -->
+
+                <Grid
+                    ColumnDefinitions="*,Auto"
+                    ColumnSpacing="10">
+
+
+                    <!-- DATE -->
+
+                    <Label
+                        x:Name="SelectedDateLabel"
+                        FontSize="{StaticResource FontHeading}"
+                        FontAttributes="Bold"
+                        TextColor="{StaticResource TextPrimary}"
+                        VerticalTextAlignment="Center"
+                        LineBreakMode="TailTruncation"/>
+
+
+                    <!-- ================================================= -->
+                    <!-- TASK COUNT                                        -->
+                    <!-- MATCHES ALL TEACHER BUTTON                        -->
+                    <!-- ================================================= -->
+
+                    <Border
+                        Grid.Column="1"
+                        Padding="10,4"
+                        BackgroundColor="#111C3A"
+                        Stroke="Transparent"
+                        StrokeThickness="0"
+                        VerticalOptions="Center"
+                        HorizontalOptions="End">
+
+                        <Border.StrokeShape>
+
+                            <RoundRectangle CornerRadius="10"/>
+
+                        </Border.StrokeShape>
+
+
+                        <Label
+                            x:Name="TaskCountLabel"
+                            FontSize="{StaticResource FontLabel}"
+                            FontAttributes="Bold"
+                            TextColor="#FFFFFF"
+                            HorizontalTextAlignment="Center"
+                            VerticalTextAlignment="Center"/>
+
                     </Border>
+
                 </Grid>
+
+
+                <!-- ================================================= -->
+                <!-- TASK LIST AREA                                    -->
+                <!-- ================================================= -->
 
                 <Grid Grid.Row="1">
 
-                    <ScrollView x:Name="TaskScroller" VerticalScrollBarVisibility="Never">
-                        <VerticalStackLayout x:Name="TaskList" Spacing="3" Padding="0,0,0,20">
+
+                    <!-- ================================================= -->
+                    <!-- TASK LIST                                         -->
+                    <!-- ================================================= -->
+
+                    <ScrollView
+                        x:Name="TaskScroller"
+                        VerticalScrollBarVisibility="Never">
+
+                        <VerticalStackLayout
+                            x:Name="TaskList"
+                            Spacing="3"
+                            Padding="0,0,0,20">
+
                             <BindableLayout.ItemTemplate>
-                                <StaticResource Key="CalendarTaskCardTemplate"/>
+
+                                <StaticResource
+                                    Key="CalendarTaskCardTemplate"/>
+
                             </BindableLayout.ItemTemplate>
+
                         </VerticalStackLayout>
+
                     </ScrollView>
 
-                    <ActivityIndicator x:Name="LoadingIndicator"
-                                       IsVisible="False" IsRunning="False"
-                                       Color="{StaticResource Brand800}"
-                                       HorizontalOptions="Center" VerticalOptions="Center"/>
 
-                    <VerticalStackLayout x:Name="EmptyState" IsVisible="False"
-                                         Spacing="6" Padding="20,4"
-                                         HorizontalOptions="Fill" VerticalOptions="Center"
-                                         Margin="0,0,0,20">
-                        <Image Source="notaskdue.png"
-                               WidthRequest="132" HeightRequest="110"
-                               Aspect="AspectFit"
-                               HorizontalOptions="Center"
-                               InputTransparent="True"/>
-                        <Label Text="Pick another date to see its deadlines."
-                               Style="{StaticResource EmptyStateMessage}"
-                               FontSize="{StaticResource FontBody}"
-                               HorizontalOptions="Fill"
-                               HorizontalTextAlignment="Center"/>
+                    <!-- ================================================= -->
+                    <!-- LOADING                                           -->
+                    <!-- ================================================= -->
+
+                    <ActivityIndicator
+                        x:Name="LoadingIndicator"
+                        IsVisible="False"
+                        IsRunning="False"
+                        Color="{StaticResource Brand800}"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"/>
+
+
+                    <!-- ================================================= -->
+                    <!-- EMPTY STATE                                       -->
+                    <!-- ================================================= -->
+
+                    <VerticalStackLayout
+                        x:Name="EmptyState"
+                        IsVisible="False"
+                        Spacing="6"
+                        Padding="20,4"
+                        HorizontalOptions="Fill"
+                        VerticalOptions="Center"
+                        Margin="0,0,0,20">
+
+
+                        <Image
+                            Source="notaskdue.png"
+                            WidthRequest="132"
+                            HeightRequest="110"
+                            Aspect="AspectFit"
+                            HorizontalOptions="Center"
+                            InputTransparent="True"/>
+
+
+                        <Label
+                            Text="Pick another date to see its deadlines."
+                            Style="{StaticResource EmptyStateMessage}"
+                            FontSize="{StaticResource FontBody}"
+                            HorizontalOptions="Fill"
+                            HorizontalTextAlignment="Center"/>
+
                     </VerticalStackLayout>
 
                 </Grid>
+
             </Grid>
+
         </Grid>
 
-        <local:BottomNavigationBar Grid.Row="1" ActiveTab="None"/>
+
+        <!-- ===================================================== -->
+        <!-- BOTTOM NAVIGATION                                     -->
+        <!-- ===================================================== -->
+
+        <local:BottomNavigationBar
+            Grid.Row="2"
+            ActiveTab="None"/>
+
     </Grid>
+
 </base:EduTaskPage>

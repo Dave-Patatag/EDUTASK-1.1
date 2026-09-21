@@ -80,21 +80,18 @@
                     </Grid>
                 </Border>
 
-                <!-- Field-specific and authentication errors share the space
-                     directly beneath Password. Only one is populated at a
-                     time, so the message stays attached to the inputs. -->
+                <!-- Keep password feedback and recovery action on one compact
+                     row so no empty validation line separates the link from
+                     the password field. -->
                 <Grid Grid.Row="4"
-                      RowDefinitions="Auto,Auto"
                       ColumnDefinitions="*,Auto">
 
                     <Label x:Name="PasswordErrorLabel"
                            Style="{StaticResource AuthFieldError}"
                            HorizontalOptions="Fill"
-                           HorizontalTextAlignment="Start"
-                           Grid.ColumnSpan="2"/>
+                           HorizontalTextAlignment="Start"/>
 
                     <Label Grid.Column="1"
-                           Grid.Row="1"
                            Text="Forgot password?"
                            FontSize="{StaticResource FontLabel}"
                            TextColor="{StaticResource Accent500}"
@@ -107,7 +104,8 @@
                     </Label>
                 </Grid>
 
-                <Button Grid.Row="5"
+                <Button x:Name="LoginButton"
+                        Grid.Row="5"
                         Text="Login"
                         Clicked="OnLoginClicked"
                         HeightRequest="50"

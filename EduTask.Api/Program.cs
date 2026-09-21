@@ -1,6 +1,8 @@
 using EduTask.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.ConfigureKestrel(options =>
+    options.Limits.MaxRequestBodySize = 48 * 1024 * 1024);
 builder.Logging.ClearProviders();
 builder.Logging.AddSimpleConsole(options => options.SingleLine = true);
 builder.Services.AddControllers();

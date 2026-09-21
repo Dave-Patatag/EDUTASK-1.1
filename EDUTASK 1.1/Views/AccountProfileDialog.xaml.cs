@@ -15,7 +15,7 @@ public partial class AccountProfileDialog : EduTaskPage
     private bool _isActive;
     private string _role = string.Empty;
     private bool _isClosing;
-    private double _preferredDialogHeight = 312;
+    private double _preferredDialogHeight = 330;
 
     public AccountProfileDialog(
         Teachers teacher,
@@ -28,16 +28,15 @@ public partial class AccountProfileDialog : EduTaskPage
         BindingContext = _viewModel;
 
         ApplyProfile(
-            avatarSeed: $"teacher-{teacher.TeacherID}",
-            fullName: $"{teacher.FirstName} {teacher.LastName}".Trim(),
+            avatarSeed: $"teacher-{teacher.Teacher_id}",
+            fullName: $"{teacher.First_name} {teacher.Last_name}".Trim(),
             username: teacher.Username,
             email: teacher.Email,
-            contactNumber: teacher.ContactNumber,
+            contactNumber: teacher.Contact_number,
             role: "Teacher",
-            bio: teacher.Bio,
-            profilePhotoPath: teacher.ProfilePhotoPath,
-            accountCreated: teacher.AccountCreated,
-            isActive: teacher.IsActive,
+            profilePhotoPath: teacher.Profile_photo,
+            accountCreated: teacher.Account_created,
+            isActive: teacher.Is_active,
             isManagedAccountDisabled: isManagedAccountDisabled,
             onPromote: onPromote,
             onAccountStateChange: onAccountStateChange);
@@ -54,16 +53,15 @@ public partial class AccountProfileDialog : EduTaskPage
         BindingContext = _viewModel;
 
         ApplyProfile(
-            avatarSeed: $"user-{user.UserID}",
-            fullName: $"{user.FirstName} {user.LastName}".Trim(),
+            avatarSeed: $"user-{user.User_id}",
+            fullName: $"{user.First_name} {user.Last_name}".Trim(),
             username: user.Username,
             email: user.Email,
-            contactNumber: user.ContactNumber,
-            role: string.IsNullOrWhiteSpace(user.RoleName) ? "Staff" : user.RoleName,
-            bio: user.Bio,
-            profilePhotoPath: user.ProfilePhotoPath,
-            accountCreated: user.AccountCreated,
-            isActive: user.IsActive,
+            contactNumber: user.Contact_number,
+            role: string.IsNullOrWhiteSpace(user.Role_name) ? "Staff" : user.Role_name,
+            profilePhotoPath: user.Profile_photo,
+            accountCreated: user.Account_created,
+            isActive: user.Is_active,
             isManagedAccountDisabled: isManagedAccountDisabled,
             onPromote: onPromote,
             onAccountStateChange: onAccountStateChange);
@@ -76,7 +74,6 @@ public partial class AccountProfileDialog : EduTaskPage
         string email,
         string contactNumber,
         string role,
-        string bio,
         string profilePhotoPath,
         DateTime accountCreated,
         bool isActive,
@@ -94,16 +91,14 @@ public partial class AccountProfileDialog : EduTaskPage
         _viewModel.FullName = fullName;
         _viewModel.Username = username;
         _viewModel.Email = email;
-        _viewModel.ContactNumber = string.IsNullOrWhiteSpace(contactNumber)
+        _viewModel.Contact_number = string.IsNullOrWhiteSpace(contactNumber)
             ? "No contact number"
             : contactNumber;
         _viewModel.Role = role;
-        _viewModel.Bio = bio;
-        _viewModel.ProfilePhotoPath = profilePhotoPath;
+        _viewModel.Profile_photo = profilePhotoPath;
 
         RoleLabel.Text = role;
         MemberSinceLabel.Text = accountCreated.ToString("MMM d, yyyy");
-        BioSection.IsVisible = !string.IsNullOrWhiteSpace(bio);
 
         string status = isManagedAccountDisabled
             ? "Disabled"
@@ -111,13 +106,13 @@ public partial class AccountProfileDialog : EduTaskPage
         StatusLabel.Text = status;
         StatusLabel.TextColor = isManagedAccountDisabled
             ? AppColors.StatusDanger
-            : isActive ? AppColors.StatusSuccess : AppColors.StatusValidation;
+            : isActive ? AppColors.StatusSuccess : AppColors.StatusPending;
         StatusCard.BackgroundColor = isManagedAccountDisabled
             ? AppColors.StatusDangerSurface
-            : isActive ? AppColors.StatusSuccessSurface : AppColors.StatusValidationSurface;
+            : isActive ? AppColors.StatusSuccessSurface : AppColors.StatusPendingSurface;
         StatusCard.Stroke = isManagedAccountDisabled
             ? AppColors.StatusDangerBorder
-            : isActive ? AppColors.StatusSuccessBorder : AppColors.StatusValidationBorder;
+            : isActive ? AppColors.StatusSuccessBorder : AppColors.StatusPendingBorder;
 
         bool isStaff = string.Equals(role, "Staff", StringComparison.OrdinalIgnoreCase);
         bool isPending = !isActive && !isManagedAccountDisabled;
@@ -128,26 +123,25 @@ public partial class AccountProfileDialog : EduTaskPage
         AccountStateButton.Text = isManagedAccountDisabled ? "Enable account" : "Disable account";
         AccountStateButton.BackgroundColor = isManagedAccountDisabled
             ? AppColors.StatusSuccessSurface
-            : AppColors.StatusDangerSurface;
+            : AppColors.ActionDanger;
         AccountStateButton.BorderColor = isManagedAccountDisabled
             ? AppColors.StatusSuccessBorder
-            : AppColors.StatusDangerBorder;
+            : AppColors.ActionDanger;
         AccountStateButton.TextColor = isManagedAccountDisabled
             ? AppColors.StatusSuccess
-            : AppColors.StatusDanger;
+            : AppColors.TextInverse;
         UpdatePreferredDialogHeight();
     }
 
     private void UpdatePreferredDialogHeight()
     {
-        double bioHeight = BioSection.IsVisible ? 72 : 0;
         double actionHeight = !ManagementActions.IsVisible
             ? 0
             : PromoteButton.IsVisible && AccountStateButton.IsVisible ? 110 : 66;
 
-        _preferredDialogHeight = Math.Min(494, 312 + bioHeight + actionHeight);
+        _preferredDialogHeight = Math.Min(560, 330 + actionHeight);
         if (Height > 0)
-            DialogPanel.HeightRequest = Math.Min(_preferredDialogHeight, Math.Max(280, Height - 64));
+            DialogPanel.HeightRequest = Math.Min(_preferredDialogHeight, Math.Max(300, Height - 24));
     }
 
     protected override void OnSizeAllocated(double width, double height)
@@ -156,11 +150,10 @@ public partial class AccountProfileDialog : EduTaskPage
         if (width <= 0 || height <= 0)
             return;
 
-        // Leave room for the root grid's padding. The previous 300 minimum
-        // could exceed the padded Android viewport and clip the right side,
-        // making an otherwise centred card appear shifted to the left.
-        DialogPanel.WidthRequest = Math.Min(380, Math.Max(260, width - 40));
-        double availableHeight = Math.Max(280, height - 64);
+        // The sheet occupies the full viewport width and its dedicated auto
+        // grid row keeps it attached to the bottom edge on every platform.
+        DialogPanel.WidthRequest = width;
+        double availableHeight = Math.Max(300, height - 24);
         DialogPanel.MaximumHeightRequest = availableHeight;
         DialogPanel.HeightRequest = Math.Min(_preferredDialogHeight, availableHeight);
     }
@@ -199,23 +192,23 @@ public partial class AccountProfileDialog : EduTaskPage
         StatusLabel.Text = status;
         StatusLabel.TextColor = isDisabled
             ? AppColors.StatusDanger
-            : isActive ? AppColors.StatusSuccess : AppColors.StatusValidation;
+            : isActive ? AppColors.StatusSuccess : AppColors.StatusPending;
         StatusCard.BackgroundColor = isDisabled
             ? AppColors.StatusDangerSurface
-            : isActive ? AppColors.StatusSuccessSurface : AppColors.StatusValidationSurface;
+            : isActive ? AppColors.StatusSuccessSurface : AppColors.StatusPendingSurface;
         StatusCard.Stroke = isDisabled
             ? AppColors.StatusDangerBorder
-            : isActive ? AppColors.StatusSuccessBorder : AppColors.StatusValidationBorder;
+            : isActive ? AppColors.StatusSuccessBorder : AppColors.StatusPendingBorder;
         AccountStateButton.Text = isDisabled ? "Enable account" : "Disable account";
         AccountStateButton.BackgroundColor = isDisabled
             ? AppColors.StatusSuccessSurface
-            : AppColors.StatusDangerSurface;
+            : AppColors.ActionDanger;
         AccountStateButton.BorderColor = isDisabled
             ? AppColors.StatusSuccessBorder
-            : AppColors.StatusDangerBorder;
+            : AppColors.ActionDanger;
         AccountStateButton.TextColor = isDisabled
             ? AppColors.StatusSuccess
-            : AppColors.StatusDanger;
+            : AppColors.TextInverse;
         PromoteButton.IsVisible = string.Equals(_role, "Staff", StringComparison.OrdinalIgnoreCase)
             && isActive && !isDisabled && _onPromote is not null;
         UpdatePreferredDialogHeight();

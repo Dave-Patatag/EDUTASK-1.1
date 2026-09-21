@@ -35,9 +35,6 @@
 <text class="umk" x="346" y="154" text-anchor="end">«PK»</text>
 <text class="uat" x="54" y="171">+ RoleName : string</text>
 <text class="umk" x="346" y="171" text-anchor="end">«UQ»</text>
-<text class="uat" x="54" y="188">+ Description : string?</text>
-<text class="uat" x="54" y="205">+ IsActive : bool</text>
-<text class="uat" x="54" y="222">+ CreatedAt : DateTime</text>
 </g>
 <g>
 <rect class="ubox" x="40" y="287" width="320" height="154"/>
@@ -72,9 +69,7 @@
 <text class="umk" x="756" y="222" text-anchor="end">«UQ»</text>
 <text class="uat" x="464" y="239">+ Password : string</text>
 <text class="uat" x="464" y="256">+ ContactNumber : string</text>
-<text class="uat" x="464" y="273">+ Birthdate : DateTime?</text>
 <text class="uat" x="464" y="290">+ ProfilePhotoPath : string</text>
-<text class="uat" x="464" y="307">+ Position : string</text>
 <text class="uat" x="464" y="324">+ Bio : string</text>
 <text class="uat" x="464" y="341">+ AccountCreated : DateTime</text>
 <text class="uat" x="464" y="358">+ RoleID : int</text>
@@ -103,9 +98,7 @@
 <text class="umk" x="1166" y="222" text-anchor="end">«UQ»</text>
 <text class="uat" x="874" y="239">+ Password : string</text>
 <text class="uat" x="874" y="256">+ ContactNumber : string</text>
-<text class="uat" x="874" y="273">+ Birthdate : DateTime?</text>
 <text class="uat" x="874" y="290">+ ProfilePhotoPath : string</text>
-<text class="uat" x="874" y="307">+ Position : string</text>
 <text class="uat" x="874" y="324">+ Bio : string</text>
 <text class="uat" x="874" y="341">+ AccountCreated : DateTime</text>
 <text class="uat" x="874" y="358">+ RoleID : int</text>
@@ -119,29 +112,10 @@
 <text class="uat" x="874" y="477">+ SecurityAnswerHash2 : string</text>
 </g>
 <g>
-<rect class="ubox" x="1270" y="100" width="320" height="205"/>
-<rect class="uhd d" x="1270" y="100" width="320" height="34"/>
-<text class="unm d" x="1430" y="122" text-anchor="middle">TaskActivityLog</text>
-<line class="urule" x1="1270" y1="134" x2="1590" y2="134"/>
-<text class="uat" x="1284" y="154">+ ActivityLogID : long</text>
-<text class="umk" x="1576" y="154" text-anchor="end">«PK»</text>
-<text class="uat" x="1284" y="171">+ TaskID : int</text>
-<text class="umk" x="1576" y="171" text-anchor="end">«FK»</text>
-<text class="uat" x="1284" y="188">+ PerformedByUserID : int?</text>
-<text class="umk" x="1576" y="188" text-anchor="end">«FK»</text>
-<text class="uat" x="1284" y="205">+ PerformedByTeacherID : int?</text>
-<text class="umk" x="1576" y="205" text-anchor="end">«FK»</text>
-<text class="uat" x="1284" y="222">+ ActionType : string</text>
-<text class="uat" x="1284" y="239">+ PreviousStatus : string?</text>
-<text class="uat" x="1284" y="256">+ NewStatus : string?</text>
-<text class="uat" x="1284" y="273">+ Details : string?</text>
-<text class="uat" x="1284" y="290">+ CreatedAt : DateTime</text>
-</g>
-<g>
 <rect class="ubox" x="1270" y="355" width="320" height="120"/>
 <rect class="uhd d" x="1270" y="355" width="320" height="34"/>
 <text class="ust" x="1430" y="369" text-anchor="middle">«inbox state»</text>
-<text class="unm d" x="1430" y="383" text-anchor="middle">NotificationRead / Hidden</text>
+<text class="unm d" x="1430" y="383" text-anchor="middle">NotificationState</text>
 <line class="urule" x1="1270" y1="389" x2="1590" y2="389"/>
 <text class="uat" x="1284" y="409">+ RecipientType : string</text>
 <text class="umk" x="1576" y="409" text-anchor="end">«PK»</text>
@@ -149,7 +123,7 @@
 <text class="umk" x="1576" y="426" text-anchor="end">«PK»</text>
 <text class="uat" x="1284" y="443">+ NotificationKey : string</text>
 <text class="umk" x="1576" y="443" text-anchor="end">«PK»</text>
-<text class="uat" x="1284" y="460">+ ReadAt / HiddenAt : DateTime</text>
+<text class="uat" x="1284" y="460">+ ReadAt / HiddenAt : DateTime?</text>
 </g>
 <g>
 <rect class="ubox" x="450" y="560" width="320" height="290"/>
@@ -161,21 +135,11 @@
 <text class="uat" x="464" y="631">+ Title : string</text>
 <text class="uat" x="464" y="648">+ Description : string</text>
 <text class="uat" x="464" y="665">+ CreatedAt : DateTime</text>
-<text class="uat" x="464" y="682">+ UpdatedAt : DateTime</text>
-<text class="uat" x="464" y="699">+ UserID : int</text>
-<text class="umk" x="756" y="699" text-anchor="end">«FK»</text>
 <text class="uat" x="464" y="716">+ isDailyRemind : bool</text>
-<text class="uat" x="464" y="733">+ CreatedByUserID : int?</text>
+<text class="uat" x="464" y="733">+ CreatedByUserID : int</text>
 <text class="umk" x="756" y="733" text-anchor="end">«FK»</text>
-<text class="uat" x="464" y="750">+ LastModifiedByUserID : int?</text>
-<text class="umk" x="756" y="750" text-anchor="end">«FK»</text>
 <text class="uat" x="464" y="767">+ CompletionApprovedByUserID : int?</text>
 <text class="umk" x="756" y="767" text-anchor="end">«FK»</text>
-<text class="uat" x="464" y="784">+ CompletionApprovedAt : DateTime?</text>
-<text class="uat" x="464" y="801">+ RevisionRequestedByUserID : int?</text>
-<text class="umk" x="756" y="801" text-anchor="end">«FK»</text>
-<text class="uat" x="464" y="818">+ RevisionRequestedAt : DateTime?</text>
-<text class="uat" x="464" y="835">+ RevisionReason : string?</text>
 </g>
 <g>
 <rect class="ubox" x="860" y="560" width="320" height="222"/>
@@ -197,7 +161,7 @@
 <text class="uat" x="874" y="767">+ CompletedAt : DateTime?</text>
 </g>
 <g>
-<rect class="ubox" x="450" y="910" width="320" height="137"/>
+<rect class="ubox" x="450" y="910" width="320" height="290"/>
 <rect class="uhd b" x="450" y="910" width="320" height="34"/>
 <text class="unm b" x="610" y="932" text-anchor="middle">Subtask</text>
 <line class="urule" x1="450" y1="944" x2="770" y2="944"/>
@@ -207,14 +171,20 @@
 <text class="umk" x="756" y="981" text-anchor="end">«FK»</text>
 <text class="uat" x="464" y="998">+ Title : string</text>
 <text class="uat" x="464" y="1015">+ IsCompleted : bool</text>
-<text class="uat" x="464" y="1032">+ CreatedAt : DateTime</text>
+<text class="uat" x="464" y="1049">+ ProofFile : byte[]?</text>
+<text class="uat" x="464" y="1066">+ ProofFileName : string?</text>
+<text class="uat" x="464" y="1083">+ ProofContentType : string?</text>
+<text class="uat" x="464" y="1100">+ ProofValidationStatus : string?</text>
+<text class="uat" x="464" y="1117">+ ProofUploadedAt : DateTime?</text>
+<text class="uat" x="464" y="1168">+ ProofSubmittedByTeacherID : int?</text>
+<text class="umk" x="756" y="1168" text-anchor="end">«FK»</text>
 </g>
 <g>
 <rect class="ubox" x="1270" y="910" width="320" height="205"/>
 <rect class="uhd d" x="1270" y="910" width="320" height="34"/>
-<text class="unm d" x="1430" y="932" text-anchor="middle">TaskComment</text>
+<text class="unm d" x="1430" y="932" text-anchor="middle">TaskDiscussion</text>
 <line class="urule" x1="1270" y1="944" x2="1590" y2="944"/>
-<text class="uat" x="1284" y="964">+ CommentID : int</text>
+<text class="uat" x="1284" y="964">+ DiscussionID : int</text>
 <text class="umk" x="1576" y="964" text-anchor="end">«PK»</text>
 <text class="uat" x="1284" y="981">+ TaskID : int</text>
 <text class="umk" x="1576" y="981" text-anchor="end">«FK»</text>
@@ -224,31 +194,11 @@
 <text class="uat" x="1284" y="1032">+ AuthorID : int</text>
 <text class="uat" x="1284" y="1049">+ AuthorName : string</text>
 <text class="uat" x="1284" y="1066">+ MessageType : string</text>
-<text class="uat" x="1284" y="1083">+ CommentText : string</text>
+<text class="uat" x="1284" y="1083">+ DiscussionText : string</text>
 <text class="uat" x="1284" y="1100">+ CreatedAt : DateTime</text>
 </g>
 <g>
-<rect class="ubox" x="450" y="1175" width="320" height="222"/>
-<rect class="uhd c" x="450" y="1175" width="320" height="34"/>
-<text class="ust" x="610" y="1189" text-anchor="middle">«current evidence»</text>
-<text class="unm c" x="610" y="1203" text-anchor="middle">SubtaskProof</text>
-<line class="urule" x1="450" y1="1209" x2="770" y2="1209"/>
-<text class="uat" x="464" y="1229">+ ProofID : int</text>
-<text class="umk" x="756" y="1229" text-anchor="end">«PK»</text>
-<text class="uat" x="464" y="1246">+ SubtaskID : int</text>
-<text class="umk" x="756" y="1246" text-anchor="end">«FK, UQ»</text>
-<text class="uat" x="464" y="1263">+ ImageData : byte[]</text>
-<text class="uat" x="464" y="1280">+ FileName : string</text>
-<text class="uat" x="464" y="1297">+ ContentType : string</text>
-<text class="uat" x="464" y="1314">+ ValidationStatus : string</text>
-<text class="uat" x="464" y="1331">+ UploadedAt : DateTime</text>
-<text class="uat" x="464" y="1348">+ ReviewedAt : DateTime?</text>
-<text class="uat" x="464" y="1365">+ ReviewedByUserID : int?</text>
-<text class="umk" x="756" y="1365" text-anchor="end">«FK»</text>
-<text class="uat" x="464" y="1382">+ AdminRemarks : string?</text>
-</g>
-<g>
-<rect class="ubox" x="860" y="1175" width="320" height="239"/>
+<rect class="ubox" x="860" y="1175" width="320" height="256"/>
 <rect class="uhd c" x="860" y="1175" width="320" height="34"/>
 <text class="ust" x="1020" y="1189" text-anchor="middle">«attempt archive»</text>
 <text class="unm c" x="1020" y="1203" text-anchor="middle">SubtaskProofHistory</text>
@@ -263,15 +213,17 @@
 <text class="uat" x="874" y="1314">+ FileData : byte[]</text>
 <text class="uat" x="874" y="1331">+ ValidationStatus : string</text>
 <text class="uat" x="874" y="1348">+ SubmittedAt : DateTime</text>
-<text class="uat" x="874" y="1365">+ ReviewedAt : DateTime?</text>
-<text class="uat" x="874" y="1382">+ ReviewedByUserID : int?</text>
-<text class="umk" x="1166" y="1382" text-anchor="end">«FK»</text>
-<text class="uat" x="874" y="1399">+ ReturnRemarks : string?</text>
+<text class="uat" x="874" y="1365">+ SubmittedByTeacherID : int?</text>
+<text class="umk" x="1166" y="1365" text-anchor="end">«FK»</text>
+<text class="uat" x="874" y="1382">+ ReviewedAt : DateTime?</text>
+<text class="uat" x="874" y="1399">+ ReviewedByUserID : int?</text>
+<text class="umk" x="1166" y="1399" text-anchor="end">«FK»</text>
+<text class="uat" x="874" y="1416">+ ReturnRemarks : string?</text>
 </g>
 <g>
 <rect class="ubox" x="1270" y="1175" width="320" height="137"/>
 <rect class="uhd d" x="1270" y="1175" width="320" height="34"/>
-<text class="unm d" x="1430" y="1197" text-anchor="middle">TaskCommentRead</text>
+<text class="unm d" x="1430" y="1197" text-anchor="middle">TaskDiscussionRead</text>
 <line class="urule" x1="1270" y1="1209" x2="1590" y2="1209"/>
 <text class="uat" x="1284" y="1229">+ SubtaskID : int</text>
 <text class="umk" x="1576" y="1229" text-anchor="end">«PK, FK»</text>
@@ -279,7 +231,7 @@
 <text class="umk" x="1576" y="1246" text-anchor="end">«PK»</text>
 <text class="uat" x="1284" y="1263">+ ReaderID : int</text>
 <text class="umk" x="1576" y="1263" text-anchor="end">«PK»</text>
-<text class="uat" x="1284" y="1280">+ LastReadCommentID : int</text>
+<text class="uat" x="1284" y="1280">+ LastReadDiscussionID : int</text>
 <text class="uat" x="1284" y="1297">+ ReadAt : DateTime</text>
 </g>
 <polyline class="uln" points="360,150 450,150" marker-end="url(#uarrow)"/>
@@ -290,16 +242,12 @@
 <text class="umult" x="210" y="94">1</text>
 <text class="umult" x="1010" y="94" text-anchor="end">0..*</text>
 <text class="ulbl" x="600" y="50" text-anchor="middle">governs</text>
-<polyline class="uln" points="700,100 700,80 1430,80 1430,100" marker-end="url(#uarrow)"/>
-<text class="ulbl" x="1065" y="72" text-anchor="middle">performed by</text>
 <polyline class="uln" points="200,287 200,237" marker-end="url(#uarrow)"/>
 <text class="ulbl" x="210" y="268">from / to role</text>
 <polyline class="uln" points="360,364 450,364" marker-end="url(#uarrow)"/>
 <text class="umult" x="366" y="358">0..*</text>
 <text class="umult" x="444" y="358" text-anchor="end">1</text>
 <text class="ulbl" x="405" y="380" text-anchor="middle">promotes</text>
-<polyline class="uln" points="1180,250 1270,250" marker-end="url(#uarrow)"/>
-<text class="ulbl" x="1225" y="242" text-anchor="middle">acts</text>
 <polyline class="uln" points="1180,420 1270,420" marker-end="url(#uarrow)"/>
 <text class="ulbl" x="1225" y="412" text-anchor="middle">receives</text>
 <polyline class="uln" points="610,492 610,560" marker-end="url(#uarrow)"/>
@@ -314,9 +262,6 @@
 <text class="umult" x="776" y="644">1</text>
 <text class="umult" x="854" y="644" text-anchor="end">1..*</text>
 <text class="ulbl" x="815" y="668" text-anchor="middle">assigned by</text>
-<polyline class="uln" points="730,560 730,520 1615,520 1615,200 1590,200" marker-end="url(#uarrow)"/>
-<text class="umult" x="738" y="546">1</text>
-<text class="ulbl" x="1180" y="512" text-anchor="middle">records every action</text>
 <polyline class="uln" points="610,850 610,910" marker-end="url(#uarrow)"/>
 <text class="umult" x="602" y="870" text-anchor="end">1</text>
 <text class="umult" x="602" y="902" text-anchor="end">0..*</text>

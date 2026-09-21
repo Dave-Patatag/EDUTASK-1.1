@@ -12,14 +12,14 @@ BEGIN TRY
     -- the legacy 'Returned'/'In Progress' values instead) and silently skipped replacing it.
     -- That left dbo.RequestTaskRevision / dbo.ReopenTask writing a status the live constraint
     -- rejects. Normalize any lingering legacy values, then drop and recreate the constraint.
-    UPDATE dbo.TaskAssignment SET CompletionStatus = N'Needs Revision' WHERE CompletionStatus = N'Returned';
-    UPDATE dbo.TaskAssignment SET CompletionStatus = N'Pending' WHERE CompletionStatus = N'In Progress';
+    UPDATE dbo.TaskAssignment SET Completion_status = N'Needs Revision' WHERE Completion_status = N'Returned';
+    UPDATE dbo.TaskAssignment SET Completion_status = N'Pending' WHERE Completion_status = N'In Progress';
 
     IF OBJECT_ID(N'dbo.CK_TaskAssignment_CompletionStatus', N'C') IS NOT NULL
         ALTER TABLE dbo.TaskAssignment DROP CONSTRAINT CK_TaskAssignment_CompletionStatus;
 
     ALTER TABLE dbo.TaskAssignment WITH CHECK ADD CONSTRAINT CK_TaskAssignment_CompletionStatus
-        CHECK (CompletionStatus IN (N'Pending', N'Acknowledged', N'For Validation', N'Needs Revision', N'Completed'));
+        CHECK (Completion_status IN (N'Pending', N'Acknowledged', N'For Validation', N'Needs Revision', N'Completed'));
 
     -- Email is uniquely constrained on both tables already; Username was not.
     IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.[User]') AND name = N'UQ_User_Username')
@@ -28,10 +28,10 @@ BEGIN TRY
         CREATE UNIQUE INDEX UQ_Teacher_Username ON dbo.Teacher(Username);
 
     -- Supporting indexes for columns filtered/joined on every dashboard, inbox, and discussion query.
-    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.TaskComment') AND name = N'IX_TaskComment_Task_Subtask')
-        CREATE INDEX IX_TaskComment_Task_Subtask ON dbo.TaskComment(TaskID, SubtaskID);
+    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.TaskDiscussion') AND name = N'IX_TaskDiscussion_Task_Subtask')
+        CREATE INDEX IX_TaskDiscussion_Task_Subtask ON dbo.TaskDiscussion(Task_id, Subtask_id);
     IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.TaskAssignment') AND name = N'IX_TaskAssignment_Task_Teacher')
-        CREATE INDEX IX_TaskAssignment_Task_Teacher ON dbo.TaskAssignment(TaskID, TeacherID);
+        CREATE INDEX IX_TaskAssignment_Task_Teacher ON dbo.TaskAssignment(Task_id, Teacher_id);
 
     COMMIT TRANSACTION;
 END TRY
@@ -43,4 +43,4 @@ GO
 
 /* Validation: constraint should list Needs Revision, no rows should be blocked. */
 SELECT definition FROM sys.check_constraints WHERE name = N'CK_TaskAssignment_CompletionStatus';
-SELECT name FROM sys.indexes WHERE name IN (N'UQ_User_Username', N'UQ_Teacher_Username', N'IX_TaskComment_Task_Subtask', N'IX_TaskAssignment_Task_Teacher');
+SELECT name FROM sys.indexes WHERE name IN (N'UQ_User_Username', N'UQ_Teacher_Username', N'IX_TaskDiscussion_Task_Subtask', N'IX_TaskAssignment_Task_Teacher');

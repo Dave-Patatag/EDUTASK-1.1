@@ -25,11 +25,11 @@ public partial class SubtaskProofHistoryPage : EduTaskPage
         InitializeComponent();
         _subtask = subtask;
         _onReviewCompleted = onReviewCompleted;
-        int? reviewableHistoryID = canReview
+        int? reviewableSubmissionID = canReview
             ? subtask.ProofHistory
                 .Where(item => item.ValidationStatus == "Pending")
                 .OrderByDescending(item => item.AttemptNumber)
-                .Select(item => (int?)item.HistoryID)
+                .Select(item => (int?)item.SubmissionID)
                 .FirstOrDefault()
             : null;
         Attempts = new ObservableCollection<ProofHistoryRowViewModel>(
@@ -37,9 +37,8 @@ public partial class SubtaskProofHistoryPage : EduTaskPage
                 .OrderBy(item => item.AttemptNumber)
                 .Select(item => new ProofHistoryRowViewModel(
                     item,
-                    reviewableHistoryID == item.HistoryID)));
+                    reviewableSubmissionID == item.SubmissionID)));
         _reviewableRow = Attempts.FirstOrDefault(item => item.CanReview);
-        ReviewActionsPanel.IsVisible = _reviewableRow is not null;
         BindingContext = this;
     }
 
@@ -49,11 +48,20 @@ public partial class SubtaskProofHistoryPage : EduTaskPage
         if (width <= 0 || height <= 0)
             return;
 
-        PopupPanel.WidthRequest = Math.Min(680, Math.Max(300, width - 32));
-        PopupPanel.HeightRequest = Math.Min(520, Math.Max(260, height - 48));
+        double horizontalMargin = width >= 400 ? 40 : 20;
+        PopupPanel.WidthRequest = Math.Min(620, Math.Max(0, width - horizontalMargin));
+
+        int attemptCount = Math.Max(1, Attempts?.Count ?? 0);
+        bool hasReviewControls = Attempts?.Any(attempt => attempt.CanReview) == true;
+        double desiredHeight = 300 + attemptCount * 82 + (hasReviewControls ? 48 : 0);
+        double availableHeight = Math.Max(0, height - 40);
+        PopupPanel.HeightRequest = Math.Min(desiredHeight, availableHeight);
     }
 
     private async void OnCloseClicked(object sender, EventArgs e) =>
+        await Navigation.PopModalAsync(false);
+
+    private async void OnCloseTapped(object sender, TappedEventArgs e) =>
         await Navigation.PopModalAsync(false);
 
     private async void OnViewProofTapped(object sender, TappedEventArgs e)
@@ -62,13 +70,13 @@ public partial class SubtaskProofHistoryPage : EduTaskPage
             return;
         try
         {
-            var file = await _db.GetSubtaskProofHistoryFileAsync(row.HistoryID);
-            if (file is null)
+            List<PreparedProofImage> files = await _db.GetProofSubmissionFilesAsync(row.SubmissionID);
+            if (files.Count == 0)
             {
-                await UiAlertService.ShowAsync(this, "File unavailable", "We couldn't find this proof-history file.");
+                await UiAlertService.ShowAsync(this, "Files unavailable", "We couldn't find files for this submission.");
                 return;
             }
-            await ProofFileViewerService.OpenAsync(this, file.Value, $"proof-attempt-{row.AttemptNumber}");
+            await ProofFileViewerService.OpenManyAsync(this, files, $"proof-attempt-{row.AttemptNumber}");
         }
         catch
         {
@@ -81,7 +89,7 @@ public partial class SubtaskProofHistoryPage : EduTaskPage
         if (_reviewableRow is not { CanReview: true } row)
             return;
         if (!await UiAlertService.ConfirmAsync(
-                this, "Approve file", "Approve this submission and complete the subtask?", "Approve", "Cancel"))
+                this, "Approve submission", "Approve these proof files and complete the subtask?", "Approve", "Cancel"))
             return;
         await ReviewAsync(row, true, null);
     }
@@ -115,7 +123,7 @@ public partial class SubtaskProofHistoryPage : EduTaskPage
         try
         {
             bool reviewed = await _db.ReviewSubtaskProofAsync(
-                _subtask.SubtaskID,
+                _subtask.Subtask_id,
                 approve,
                 UserSessionService.CurrentUserId,
                 remarks);
@@ -130,22 +138,16 @@ public partial class SubtaskProofHistoryPage : EduTaskPage
 
             if (!approve && !string.IsNullOrWhiteSpace(remarks))
             {
-                var currentUser = await UserSessionService.GetCurrentUserAsync();
-                string authorName = currentUser is null
-                    ? "Admin"
-                    : $"{currentUser.FirstName} {currentUser.LastName}".Trim();
-                await _db.AddTaskCommentAsync(
-                    _subtask.TaskID,
-                    _subtask.SubtaskID,
+                await _db.AddTaskDiscussionAsync(
+                    _subtask.Task_id,
+                    _subtask.Subtask_id,
                     "User",
                     UserSessionService.CurrentUserId,
-                    authorName,
                     remarks,
                     "ProofReturn");
             }
 
             row.CompleteReview(approve ? "Approved" : "Returned");
-            ReviewActionsPanel.IsVisible = false;
             if (_onReviewCompleted is not null)
                 await _onReviewCompleted();
             await UiAlertService.ShowAsync(
@@ -167,11 +169,12 @@ public sealed class ProofHistoryRowViewModel : INotifyPropertyChanged
     private string _validationStatus;
     private bool _canReview;
 
-    public ProofHistoryRowViewModel(SubtaskProofHistoryItem item, bool canReview)
+    public ProofHistoryRowViewModel(ProofSubmissionItem item, bool canReview)
     {
-        HistoryID = item.HistoryID;
+        SubmissionID = item.SubmissionID;
         AttemptNumber = item.AttemptNumber;
-        FileName = item.FileName;
+        File_name = item.File_name;
+        FileCount = Math.Max(1, item.FileCount);
         SubmittedAtDisplay = item.SubmittedAtDisplay;
         SubmittedDateDisplay = item.SubmittedDateDisplay;
         SubmittedTimeDisplay = item.SubmittedTimeDisplay;
@@ -179,10 +182,12 @@ public sealed class ProofHistoryRowViewModel : INotifyPropertyChanged
         _canReview = canReview;
     }
 
-    public int HistoryID { get; }
+    public int SubmissionID { get; }
     public int AttemptNumber { get; }
     public string AttemptDisplay => AttemptNumber.ToString();
-    public string FileName { get; }
+    public string File_name { get; }
+    public int FileCount { get; }
+    public string ViewFilesText => FileCount == 1 ? "View file" : $"View files ({FileCount})";
     public string SubmittedAtDisplay { get; }
     public string SubmittedDateDisplay { get; }
     public string SubmittedTimeDisplay { get; }
@@ -192,9 +197,17 @@ public sealed class ProofHistoryRowViewModel : INotifyPropertyChanged
     {
         "Approved" => AppColors.StatusSuccess,
         "Returned" => AppColors.StatusDanger,
-        "Pending" => AppColors.StatusWarning,
+        "Pending" => AppColors.StatusPending,
         "Ready" => AppColors.Accent500,
         _ => AppColors.TextTertiary
+    };
+    public Color StatusSurfaceColor => _validationStatus switch
+    {
+        "Approved" => AppColors.StatusSuccessSurface,
+        "Returned" => AppColors.StatusDangerSurface,
+        "Pending" => AppColors.StatusPendingSurface,
+        "Ready" => AppColors.Accent100,
+        _ => AppColors.SurfaceSunken
     };
 
     public void CompleteReview(string status)
@@ -203,6 +216,7 @@ public sealed class ProofHistoryRowViewModel : INotifyPropertyChanged
         _canReview = false;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ValidationStatus)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StatusColor)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(StatusSurfaceColor)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanReview)));
     }
 

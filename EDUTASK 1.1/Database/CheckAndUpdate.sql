@@ -1,5 +1,5 @@
 /* =====================================================================
-   EduTaskDB — health check + bring-up-to-date
+   EduTaskDB â€” health check + bring-up-to-date
    Run against: EduTaskDB   ((localdb)\MSSQLLocalDB)
 
    Safe to run repeatedly. Every change is guarded, so re-running it
@@ -12,29 +12,47 @@ GO
 SET NOCOUNT ON;
 
 /* ---------------------------------------------------------------------
-   PART 1 — Report. Read-only; changes nothing.
+   PART 1 â€” Report. Read-only; changes nothing.
    --------------------------------------------------------------------- */
 PRINT '=== Missing tables (should be empty) ===';
 SELECT expected.name AS MissingTable
 FROM (VALUES
     ('Roles'),('User'),('Teacher'),('Task'),('TaskAssignment'),
-    ('SubTask'),('SubtaskProof'),('SubtaskProofHistory'),
-    ('TaskComment'),('TaskCommentRead'),('TaskActivityLog'),
-    ('AccountRoleChangeLog'),('NotificationRead'),('NotificationHidden')
+    ('Subtask'),('ProofSubmission'),('ProofAttachment'),
+    ('TaskDiscussion'),('TaskDiscussionRead'),
+    ('Promotion'),('NotificationState')
 ) AS expected(name)
 WHERE OBJECT_ID(N'dbo.' + QUOTENAME(expected.name), N'U') IS NULL;
 
 PRINT '=== Missing columns (should be empty) ===';
 SELECT expected.tbl + '.' + expected.col AS MissingColumn
 FROM (VALUES
-    ('User','RoleID'),('User','Username'),
-    ('User','ProfilePhotoPath'),('User','IsActive'),
-    ('Teacher','RoleID'),('Teacher','Username'),
-    ('Teacher','ProfilePhotoPath'),('Teacher','IsActive'),
-    ('Task','CreatedByUserID'),('Task','LastModifiedByUserID'),
-    ('Task','CompletionApprovedByUserID'),('Task','CompletionApprovedAt'),
-    ('Task','RevisionRequestedByUserID'),('Task','RevisionRequestedAt'),
-    ('Task','RevisionReason')
+    ('User','Role_id'),('User','Username'),
+    ('User','Profile_photo'),('User','Is_active'),
+    ('User','Security_question_1'),('User','Security_answer_1'),
+    ('User','Security_question_2'),('User','Security_answer_2'),
+    ('Teacher','Role_id'),('Teacher','Username'),
+    ('Teacher','Profile_photo'),('Teacher','Is_active'),
+    ('Teacher','Security_question_1'),('Teacher','Security_answer_1'),
+    ('Teacher','Security_question_2'),('Teacher','Security_answer_2'),
+    ('Task','Createdby_user_id'),('Task','Approvedby_user_id'),
+    ('Task','Updated_at'),
+    ('Subtask','Subtask_id'),('Subtask','Task_id'),('Subtask','Title'),
+    ('ProofSubmission','Submission_id'),('ProofSubmission','Subtask_id'),
+    ('ProofSubmission','Attempt_number'),('ProofSubmission','Proof_status'),
+    ('ProofSubmission','Submitted_at'),('ProofSubmission','Submittedby_teacher_id'),
+    ('ProofSubmission','Reviewed_at'),('ProofSubmission','Reviewedby_user_id'),
+    ('ProofSubmission','Return_remarks'),
+    ('ProofAttachment','Submission_id'),('ProofAttachment','Sort_order'),
+    ('ProofAttachment','File_name'),
+    ('ProofAttachment','File_type'),('ProofAttachment','Proof_file'),
+    ('TaskDiscussion','Sender_id'),('TaskDiscussion','Sender_type'),
+    ('TaskDiscussion','Message_text'),
+    ('Promotion','Promotion_id'),('Promotion','Promoted_user_id'),
+    ('Promotion','Promotedby_user_id'),('Promotion','Promoted_at'),
+    ('NotificationState','Recipient_type'),('NotificationState','Recipient_id'),
+    ('NotificationState','Notification_key'),('NotificationState','Read_at'),
+    ('NotificationState','Hidden_at')
 ) AS expected(tbl,col)
 WHERE COL_LENGTH(N'dbo.' + QUOTENAME(expected.tbl), expected.col) IS NULL;
 
@@ -42,9 +60,8 @@ PRINT '=== Missing indexes (should be empty) ===';
 SELECT expected.name AS MissingIndex
 FROM (VALUES
     ('IX_User_RoleID'),('IX_Teacher_RoleID'),('IX_Task_CreatedByUserID'),
-    ('IX_Task_CompletionApprovedByUserID'),('IX_TaskAssignment_Task_Teacher'),
-    ('IX_TaskComment_Task_Subtask'),('IX_TaskActivityLog_Task_CreatedAt'),
-    ('IX_TaskActivityLog_User_CreatedAt'),('IX_TaskActivityLog_Teacher_CreatedAt')
+    ('IX_Task_ApprovedByUserID'),('IX_TaskAssignment_Task_Teacher'),
+    ('IX_TaskDiscussion_Task_Subtask')
 ) AS expected(name)
 WHERE NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = expected.name);
 
@@ -58,19 +75,19 @@ FROM (VALUES
 
 PRINT '=== Data health ===';
 SELECT
-    (SELECT COUNT(*) FROM dbo.[User]  WHERE RoleID IS NULL)          AS UsersWithoutRole,
-    (SELECT COUNT(*) FROM dbo.Teacher WHERE RoleID IS NULL)          AS TeachersWithoutRole,
-    (SELECT COUNT(*) FROM dbo.[Task]  WHERE CreatedByUserID IS NULL) AS TasksWithoutCreator;
+    (SELECT COUNT(*) FROM dbo.[User]  WHERE Role_id IS NULL)          AS UsersWithoutRole,
+    (SELECT COUNT(*) FROM dbo.Teacher WHERE Role_id IS NULL)          AS TeachersWithoutRole,
+    (SELECT COUNT(*) FROM dbo.[Task]  WHERE Createdby_user_id IS NULL) AS TasksWithoutCreator;
 
-PRINT '=== CompletionStatus values in use (must all be in the allowed set) ===';
-SELECT CompletionStatus, COUNT(*) AS AssignmentCount
+PRINT '=== Completion_status values in use (must all be in the allowed set) ===';
+SELECT Completion_status, COUNT(*) AS AssignmentCount
 FROM dbo.TaskAssignment
-GROUP BY CompletionStatus
-ORDER BY CompletionStatus;
+GROUP BY Completion_status
+ORDER BY Completion_status;
 GO
 
 /* ---------------------------------------------------------------------
-   PART 2 — The only change this script makes.
+   PART 2 â€” The only change this script makes.
 
    dbo.ReopenTask is not called from anywhere in the app. It has been
    removed from MigrateRolesAndAuthorization.sql; this drops the copy
@@ -82,23 +99,8 @@ BEGIN
     PRINT 'Dropped unused procedure dbo.ReopenTask.';
 END
 ELSE
-    PRINT 'dbo.ReopenTask already absent — nothing to do.';
+    PRINT 'dbo.ReopenTask already absent â€” nothing to do.';
 GO
-
-/* ---------------------------------------------------------------------
-   PART 3 — OPTIONAL. Left commented out on purpose.
-
-   Backfills the creator on older tasks that predate the CreatedByUserID
-   column, copying the owning UserID into it.
-
-   You do not need this. Every query in the app already reads
-   COALESCE(CreatedByUserID, UserID), so these rows behave correctly as
-   they are. Note also that new tasks are inserted WITHOUT setting
-   CreatedByUserID, so this will not stay at zero — running it is
-   cosmetic unless the insert in DatabaseService.cs is changed too.
-
-   UPDATE dbo.[Task] SET CreatedByUserID = UserID WHERE CreatedByUserID IS NULL;
-   --------------------------------------------------------------------- */
 
 PRINT '=== Done. ===';
 GO

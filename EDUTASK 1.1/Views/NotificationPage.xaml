@@ -14,25 +14,17 @@
 
         <!-- Compact app header from the original notification design: the
              title follows the menu button instead of floating in the centre. -->
-        <Grid Grid.Row="0" Padding="16,8" ColumnDefinitions="38,*"
-              HeightRequest="60"
+        <Grid Grid.Row="0" Padding="15,13" ColumnDefinitions="42,*"
+              ColumnSpacing="11"
+              HeightRequest="64"
               BackgroundColor="{StaticResource SurfaceMuted}">
-            <Border WidthRequest="38" HeightRequest="38"
-                    BackgroundColor="{StaticResource SurfaceBase}"
-                    Stroke="{StaticResource BorderSubtle}" StrokeThickness="1"
-                    HorizontalOptions="Start" VerticalOptions="Center"
-                    SemanticProperties.Description="Open navigation menu">
-                <Border.StrokeShape><RoundRectangle CornerRadius="11"/></Border.StrokeShape>
-                <Image Source="menubar.png" WidthRequest="20" HeightRequest="20"
-                       HorizontalOptions="Center" VerticalOptions="Center"/>
-                <Border.GestureRecognizers><TapGestureRecognizer Tapped="OnMenuClicked"/></Border.GestureRecognizers>
-            </Border>
+            <local:FlyoutMenuButton/>
 
             <Label Grid.Column="1" Text="Notification"
                    FontSize="{StaticResource FontTitle}"
                    FontAttributes="Bold"
                    TextColor="{StaticResource TextPrimary}"
-                   Margin="14,0,0,0"
+                   Margin="0"
                    HorizontalTextAlignment="Start"
                    VerticalTextAlignment="Center"
                    SemanticProperties.HeadingLevel="Level1"/>
@@ -87,10 +79,10 @@
                                 HeightRequest="32"
                                 MinimumHeightRequest="32"
                                 Padding="10,0"
-                                BackgroundColor="Transparent"
+                                BackgroundColor="{StaticResource ActionDismiss}"
                                 BorderWidth="0"
                                 FontSize="{StaticResource FontCaption}"
-                                TextColor="{StaticResource TextSecondary}"/>
+                                TextColor="#FFFFFF"/>
 
                         <Button Grid.Column="2"
                                 Text="{Binding DeleteSelectedText}"
@@ -100,11 +92,11 @@
                                 HeightRequest="32"
                                 MinimumHeightRequest="32"
                                 Padding="10,0"
-                                BackgroundColor="Transparent"
+                                BackgroundColor="{StaticResource ActionDanger}"
                                 BorderWidth="0"
                                 FontSize="{StaticResource FontCaption}"
                                 FontAttributes="Bold"
-                                TextColor="{StaticResource StatusDanger}"/>
+                                TextColor="{StaticResource TextInverse}"/>
 
                         <ImageButton Grid.Column="2"
                                      Source="cardmenu.png"

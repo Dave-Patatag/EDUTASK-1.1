@@ -290,6 +290,6 @@ public partial class ViewTasksPage : EduTaskPage
             return;
 
         TaskCollectionView.SelectedItem = null;
-        await Navigation.PushModalAsync(new EditTaskPage(task.TaskID), false);
+        await Navigation.PushModalAsync(new EditTaskPage(task.Task_id), false);
     }
 }

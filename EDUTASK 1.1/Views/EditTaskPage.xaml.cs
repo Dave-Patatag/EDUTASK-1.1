@@ -28,6 +28,8 @@ public partial class EditTaskPage : EduTaskPage
         _isReadOnly = isReadOnly;
         _formViewModel = new TaskFormViewModel(this);
         BindingContext = this;
+        PriorityPicker.HandlerChanged += (_, _) =>
+            PriorityPickerStyling.Apply(PriorityPicker, _selectedPriority);
         ApplyReadOnlyMode();
     }
 
@@ -50,40 +52,52 @@ public partial class EditTaskPage : EduTaskPage
 
             _task = await _formViewModel.LoadTaskAsync(_taskID);
             if (_task is null)
+            {
+                DashboardFlyoutPage.Current?.InvalidateTaskData();
+                await ClosePageAsync();
                 return;
+            }
 
             _originalDeadline = _task.Deadline;
             TitleEntry.Text = _task.Title;
-DescriptionEditor.Text = _task.Description;
+            DescriptionEditor.Text = _task.Description;
             SummaryTitleLabel.Text = _task.Title;
             SummaryDescriptionLabel.Text = string.IsNullOrWhiteSpace(_task.Description)
                 ? "No description provided"
                 : _task.Description;
             SummaryDueDateLabel.Text = _task.Deadline.ToString("MMM d, yyyy");
             SummaryPriorityLabel.Text = string.IsNullOrWhiteSpace(_task.Priority) ? "None" : _task.Priority;
-            SummaryReminderLabel.Text = _task.IsDailyRemind ? "On" : "Off";
+            SummaryPriorityLabel.TextColor = TaskPalette.PriorityColor(_task.Priority);
+            SummaryUpdatedAtLabel.Text = _task.Updated_at.HasValue
+                ? _task.Updated_at.Value.ToString("MMM d, yyyy 'at' h:mm tt")
+                : "Not edited yet";
             DailyRemindSwitch.IsToggled = _task.IsDailyRemind;
             DueDatePicker.Date = _task.Deadline.Date;
             DueDateDisplayLabel.Text = _task.Deadline.ToString("MMM dd, yyyy");
             DueDateLabel.Text = _task.Deadline.ToString("MMM d, yyyy");
             CompletionInfo.IsVisible = _isReadOnly &&
-                string.Equals(_task.CompletionStatus, "Completed", StringComparison.OrdinalIgnoreCase);
-            CompletedAtLabel.Text = _task.CompletedAt.HasValue
-                ? $"Completed {_task.CompletedAt.Value:MMM d, yyyy 'at' h:mm tt}"
-                : "Completion confirmed";
+                string.Equals(_task.Completion_status, "Completed", StringComparison.OrdinalIgnoreCase);
+            CompletedAtLabel.Text = _task.Completed_at.HasValue
+                ? $"Completed {_task.Completed_at.Value:MMM d, yyyy 'at' h:mm tt}"
+                : "Completed";
 
             var subtasks = await new DatabaseService().GetTaskSubtasksAsync(_taskID);
             EditableSubtasks.Clear();
             foreach (var subtask in subtasks)
-                EditableSubtasks.Add(new SubtaskDraft { SubtaskID = subtask.SubtaskID, Title = subtask.Title, IsCompleted = subtask.IsCompleted });
+                EditableSubtasks.Add(new SubtaskDraft
+                {
+                    Subtask_id = subtask.Subtask_id,
+                    Title = subtask.Title,
+                    ProofStatus = subtask.ProofStatus
+                });
             UpdateSubtaskVisibility();
             SubtasksList.Children.Clear();
             foreach (var subtask in subtasks)
             {
                 var marker = new Label
                 {
-                    Text = subtask.IsCompleted ? "✓" : "○",
-                    TextColor = subtask.IsCompleted ? AppColors.StatusSuccess : AppColors.TextTertiary,
+                    Text = subtask.Is_completed ? "✓" : "○",
+                    TextColor = subtask.Is_completed ? AppColors.StatusSuccess : AppColors.TextTertiary,
                     FontSize = AppTypography.Heading,
                     VerticalOptions = LayoutOptions.Center
                 };
@@ -91,7 +105,7 @@ DescriptionEditor.Text = _task.Description;
                 {
                     Text = subtask.Title,
                     TextColor = AppColors.TextPrimary,
-                    TextDecorations = subtask.IsCompleted ? TextDecorations.Strikethrough : TextDecorations.None,
+                    TextDecorations = subtask.Is_completed ? TextDecorations.Strikethrough : TextDecorations.None,
                     VerticalOptions = LayoutOptions.Center
                 };
                 var row = new Grid { ColumnDefinitions = { new ColumnDefinition(GridLength.Auto), new ColumnDefinition(GridLength.Star) }, ColumnSpacing = 10 };
@@ -99,16 +113,16 @@ DescriptionEditor.Text = _task.Description;
                 row.Add(title, 1);
                 SubtasksList.Children.Add(new Border
                 {
-                    BackgroundColor = subtask.IsCompleted ? AppColors.StatusSuccessSurface : AppColors.SurfaceBase,
+                    BackgroundColor = subtask.Is_completed ? AppColors.StatusSuccessSurface : AppColors.SurfaceBase,
                     Stroke = AppColors.Slate100,
                     StrokeShape = new RoundRectangle { CornerRadius = 8 },
-                    Padding = new Thickness(12, 9),
+                    Padding = new Thickness(10, 7),
                     Content = row
                 });
             }
             SubtasksSection.IsVisible = subtasks.Count > 0;
             SelectPriority(_task.Priority);
-TeacherPicker.SelectedItem = teachers.FirstOrDefault(t => t.TeacherID == _task.TeacherID);
+            TeacherPicker.SelectedItem = teachers.FirstOrDefault(t => t.Teacher_id == _task.Teacher_id);
             SummaryTeacherLabel.Text = TeacherPicker.SelectedItem is TeacherOption selectedTeacher
                 ? selectedTeacher.DisplayName
                 : "Not assigned";
@@ -129,11 +143,16 @@ TeacherPicker.SelectedItem = teachers.FirstOrDefault(t => t.TeacherID == _task.T
     private async void OnRemoveSubtaskClicked(object sender, EventArgs e)
     {
         if (sender is not Button { CommandParameter: SubtaskDraft subtask }) return;
-        if (subtask.IsCompleted)
+        if (subtask.Is_completed)
         {
             await UiAlertService.ShowAsync(this, "Subtask can't be removed", "Completed or approved subtasks must stay with the task.", "OK");
             return;
         }
+        if (subtask.Subtask_id.HasValue && !await UiAlertService.ConfirmAsync(this,
+                "Remove subtask?",
+                $"Removing '{subtask.Title}' will permanently delete its discussion messages and proof history when you save the task.",
+                "Remove", "Cancel"))
+            return;
         EditableSubtasks.Remove(subtask);
         UpdateSubtaskVisibility();
     }
@@ -144,12 +163,14 @@ TeacherPicker.SelectedItem = teachers.FirstOrDefault(t => t.TeacherID == _task.T
         if (_isReadOnly)
             return;
         _selectedPriority = PriorityPicker.SelectedItem?.ToString() ?? string.Empty;
+        PriorityPickerStyling.Apply(PriorityPicker, _selectedPriority);
     }
 
     private void SelectPriority(string? priority)
     {
         _selectedPriority = priority ?? string.Empty;
         PriorityPicker.SelectedItem = _selectedPriority;
+        PriorityPickerStyling.Apply(PriorityPicker, _selectedPriority);
     }
     private void OnDueDateSelected(object sender, DateChangedEventArgs e) =>
         DueDateDisplayLabel.Text = e.NewDate.ToString("MMM dd, yyyy");
@@ -218,6 +239,7 @@ TeacherPicker.SelectedItem = teachers.FirstOrDefault(t => t.TeacherID == _task.T
             if (!updated)
                 return;
 
+            DashboardFlyoutPage.Current?.InvalidateTaskData();
             await UiAlertService.ShowAsync(this, "Task updated", "Your changes have been saved.", "OK");
             await ClosePageAsync();
         }
@@ -239,6 +261,7 @@ TeacherPicker.SelectedItem = teachers.FirstOrDefault(t => t.TeacherID == _task.T
             if (!deleted)
                 return;
 
+            DashboardFlyoutPage.Current?.InvalidateTaskData();
             await UiAlertService.ShowAsync(this, "Task deleted", "The task has been removed.", "OK");
             await ClosePageAsync();
         }
@@ -262,10 +285,12 @@ TeacherPicker.SelectedItem = teachers.FirstOrDefault(t => t.TeacherID == _task.T
     }
     private void ApplyReadOnlyMode()
     {
+        DialogTitleLabel.Text = _isReadOnly ? "Task details" : "Edit task";
         ReadOnlySummary.IsVisible = _isReadOnly;
         EditableDetailsForm.IsVisible = !_isReadOnly;
         EditableSchedule.IsVisible = !_isReadOnly;
         ReadOnlySchedule.IsVisible = _isReadOnly;
+        CancelButton.IsVisible = !_isReadOnly;
         BackButton.IsVisible = _isReadOnly;
         SaveButton.IsVisible = !_isReadOnly;
         DeleteButton.IsVisible = !_isReadOnly && UserSessionService.CanDeleteTasks;
@@ -286,7 +311,3 @@ TeacherPicker.SelectedItem = teachers.FirstOrDefault(t => t.TeacherID == _task.T
     }
 
 }
-
-
-
-

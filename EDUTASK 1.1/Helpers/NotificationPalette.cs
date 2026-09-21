@@ -19,7 +19,7 @@ namespace EDUTASK_1._1.Helpers
     /// read on top of it. The Status tokens are the wrong set for that — they
     /// are tuned as foregrounds, dark enough to clear 4.5:1 as badge text, and
     /// at dot size that tuning collapses: StatusWarning (#B45309) reads brown
-    /// rather than orange and sits 1.12:1 from StatusDanger, so amber and red
+    /// rather than orange and sits very close to StatusDanger in luminance, so amber and red
     /// dots fuse. The fill-tuned hues carry the same meanings with room between
     /// them; Colors.xaml's CHART block works the arithmetic out in full. The
     /// glyph is the opposite case — text on a tint — so it takes the Status
@@ -43,7 +43,7 @@ namespace EDUTASK_1._1.Helpers
             Overdue => AppColors.ChartOverdue,
             Completed => AppColors.ChartCompleted,
             Ongoing => AppColors.ChartOngoing,
-            _ => AppColors.Accent500
+            _ => AppColors.StatusPending
         };
 
         /// <summary>The disc behind a system notification's glyph.</summary>
@@ -51,8 +51,8 @@ namespace EDUTASK_1._1.Helpers
         {
             Overdue => AppColors.StatusDangerSurface,
             Completed => AppColors.StatusSuccessSurface,
-            Ongoing => AppColors.StatusWarningSurface,
-            _ => AppColors.StatusInfoSurface
+            Ongoing => AppColors.StatusOngoingSurface,
+            _ => AppColors.StatusPendingSurface
         };
 
         /// <summary>The glyph itself. Text on a tint, so it takes the foreground token.</summary>
@@ -60,8 +60,8 @@ namespace EDUTASK_1._1.Helpers
         {
             Overdue => AppColors.StatusDanger,
             Completed => AppColors.StatusSuccess,
-            Ongoing => AppColors.StatusWarning,
-            _ => AppColors.StatusInfo
+            Ongoing => AppColors.StatusOngoing,
+            _ => AppColors.StatusPending
         };
 
         /// <summary>

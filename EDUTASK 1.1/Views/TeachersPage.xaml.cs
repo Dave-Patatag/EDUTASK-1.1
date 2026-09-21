@@ -10,7 +10,7 @@ public partial class TeachersPage : EduTaskPage
     // The three lists the page can show. They are also the page menu's options,
     // so the active list remains highlighted.
     private const string ViewActive = "Active Accounts";
-    private const string ViewRequests = "Register Requests";
+    private const string ViewRequests = "Request Approval";
     private const string ViewDisabled = "Disabled Accounts";
 
     // The scope filter narrows whichever list is showing.
@@ -29,8 +29,11 @@ public partial class TeachersPage : EduTaskPage
     private string _scope = ScopeAll;
     private bool _isPageMenuAnimating;
 
-    public TeachersPage()
+    public TeachersPage(bool showApprovalRequests = false)
     {
+        if (showApprovalRequests && _isDirector)
+            _view = ViewRequests;
+
         InitializeComponent();
         InitialiseMenus();
 
@@ -83,12 +86,6 @@ public partial class TeachersPage : EduTaskPage
             ? active ? "whitebackicon.png" : "backicon.png"
             : "dotmenu.png";
     }
-
-    private void OnHeaderBackPressed(object sender, EventArgs e) =>
-        SetHeaderButtonState(HeaderBackButton, active: true, isBackButton: true);
-
-    private void OnHeaderBackReleased(object sender, EventArgs e) =>
-        SetHeaderButtonState(HeaderBackButton, active: false, isBackButton: true);
 
     private void OnHeaderMenuPressed(object sender, EventArgs e) =>
         SetHeaderButtonState(MenuButton, active: true, isBackButton: false);
@@ -417,9 +414,31 @@ public partial class TeachersPage : EduTaskPage
         bool? requestedDisabling = null)
     {
         bool disabling = requestedDisabling ?? !account.IsDisabled;
+        bool isTeacher = string.Equals(
+            account.AccountType, "Teacher", StringComparison.OrdinalIgnoreCase);
+
+        if (disabling && isTeacher)
+        {
+            try
+            {
+                int unfinishedTaskCount = await _database
+                    .GetTeacherUnfinishedTaskCountAsync(account.AccountID);
+                if (unfinishedTaskCount > 0)
+                {
+                    await ShowUnfinishedTasksBlockAsync(account, unfinishedTaskCount);
+                    return false;
+                }
+            }
+            catch
+            {
+                await UiAlertService.ShowAsync(this, "Task check unavailable",
+                    "The teacher's active tasks could not be checked, so the account was not disabled. Please try again.");
+                return false;
+            }
+        }
 
         string message = disabling
-            ? $"Disable {account.FullName}'s account? They will not be able to sign in until it is enabled again."
+            ? $"Disable {account.FullName}'s account? They will not be able to sign in until it is enabled again. Completed task history will be kept."
             : $"Enable {account.FullName}'s account? They will be able to sign in again.";
 
         bool confirmed = await UiAlertService.ConfirmAsync(this,
@@ -437,8 +456,23 @@ public partial class TeachersPage : EduTaskPage
                 return true;
             }
             else
+            {
+                // The database guard can still block the write if another user
+                // assigned work after the preflight check but before confirmation.
+                if (disabling && isTeacher)
+                {
+                    int unfinishedTaskCount = await _database
+                        .GetTeacherUnfinishedTaskCountAsync(account.AccountID);
+                    if (unfinishedTaskCount > 0)
+                    {
+                        await ShowUnfinishedTasksBlockAsync(account, unfinishedTaskCount);
+                        return false;
+                    }
+                }
+
                 await UiAlertService.ShowAsync(this, "Nothing changed",
                     "That account was already updated somewhere else. Pull down to refresh.");
+            }
         }
         catch
         {
@@ -447,6 +481,15 @@ public partial class TeachersPage : EduTaskPage
         }
 
         return false;
+    }
+
+    private System.Threading.Tasks.Task ShowUnfinishedTasksBlockAsync(
+        DirectoryCardItem account,
+        int unfinishedTaskCount)
+    {
+        string taskLabel = unfinishedTaskCount == 1 ? "task" : "tasks";
+        return UiAlertService.ShowAsync(this, "Reassign active tasks first",
+            $"{account.FullName} still has {unfinishedTaskCount} unfinished {taskLabel}. Reassign or complete them from Active Task before disabling this account.");
     }
 
     private async System.Threading.Tasks.Task<bool> PromoteStaffFromProfileAsync(DirectoryCardItem account)

@@ -133,25 +133,11 @@
 
         <Grid
             x:Name="ReportHeader"
-            Padding="18,14,18,14"
-            ColumnDefinitions="44,*,44"
+            Padding="15,13"
+            ColumnDefinitions="42,*,42"
             BackgroundColor="{StaticResource SurfaceMuted}">
 
-            <ImageButton
-                x:Name="ReportBackButton"
-                Source="backicon.png"
-                Clicked="OnBackClicked"
-                Pressed="OnReportBackPressed"
-                Released="OnReportBackReleased"
-                WidthRequest="42"
-                HeightRequest="42"
-                Padding="10"
-                CornerRadius="12"
-                BackgroundColor="{StaticResource SurfaceBase}"
-                BorderWidth="0"
-                HorizontalOptions="Start"
-                VerticalOptions="Center"
-                SemanticProperties.Description="Go back"/>
+            <local:FlyoutMenuButton x:Name="ReportMenuButton"/>
 
             <Label
                 Grid.Column="1"
@@ -165,8 +151,8 @@
 
             <BoxView
                 Grid.Column="2"
-                WidthRequest="42"
-                HeightRequest="42"
+                WidthRequest="38"
+                HeightRequest="38"
                 Color="Transparent"/>
 
         </Grid>
@@ -198,7 +184,7 @@
 
                         <Label
                             x:Name="SectionHeadingLabel"
-                            Text="Overview"
+                            Text="Task Status"
                             Style="{StaticResource ReportSectionHeading}"/>
 
 
@@ -280,7 +266,7 @@
                                     x:Name="PendingCountLabel"
                                     FontSize="22"
                                     FontAttributes="Bold"
-                                    TextColor="{StaticResource Accent500}"
+                                    TextColor="{StaticResource StatusPending}"
                                     HorizontalTextAlignment="Center"
                                     VerticalTextAlignment="Center"/>
 
@@ -319,7 +305,7 @@
                                     x:Name="OngoingCountLabel"
                                     FontSize="22"
                                     FontAttributes="Bold"
-                                    TextColor="{StaticResource StatusWarning}"
+                                    TextColor="{StaticResource StatusOngoing}"
                                     HorizontalTextAlignment="Center"
                                     VerticalTextAlignment="Center"/>
 
@@ -358,7 +344,7 @@
                                     x:Name="CompletedCountLabel"
                                     FontSize="22"
                                     FontAttributes="Bold"
-                                    TextColor="#48E000"
+                                    TextColor="{StaticResource StatusSuccess}"
                                     HorizontalTextAlignment="Center"
                                     VerticalTextAlignment="Center"/>
 
@@ -397,7 +383,7 @@
                                     x:Name="OverdueCountLabel"
                                     FontSize="22"
                                     FontAttributes="Bold"
-                                    TextColor="#DF0038"
+                                    TextColor="{StaticResource StatusDanger}"
                                     HorizontalTextAlignment="Center"
                                     VerticalTextAlignment="Center"/>
 
@@ -436,7 +422,8 @@
                     Spacing="8">
 
                     <Label
-                        Text="Completion"
+                        x:Name="CompletionHeadingLabel"
+                        Text="Completed"
                         Style="{StaticResource ReportSectionHeading}"/>
 
                     <Border
@@ -660,7 +647,7 @@
 
                                                     <Setter
                                                         Property="Color"
-                                                        Value="#48E000"/>
+                                                        Value="{StaticResource StatusSuccess}"/>
 
                                                 </DataTrigger>
 
@@ -674,7 +661,7 @@
 
                                                     <Setter
                                                         Property="Color"
-                                                        Value="#DF0038"/>
+                                                        Value="{StaticResource StatusDanger}"/>
 
                                                 </DataTrigger>
 
@@ -733,7 +720,7 @@
 
                                                         <Setter
                                                             Property="TextColor"
-                                                            Value="#48E000"/>
+                                                            Value="{StaticResource StatusSuccess}"/>
 
                                                     </DataTrigger>
 
@@ -747,7 +734,7 @@
 
                                                         <Setter
                                                             Property="TextColor"
-                                                            Value="#DF0038"/>
+                                                            Value="{StaticResource StatusDanger}"/>
 
                                                     </DataTrigger>
 
@@ -788,7 +775,7 @@
 
                                                         <Setter
                                                             Property="TextColor"
-                                                            Value="#DF0038"/>
+                                                            Value="{StaticResource StatusDanger}"/>
 
                                                     </DataTrigger>
 
@@ -1304,8 +1291,8 @@
                             MinimumWidthRequest="0"
                             HorizontalOptions="Fill"
                             CornerRadius="8"
-                            BackgroundColor="{StaticResource SurfaceSunken}"
-                            TextColor="{StaticResource TextSecondary}"
+                            BackgroundColor="{StaticResource ActionDismiss}"
+                            TextColor="#FFFFFF"
                             FontAttributes="Bold"
                             FontSize="{StaticResource FontCaption}"/>
 

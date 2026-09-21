@@ -56,7 +56,7 @@ public static class MonthYearPickerDialog
             CornerRadius = 8,
             FontSize = 14,
             FontAttributes = FontAttributes.Bold,
-            BackgroundColor = AppColors.Brand800,
+            BackgroundColor = AppColors.ActionPrimary,
             TextColor = AppColors.TextInverse
         };
         var cancelButton = new Button
@@ -67,9 +67,9 @@ public static class MonthYearPickerDialog
             CornerRadius = 8,
             FontSize = 14,
             FontAttributes = FontAttributes.Bold,
-            BackgroundColor = AppColors.SurfaceBase,
-            TextColor = AppColors.Brand800,
-            BorderColor = AppColors.Brand800,
+            BackgroundColor = AppColors.ActionDismiss,
+            TextColor = Colors.White,
+            BorderColor = AppColors.ActionDismiss,
             BorderWidth = 1
         };
 

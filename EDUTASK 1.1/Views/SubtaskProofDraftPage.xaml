@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <base:EduTaskPage xmlns:base="clr-namespace:EDUTASK_1._1.Views.Base" xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="EDUTASK_1._1.Views.SubtaskProofDraftPage"
@@ -6,42 +6,36 @@
              BackgroundColor="{StaticResource Scrim}"
              NavigationPage.HasNavigationBar="False">
     <Grid Padding="16">
-        <Border x:Name="PopupPanel" WidthRequest="560" HeightRequest="330"
+        <Border x:Name="PopupPanel" WidthRequest="560" HeightRequest="236"
                 HorizontalOptions="Center" VerticalOptions="Center"
-                Padding="18" BackgroundColor="{StaticResource SurfaceMuted}" Stroke="{StaticResource BorderDefault}">
+                Padding="14" BackgroundColor="{StaticResource SurfaceMuted}" Stroke="{StaticResource BorderDefault}">
             <Border.StrokeShape><RoundRectangle CornerRadius="14"/></Border.StrokeShape>
             <Grid RowDefinitions="Auto,*,Auto" RowSpacing="14">
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                    <VerticalStackLayout Spacing="2" VerticalOptions="Center">
-                        <Label Text="Review file before submission" FontSize="{StaticResource FontHeading}"
-                               FontAttributes="Bold" TextColor="{StaticResource TextPrimary}"/>
-                        <Label Text="{Binding SubtaskTitle}" FontSize="{StaticResource FontCaption}" TextColor="{StaticResource Slate400}"
-                               LineBreakMode="TailTruncation"/>
-                    </VerticalStackLayout>
-                    <Button Grid.Column="1" Text="&#x2715;" Clicked="OnCloseClicked"
-                            WidthRequest="36" HeightRequest="36" Padding="0"
-                            FontSize="{StaticResource FontBodySmall}" TextColor="{StaticResource TextPrimary}"
-                            BackgroundColor="{StaticResource SurfaceSunken}" CornerRadius="9"
-                            SemanticProperties.Description="Close without submitting"/>
-                </Grid>
+                <VerticalStackLayout Spacing="2" VerticalOptions="Center">
+                        <Label Text="{Binding SubtaskTitle}" FontSize="{StaticResource FontHeading}"
+                               FontAttributes="Bold" TextColor="{StaticResource TextPrimary}"
+                               LineBreakMode="TailTruncation" MaxLines="2"/>
+                        <Label Text="Review file before submission" FontSize="{StaticResource FontCaption}"
+                               TextColor="{StaticResource Slate400}" LineBreakMode="WordWrap"/>
+                </VerticalStackLayout>
 
                 <Border Grid.Row="1" Padding="0" BackgroundColor="{StaticResource SurfaceBase}" Stroke="{StaticResource BorderDefault}">
                     <Border.StrokeShape><RoundRectangle CornerRadius="12"/></Border.StrokeShape>
                     <Grid RowDefinitions="Auto,*">
-                        <Grid Padding="8,9" ColumnDefinitions="28,86,*,54" ColumnSpacing="4"
+                        <Grid Padding="6,9" ColumnDefinitions="18,66,*,42,76" ColumnSpacing="3"
                               BackgroundColor="{StaticResource SurfaceSunken}">
                             <Label Text="#" FontSize="{StaticResource FontMicro}" FontAttributes="Bold"
                                    TextColor="{StaticResource Slate700}" SemanticProperties.Description="Submission number"/>
                             <Label Grid.Column="1" Text="Date / Time" FontSize="{StaticResource FontMicro}" FontAttributes="Bold" TextColor="{StaticResource Slate700}"/>
-                            <Label Grid.Column="2" Text="Proof File" FontSize="{StaticResource FontMicro}" FontAttributes="Bold" TextColor="{StaticResource Slate700}"/>
+                            <Label Grid.Column="2" Text="Proof Files" FontSize="{StaticResource FontMicro}" FontAttributes="Bold" TextColor="{StaticResource Slate700}"/>
                             <Label Grid.Column="3" Text="Status" FontSize="{StaticResource FontMicro}" FontAttributes="Bold" TextColor="{StaticResource Slate700}"/>
                         </Grid>
                         <ScrollView Grid.Row="1">
                             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Attempts}" Spacing="0">
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate>
-                                        <Grid RowDefinitions="Auto,1" ColumnDefinitions="28,86,*,54"
-                                              ColumnSpacing="4" Padding="8,9,8,0">
+                                        <Grid RowDefinitions="Auto,1" ColumnDefinitions="18,66,*,42,76"
+                                              ColumnSpacing="3" Padding="6,9,6,0">
                                             <Label Text="{Binding AttemptDisplay}" FontSize="{StaticResource FontMicro}"
                                                    TextColor="{StaticResource TextPrimary}" VerticalOptions="Center"/>
                                             <VerticalStackLayout Grid.Column="1" Spacing="0" VerticalOptions="Center">
@@ -50,17 +44,43 @@
                                                 <Label Text="{Binding SubmittedTimeDisplay}" FontSize="{StaticResource FontMicro}"
                                                        TextColor="{StaticResource Slate400}" MaxLines="1"/>
                                             </VerticalStackLayout>
-                                            <Label Grid.Column="2" Text="{Binding FileName}" FontSize="{StaticResource FontMicro}"
-                                                   TextColor="{StaticResource Accent500}" TextDecorations="Underline"
-                                                   LineBreakMode="TailTruncation" MaxLines="1" VerticalOptions="Center">
-                                                <Label.GestureRecognizers>
+                                            <Border Grid.Column="2" Padding="5,4"
+                                                    HorizontalOptions="Start" VerticalOptions="Center"
+                                                    BackgroundColor="Transparent"
+                                                    Stroke="{StaticResource Accent500}" StrokeThickness="1">
+                                                <Border.StrokeShape><RoundRectangle CornerRadius="6"/></Border.StrokeShape>
+                                                <Label Text="{Binding ViewFilesText}" FontSize="{StaticResource FontMicro}"
+                                                       TextColor="{StaticResource Accent500}"
+                                                       HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
+                                                <Border.GestureRecognizers>
                                                     <TapGestureRecognizer Tapped="OnViewFileTapped"
                                                                           CommandParameter="{Binding .}"/>
-                                                </Label.GestureRecognizers>
-                                            </Label>
+                                                </Border.GestureRecognizers>
+                                            </Border>
                                             <Label Grid.Column="3" Text="{Binding ValidationStatus}" FontSize="{StaticResource FontMicro}"
-                                                   FontAttributes="Bold" TextColor="{Binding StatusColor}" VerticalOptions="Center"/>
-                                            <BoxView Grid.Row="1" Grid.ColumnSpan="4" HeightRequest="1"
+                                                   FontAttributes="Bold" TextColor="{Binding StatusColor}" VerticalOptions="Center"
+                                                   LineBreakMode="WordWrap"/>
+                                            <HorizontalStackLayout Grid.Column="4" Spacing="4" IsVisible="False"
+                                                                   HorizontalOptions="End" VerticalOptions="Center">
+                                                <HorizontalStackLayout.Triggers>
+                                                    <DataTrigger TargetType="HorizontalStackLayout" Binding="{Binding SubmissionID}" Value="0">
+                                                        <Setter Property="IsVisible" Value="True"/>
+                                                    </DataTrigger>
+                                                </HorizontalStackLayout.Triggers>
+                                                <ImageButton Source="proof_submit.png" Clicked="OnSubmitClicked"
+                                                             WidthRequest="36" MinimumWidthRequest="36" MaximumWidthRequest="36"
+                                                             HeightRequest="38" MinimumHeightRequest="38" MaximumHeightRequest="38"
+                                                             Padding="7" CornerRadius="9" BackgroundColor="{StaticResource StatusSuccess}"
+                                                             ToolTipProperties.Text="Submit files"
+                                                             SemanticProperties.Description="Submit files for review"/>
+                                                <ImageButton Source="proof_remove.png" Clicked="OnRemoveClicked"
+                                                        WidthRequest="36" MinimumWidthRequest="36" MaximumWidthRequest="36"
+                                                        HeightRequest="38" MinimumHeightRequest="38" MaximumHeightRequest="38"
+                                                        Padding="7" CornerRadius="9" BackgroundColor="{StaticResource StatusDanger}"
+                                                        ToolTipProperties.Text="Remove draft"
+                                                        SemanticProperties.Description="Remove selected draft"/>
+                                            </HorizontalStackLayout>
+                                            <BoxView Grid.Row="1" Grid.ColumnSpan="5" HeightRequest="1"
                                                      Margin="0,9,0,0" Color="{StaticResource BorderSubtle}"/>
                                         </Grid>
                                     </DataTemplate>
@@ -70,19 +90,12 @@
                     </Grid>
                 </Border>
 
-                <HorizontalStackLayout Grid.Row="2" HorizontalOptions="End" Spacing="8">
-                    <ImageButton Source="confirmfile.png" Clicked="OnSubmitClicked"
-                                 WidthRequest="42" HeightRequest="42" Padding="7"
-                                 CornerRadius="9" BackgroundColor="{StaticResource Slate400}"
-                                 ToolTipProperties.Text="Submit file"
-                                 SemanticProperties.Description="Submit file for review"/>
-                    <Button Text="&#x2715;" Clicked="OnRemoveClicked"
-                            WidthRequest="42" HeightRequest="42" Padding="0"
-                            FontSize="{StaticResource FontBody}" FontAttributes="Bold" CornerRadius="9"
-                            BackgroundColor="{StaticResource Slate400}" TextColor="{StaticResource TextInverse}"
-                            ToolTipProperties.Text="Remove draft"
-                            SemanticProperties.Description="Remove selected draft"/>
-                </HorizontalStackLayout>
+                <Button Grid.Row="2" Text="Back" Clicked="OnCloseClicked"
+                        HorizontalOptions="Center" HeightRequest="42" MinimumHeightRequest="42"
+                        MinimumWidthRequest="80" Padding="18,0" CornerRadius="9"
+                        FontSize="{StaticResource FontBodySmall}"
+                        BackgroundColor="{StaticResource ActionDismiss}" TextColor="{StaticResource TextInverse}"
+                        SemanticProperties.Description="Go back without submitting"/>
             </Grid>
         </Border>
     </Grid>

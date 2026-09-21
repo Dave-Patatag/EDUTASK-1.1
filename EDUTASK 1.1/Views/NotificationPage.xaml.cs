@@ -1,4 +1,4 @@
-﻿using EDUTASK_1._1.Models;
+using EDUTASK_1._1.Models;
 
 using EDUTASK_1._1.Services;
 using EDUTASK_1._1.Helpers;
@@ -16,6 +16,7 @@ namespace EDUTASK_1._1.Views
         private readonly List<NotificationItem> _allNotifications = [];
         private NotificationGroup? _activeMenuGroup;
         private int _visibleNotificationCount;
+        private bool _notificationsLoaded;
 
         private const int NotificationPageSize = 10;
 
@@ -77,7 +78,8 @@ namespace EDUTASK_1._1.Views
             (string type, int id) = GetRecipient();
             if (id > 0)
                 NotificationBadgeState.MarkVisited(type, id, []);
-            await LoadNotificationsAsync();
+            if (!_notificationsLoaded)
+                await LoadNotificationsAsync();
         }
 
         private async System.Threading.Tasks.Task LoadNotificationsAsync()
@@ -88,13 +90,14 @@ namespace EDUTASK_1._1.Views
                 if (id == 0) { EmptyState.IsVisible = true; NotificationsView.IsVisible = false; return; }
                 List<NotificationItem> items = await _database.GetNotificationsAsync(type, id);
                 _allNotifications.Clear();
-                _allNotifications.AddRange(items.OrderByDescending(item => item.CreatedAt));
+                _allNotifications.AddRange(items.OrderByDescending(item => item.Created_at));
                 NotificationBadgeState.MarkVisited(
                     type,
                     id,
-                    _allNotifications.Select(item => item.NotificationKey));
+                    _allNotifications.Select(item => item.Notification_key));
                 _visibleNotificationCount = Math.Min(NotificationPageSize, _allNotifications.Count);
                 RebuildVisibleNotifications();
+                _notificationsLoaded = true;
             }
             catch (Exception ex)
             {
@@ -111,12 +114,12 @@ namespace EDUTASK_1._1.Views
 
             _notificationGroups.Clear();
             foreach (IGrouping<DateTime, NotificationItem> group in visibleItems
-                    .GroupBy(item => item.CreatedAt.Date > DateTime.Today ? DateTime.Today : item.CreatedAt.Date)
+                    .GroupBy(item => item.Created_at.Date > DateTime.Today ? DateTime.Today : item.Created_at.Date)
                     .OrderByDescending(group => group.Key))
             {
                 _notificationGroups.Add(new NotificationGroup(
                     group.Key,
-                    group.OrderByDescending(item => item.CreatedAt)));
+                    group.OrderByDescending(item => item.Created_at)));
             }
 
             bool hasNotifications = _allNotifications.Count > 0;
@@ -175,11 +178,11 @@ namespace EDUTASK_1._1.Views
             try
             {
                 string type = _teacher is not null ? "Teacher" : "User";
-                int id = _teacher?.TeacherID ?? _user?.UserID ?? 0;
+                int id = _teacher?.Teacher_id ?? _user?.User_id ?? 0;
                 if (id == 0)
                     return;
 
-                await _database.HideNotificationsAsync(type, id, [item.NotificationKey]);
+                await _database.HideNotificationsAsync(type, id, [item.Notification_key]);
                 await LoadNotificationsAsync();
             }
             catch (Exception exception)
@@ -192,14 +195,14 @@ namespace EDUTASK_1._1.Views
         private async System.Threading.Tasks.Task OpenNotificationAsync(NotificationItem item)
         {
             string type = _teacher is not null ? "Teacher" : "User";
-            int id = _teacher?.TeacherID ?? _user?.UserID ?? 0;
+            int id = _teacher?.Teacher_id ?? _user?.User_id ?? 0;
             if (!item.IsRead && id > 0)
             {
-                await _database.MarkNotificationReadAsync(type, id, item.NotificationKey);
+                await _database.MarkNotificationReadAsync(type, id, item.Notification_key);
                 item.IsRead = true;
             }
 
-            DashboardFlyoutPage.Current?.ShowTasks(item.TaskID);
+            DashboardFlyoutPage.Current?.ShowTasks(item.Task_id);
         }
 
         private void OnDateMenuClicked(object sender, EventArgs e)
@@ -320,14 +323,14 @@ namespace EDUTASK_1._1.Views
             try
             {
                 string type = _teacher is not null ? "Teacher" : "User";
-                int id = _teacher?.TeacherID ?? _user?.UserID ?? 0;
+                int id = _teacher?.Teacher_id ?? _user?.User_id ?? 0;
                 if (id == 0)
                     return;
 
                 await _database.HideNotificationsAsync(
                     type,
                     id,
-                    notifications.Select(notification => notification.NotificationKey));
+                    notifications.Select(notification => notification.Notification_key));
                 group.IsSelectionMode = false;
                 await LoadNotificationsAsync();
             }
@@ -339,12 +342,6 @@ namespace EDUTASK_1._1.Views
                     "Notifications couldn't be deleted",
                     "We couldn't delete the selected notifications. Please try again.");
             }
-        }
-
-        private void OnMenuClicked(object sender, TappedEventArgs e)
-        {
-            if (DashboardFlyoutPage.Current is { } flyout)
-                flyout.IsPresented = true;
         }
 
         private void OnTaskTapped(object sender, TappedEventArgs e) =>
@@ -360,8 +357,8 @@ namespace EDUTASK_1._1.Views
 
         private (string Type, int Id) GetRecipient() =>
             _teacher is not null
-                ? ("Teacher", _teacher.TeacherID)
-                : ("User", _user?.UserID ?? 0);
+                ? ("Teacher", _teacher.Teacher_id)
+                : ("User", _user?.User_id ?? 0);
 
     }
 }

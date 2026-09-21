@@ -54,7 +54,7 @@ public static class DeadlineFilterDialog
         int displayedYear = displayedMonth.Year;
         DeadlineFilterSelection pending = current;
         var taskDates = (tasks ?? [])
-            .Where(task => task.Deadline.HasValue && !task.IsCompleted)
+            .Where(task => task.Deadline.HasValue && !task.Is_completed)
             .GroupBy(task => task.Deadline!.Value.Date)
             .ToDictionary(group => group.Key, group => group.ToList());
 
@@ -195,7 +195,7 @@ public static class DeadlineFilterDialog
             int monthTaskCount = taskDates
                 .Where(entry => entry.Key.Year == displayedYear && entry.Key.Month == monthNumber)
                 .SelectMany(entry => entry.Value)
-                .Select(task => task.TaskID)
+                .Select(task => task.Task_id)
                 .Distinct()
                 .Count();
             var monthName = new Label
@@ -337,7 +337,7 @@ public static class DeadlineFilterDialog
                 DateTime date = new(displayedMonth.Year, displayedMonth.Month, day);
                 int cell = offset + day - 1;
                 int dateTaskCount = taskDates.TryGetValue(date.Date, out var datedTasks)
-                    ? datedTasks.Select(task => task.TaskID).Distinct().Count()
+                    ? datedTasks.Select(task => task.Task_id).Distinct().Count()
                     : 0;
                 bool inRange = selectedStart.HasValue && date >= selectedStart.Value.Date &&
                                date <= (selectedEnd ?? selectedStart).Value.Date;
@@ -495,7 +495,7 @@ public static class DeadlineFilterDialog
         applyButton.HeightRequest = 50;
         applyButton.MinimumHeightRequest = 50;
         applyButton.CornerRadius = 8;
-        applyButton.BackgroundColor = AppColors.Brand800;
+        applyButton.BackgroundColor = AppColors.ActionPrimary;
         applyButton.TextColor = AppColors.TextInverse;
         applyButton.BorderWidth = 0;
         applyButton.HorizontalOptions = LayoutOptions.Fill;

@@ -9,47 +9,61 @@ public partial class SubtaskProofDraftPage : EduTaskPage
 {
     private readonly DatabaseService _db = new();
     private readonly SubtaskDisplayItem _subtask;
+    private readonly int _teacherID;
     private readonly Func<System.Threading.Tasks.Task>? _onSubmitted;
     private bool _isSubmitting;
 
     public string SubtaskTitle => _subtask.Title;
-    public string FileName => _subtask.ProofFileName ?? "proof";
+    public string File_name => _subtask.Proof_file_name ?? "proof";
     public string PreparedAtDisplay =>
-        (_subtask.ProofUploadedAt ?? DateTime.Now).ToString("MMM d, yyyy h:mm tt");
+        (_subtask.Proof_uploaded_at ?? DateTime.Now).ToString("MMM d, yyyy h:mm tt");
     public ObservableCollection<ProofHistoryRowViewModel> Attempts { get; }
 
     public SubtaskProofDraftPage(
         SubtaskDisplayItem subtask,
+        int teacherID,
         Func<System.Threading.Tasks.Task>? onSubmitted = null)
     {
         InitializeComponent();
         _subtask = subtask;
+        _teacherID = teacherID;
         _onSubmitted = onSubmitted;
         var rows = subtask.ProofHistory
             .OrderBy(item => item.AttemptNumber)
             .Select(item => new ProofHistoryRowViewModel(item, false))
             .ToList();
         int draftAttemptNumber = rows.Count == 0 ? 1 : rows.Max(item => item.AttemptNumber) + 1;
-        rows.Add(new ProofHistoryRowViewModel(new SubtaskProofHistoryItem
+        rows.Add(new ProofHistoryRowViewModel(new ProofSubmissionItem
         {
-            HistoryID = 0,
+            SubmissionID = 0,
             AttemptNumber = draftAttemptNumber,
-            FileName = FileName,
-            ContentType = string.Empty,
+            File_name = File_name,
+            FileCount = Math.Max(1, subtask.ProofFileCount),
+            File_type = string.Empty,
             ValidationStatus = "Ready",
-            SubmittedAt = subtask.ProofUploadedAt ?? DateTime.Now
+            SubmittedAt = subtask.Proof_uploaded_at ?? DateTime.Now
         }, false));
         Attempts = new ObservableCollection<ProofHistoryRowViewModel>(rows);
+        Attempts.CollectionChanged += (_, _) => UpdatePopupSize(Width, Height);
         BindingContext = this;
     }
 
     protected override void OnSizeAllocated(double width, double height)
     {
         base.OnSizeAllocated(width, height);
+        UpdatePopupSize(width, height);
+    }
+
+    private void UpdatePopupSize(double width, double height)
+    {
         if (width <= 0 || height <= 0)
             return;
-        PopupPanel.WidthRequest = Math.Min(680, Math.Max(300, width - 32));
-        PopupPanel.HeightRequest = Math.Min(360, Math.Max(280, height - 48));
+
+        // Reserve space for the title, table header and Back button, then grow
+        // with the proof rows. The existing ScrollView handles longer histories.
+        double desiredHeight = 180 + 56 * (Attempts?.Count ?? 1);
+        PopupPanel.WidthRequest = Math.Min(680, Math.Max(0, width - 32));
+        PopupPanel.HeightRequest = Math.Min(desiredHeight, Math.Min(560, Math.Max(0, height - 48)));
     }
 
     private async void OnViewFileTapped(object sender, TappedEventArgs e)
@@ -58,15 +72,15 @@ public partial class SubtaskProofDraftPage : EduTaskPage
             return;
         try
         {
-            var file = row.HistoryID == 0
-                ? await _db.GetSubtaskProofImageAsync(_subtask.SubtaskID)
-                : await _db.GetSubtaskProofHistoryFileAsync(row.HistoryID);
-            if (file is null)
+            List<PreparedProofImage> files = row.SubmissionID == 0
+                ? await _db.GetSubtaskProofFilesAsync(_subtask.Subtask_id)
+                : await _db.GetProofSubmissionFilesAsync(row.SubmissionID);
+            if (files.Count == 0)
             {
-                await UiAlertService.ShowAsync(this, "File unavailable", "We couldn't find the selected draft file.");
+                await UiAlertService.ShowAsync(this, "Files unavailable", "We couldn't find the selected draft files.");
                 return;
             }
-            await ProofFileViewerService.OpenAsync(this, file.Value, $"proof-attempt-{row.AttemptNumber}");
+            await ProofFileViewerService.OpenManyAsync(this, files, $"proof-attempt-{row.AttemptNumber}");
         }
         catch
         {
@@ -81,9 +95,9 @@ public partial class SubtaskProofDraftPage : EduTaskPage
         _isSubmitting = true;
         try
         {
-            if (!await _db.ConfirmSubtaskProofAsync(_subtask.SubtaskID))
+            if (!await _db.ConfirmSubtaskProofAsync(_subtask.Subtask_id, _teacherID))
             {
-                await UiAlertService.ShowAsync(this, "File already updated", "This draft was already submitted or replaced.");
+                await UiAlertService.ShowAsync(this, "Files already updated", "This draft was already submitted or replaced.");
                 return;
             }
             if (_onSubmitted is not null)
@@ -92,7 +106,7 @@ public partial class SubtaskProofDraftPage : EduTaskPage
         }
         catch
         {
-            await UiAlertService.ShowAsync(this, "File couldn't be submitted", "Please try again.");
+            await UiAlertService.ShowAsync(this, "Files couldn't be submitted", "Please try again.");
         }
         finally
         {
@@ -105,12 +119,12 @@ public partial class SubtaskProofDraftPage : EduTaskPage
 
     private async void OnRemoveClicked(object sender, EventArgs e)
     {
-        if (!await UiAlertService.ConfirmAsync(this, "Remove draft", "Remove this selected file?", "Remove", "Cancel"))
+        if (!await UiAlertService.ConfirmAsync(this, "Remove draft", "Remove the selected proof files?", "Remove", "Cancel"))
             return;
 
         try
         {
-            if (!await _db.RemoveSubtaskProofAsync(_subtask.SubtaskID))
+            if (!await _db.RemoveSubtaskProofAsync(_subtask.Subtask_id, _teacherID))
             {
                 await UiAlertService.ShowAsync(this, "Draft already updated", "This draft can no longer be removed.");
                 return;

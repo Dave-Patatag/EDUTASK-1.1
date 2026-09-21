@@ -25,6 +25,9 @@
             <Setter Property="TextColor" Value="{StaticResource TextPrimary}"/>
             <Setter Property="VerticalOptions" Value="Center"/>
         </Style>
+        <Style x:Key="FlyoutSubmenuRow" TargetType="Border" BasedOn="{StaticResource FlyoutMenuRow}">
+            <Setter Property="Padding" Value="52,0,12,0"/>
+        </Style>
     </base:EduTaskPage.Resources>
 
     <Grid RowDefinitions="Auto,*,Auto">
@@ -46,19 +49,73 @@
                        TextColor="{StaticResource Slate400}"
                        Margin="4,0,0,2"/>
 
-                <Border x:Name="TaskSummaryItemBorder" Style="{StaticResource FlyoutMenuRow}">
+                <Border x:Name="TaskMenuItemBorder" Style="{StaticResource FlyoutMenuRow}">
                     <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
-                    <Grid ColumnDefinitions="40,*">
-                        <Image Grid.Column="0" Source="summaryreport.png" Style="{StaticResource FlyoutMenuIcon}"/>
-                        <Label Grid.Column="1" Text="Task Summary" Style="{StaticResource FlyoutMenuLabel}"/>
+                    <Grid ColumnDefinitions="40,*,24">
+                        <Image Grid.Column="0" Source="taskunselected.png" Style="{StaticResource FlyoutMenuIcon}"/>
+                        <Label Grid.Column="1" Text="Task" Style="{StaticResource FlyoutMenuLabel}"/>
+                        <Image x:Name="TaskMenuChevron"
+                               Grid.Column="2"
+                               Source="dropdown.png"
+                               WidthRequest="14"
+                               HeightRequest="14"
+                               Rotation="-90"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"/>
                     </Grid>
                     <Border.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnTaskSummaryTapped"/>
+                        <TapGestureRecognizer Tapped="OnTaskMenuTapped"/>
                         <PointerGestureRecognizer PointerPressed="OnItemPointerPressed"
                                                   PointerReleased="OnItemPointerReleased"
                                                   PointerExited="OnItemPointerReleased"/>
                     </Border.GestureRecognizers>
                 </Border>
+
+                <VerticalStackLayout x:Name="TaskSubmenu" IsVisible="False" Spacing="4">
+                    <Border x:Name="CreateTaskItemBorder" Style="{StaticResource FlyoutSubmenuRow}">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                        <Label Text="Create Task" Style="{StaticResource FlyoutMenuLabel}"/>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnCreateTaskTapped"/>
+                            <PointerGestureRecognizer PointerPressed="OnItemPointerPressed"
+                                                      PointerReleased="OnItemPointerReleased"
+                                                      PointerExited="OnItemPointerReleased"/>
+                        </Border.GestureRecognizers>
+                    </Border>
+
+                    <Border x:Name="ActiveTaskItemBorder" Style="{StaticResource FlyoutSubmenuRow}">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                        <Label Text="Active Task" Style="{StaticResource FlyoutMenuLabel}"/>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnActiveTaskTapped"/>
+                            <PointerGestureRecognizer PointerPressed="OnItemPointerPressed"
+                                                      PointerReleased="OnItemPointerReleased"
+                                                      PointerExited="OnItemPointerReleased"/>
+                        </Border.GestureRecognizers>
+                    </Border>
+
+                    <Border x:Name="TaskSummaryItemBorder" Style="{StaticResource FlyoutSubmenuRow}">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                        <Label Text="Task Summary Report" Style="{StaticResource FlyoutMenuLabel}"/>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnTaskSummaryTapped"/>
+                            <PointerGestureRecognizer PointerPressed="OnItemPointerPressed"
+                                                      PointerReleased="OnItemPointerReleased"
+                                                      PointerExited="OnItemPointerReleased"/>
+                        </Border.GestureRecognizers>
+                    </Border>
+
+                    <Border x:Name="CompletionHistoryItemBorder" Style="{StaticResource FlyoutSubmenuRow}">
+                        <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
+                        <Label Text="Task Completion History" Style="{StaticResource FlyoutMenuLabel}"/>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnCompletionHistoryTapped"/>
+                            <PointerGestureRecognizer PointerPressed="OnItemPointerPressed"
+                                                      PointerReleased="OnItemPointerReleased"
+                                                      PointerExited="OnItemPointerReleased"/>
+                        </Border.GestureRecognizers>
+                    </Border>
+                </VerticalStackLayout>
 
                 <Border x:Name="CalendarItemBorder" Style="{StaticResource FlyoutMenuRow}">
                     <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
@@ -79,24 +136,11 @@
                     <Grid ColumnDefinitions="40,*">
                         <Image Grid.Column="0" Source="teacherandstaff.png" Style="{StaticResource FlyoutMenuIcon}"/>
                         <Label x:Name="TeachersStaffMenuLabel" Grid.Column="1"
-                               Text="Teachers &amp; Staff" Style="{StaticResource FlyoutMenuLabel}"/>
+                               Text="Manage Teachers and Staff" Style="{StaticResource FlyoutMenuLabel}"
+                               LineBreakMode="TailTruncation"/>
                     </Grid>
                     <Border.GestureRecognizers>
                         <TapGestureRecognizer Tapped="OnTeachersStaffTapped"/>
-                        <PointerGestureRecognizer PointerPressed="OnItemPointerPressed"
-                                                  PointerReleased="OnItemPointerReleased"
-                                                  PointerExited="OnItemPointerReleased"/>
-                    </Border.GestureRecognizers>
-                </Border>
-
-                <Border x:Name="CompletionHistoryItemBorder" Style="{StaticResource FlyoutMenuRow}">
-                    <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
-                    <Grid ColumnDefinitions="40,*">
-                        <Image Grid.Column="0" Source="completionhistory.png" Style="{StaticResource FlyoutMenuIcon}"/>
-                        <Label Grid.Column="1" Text="Completion History" Style="{StaticResource FlyoutMenuLabel}"/>
-                    </Grid>
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnCompletionHistoryTapped"/>
                         <PointerGestureRecognizer PointerPressed="OnItemPointerPressed"
                                                   PointerReleased="OnItemPointerReleased"
                                                   PointerExited="OnItemPointerReleased"/>

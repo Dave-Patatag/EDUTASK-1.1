@@ -3,7 +3,7 @@ using EDUTASK_1._1.Helpers;
 namespace EDUTASK_1._1.Models;
 
 /// <summary>
-/// One row of the Teachers &amp; Staff directory, ready to bind.
+/// One row of the user management directory, ready to bind.
 ///
 /// The page shows three lists — active accounts, accounts waiting for approval,
 /// and accounts a Director has switched off — through a single card. The card
@@ -70,8 +70,8 @@ public sealed class DirectoryCardItem
     public string BadgeText => IsRequest ? AccountType : IsDisabled ? "Disabled" : "Active";
 
     public Color BadgeColor => IsRequest
-        ? (AccountType == "Teacher" ? AppColors.Accent500 : AppColors.StatusValidation)
-        : IsDisabled ? AppColors.Slate400 : AppColors.StatusSuccess;
+        ? AppColors.StatusPending
+        : IsDisabled ? AppColors.StatusDanger : AppColors.StatusSuccess;
 
     /// <summary>The overflow menu is a Director-only affordance.</summary>
     public bool ShowMenu { get; private init; }

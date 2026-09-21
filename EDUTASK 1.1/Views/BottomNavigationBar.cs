@@ -14,7 +14,7 @@ public enum BottomNavigationTab
 /// <summary>
 /// Shared navigation used by full-screen app destinations.
 /// It owns role-aware routing so every page reaches the same cached task,
-/// notification, and profile tabs.
+/// notification, and profile tabs. Home remains available from the flyout.
 /// </summary>
 public sealed class BottomNavigationBar : ContentView
 {
@@ -26,12 +26,9 @@ public sealed class BottomNavigationBar : ContentView
         propertyChanged: static (bindable, _, _) =>
             ((BottomNavigationBar)bindable).UpdateVisualState());
 
-    private readonly Image _tasksIcon;
-    private readonly Image _notificationIcon;
-    private readonly Image _profileIcon;
-    private readonly Label _tasksLabel;
-    private readonly Label _notificationLabel;
-    private readonly Label _profileLabel;
+    private readonly TabVisual _tasksTab;
+    private readonly TabVisual _notificationTab;
+    private readonly TabVisual _profileTab;
     private readonly Border _notificationBadge;
     private bool _isListeningForBadgeChanges;
 
@@ -64,10 +61,10 @@ public sealed class BottomNavigationBar : ContentView
             }
         };
 
-        (_tasksIcon, _tasksLabel, Grid tasksItem) =
-            CreateItem("Task", "Open tasks", OnTasksTapped);
-        (_notificationIcon, _notificationLabel, Grid notificationItem) =
-            CreateItem("Notification", "Open notifications", OnNotificationTapped);
+        _tasksTab = CreateItem(
+            "Tasks", "Open tasks", "taskselected.png", "taskunselected.png", OnTasksTapped);
+        _notificationTab = CreateItem(
+            "Notifications", "Open notifications", "selectedinbox.png", "defaultinbox.png", OnNotificationTapped);
         _notificationBadge = new Border
         {
             WidthRequest = 7,
@@ -82,14 +79,14 @@ public sealed class BottomNavigationBar : ContentView
             InputTransparent = true
         };
         _notificationBadge.StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 4 };
-        notificationItem.Add(_notificationBadge, 0, 0);
+        _notificationTab.Item.Add(_notificationBadge, 0, 0);
         _notificationBadge.ZIndex = 2;
-        (_profileIcon, _profileLabel, Grid profileItem) =
-            CreateItem("Profile", "Open profile", OnProfileTapped);
+        _profileTab = CreateItem(
+            "Profile", "Open profile", "selectedprofile.png", "defaultprofile.png", OnProfileTapped);
 
-        navigation.Add(tasksItem, 0, 0);
-        navigation.Add(notificationItem, 1, 0);
-        navigation.Add(profileItem, 2, 0);
+        navigation.Add(_tasksTab.Item, 0, 0);
+        navigation.Add(_notificationTab.Item, 1, 0);
+        navigation.Add(_profileTab.Item, 2, 0);
 
         var shell = new Border
         {
@@ -125,18 +122,24 @@ public sealed class BottomNavigationBar : ContentView
         }
     }
 
-    private static (Image Icon, Label Label, Grid Item) CreateItem(
+    private static TabVisual CreateItem(
         string labelText,
         string semanticDescription,
+        string selectedSource,
+        string idleSource,
         EventHandler<TappedEventArgs> tapped)
     {
-        var icon = new Image
+        var selectedIcon = CreateIcon(selectedSource);
+        var idleIcon = CreateIcon(idleSource);
+        var iconHost = new Grid
         {
             WidthRequest = 24,
             HeightRequest = 24,
             HorizontalOptions = LayoutOptions.Center,
             VerticalOptions = LayoutOptions.Center
         };
+        iconHost.Add(idleIcon);
+        iconHost.Add(selectedIcon);
 
         var label = new Label
         {
@@ -165,7 +168,7 @@ public sealed class BottomNavigationBar : ContentView
             },
             BackgroundColor = Colors.Transparent
         };
-        item.Add(icon, 0, 0);
+        item.Add(iconHost, 0, 0);
         item.Add(label, 0, 1);
         SemanticProperties.SetDescription(item, semanticDescription);
 
@@ -173,17 +176,27 @@ public sealed class BottomNavigationBar : ContentView
         tap.Tapped += tapped;
         item.GestureRecognizers.Add(tap);
 
-        return (icon, label, item);
+        return new TabVisual(selectedIcon, idleIcon, iconHost, label, item);
     }
+
+    private static Image CreateIcon(string source) => new()
+    {
+        Source = source,
+        WidthRequest = 24,
+        HeightRequest = 24,
+        HorizontalOptions = LayoutOptions.Center,
+        VerticalOptions = LayoutOptions.Center,
+        InputTransparent = true
+    };
 
     private void UpdateVisualState()
     {
-        SetTabState(_tasksIcon, _tasksLabel, ActiveTab == BottomNavigationTab.Tasks,
-            "taskselected.png", "taskunselected.png", selectedOffset: 0, defaultOffset: 5);
-        SetTabState(_notificationIcon, _notificationLabel, ActiveTab == BottomNavigationTab.Notification,
-            "selectedinbox.png", "defaultinbox.png", selectedOffset: 2, defaultOffset: 7);
-        SetTabState(_profileIcon, _profileLabel, ActiveTab == BottomNavigationTab.Profile,
-            "selectedprofile.png", "defaultprofile.png", selectedOffset: 0, defaultOffset: 6);
+        SetTabState(_tasksTab, ActiveTab == BottomNavigationTab.Tasks,
+            selectedOffset: 0, defaultOffset: 5);
+        SetTabState(_notificationTab, ActiveTab == BottomNavigationTab.Notification,
+            selectedOffset: 2, defaultOffset: 7);
+        SetTabState(_profileTab, ActiveTab == BottomNavigationTab.Profile,
+            selectedOffset: 0, defaultOffset: 6);
         _notificationBadge.IsVisible = ActiveTab != BottomNavigationTab.Notification && _notificationBadge.IsVisible;
     }
 
@@ -196,12 +209,12 @@ public sealed class BottomNavigationBar : ContentView
             if (TeacherSessionService.CurrentTeacher is { } teacher)
             {
                 type = "Teacher";
-                id = teacher.TeacherID;
+                id = teacher.Teacher_id;
             }
             else if (UserSessionService.CurrentUser is { } user)
             {
                 type = "User";
-                id = user.UserID;
+                id = user.User_id;
             }
             else return;
 
@@ -209,7 +222,7 @@ public sealed class BottomNavigationBar : ContentView
                 await new DatabaseService().GetNotificationsAsync(type, id);
             bool hasNew = notifications.Any(item =>
                 !item.IsRead &&
-                !NotificationBadgeState.WasSeen(type, id, item.NotificationKey));
+                !NotificationBadgeState.WasSeen(type, id, item.Notification_key));
             NotificationBadgeState.SetHasNewNotifications(type, id, hasNew);
         }
         catch
@@ -223,7 +236,7 @@ public sealed class BottomNavigationBar : ContentView
     {
         (string Type, int Id)? recipient = GetCurrentRecipient();
         if (recipient is null ||
-            !string.Equals(recipient.Value.Type, e.RecipientType, StringComparison.Ordinal) ||
+            !string.Equals(recipient.Value.Type, e.Recipient_type, StringComparison.Ordinal) ||
             recipient.Value.Id != e.RecipientId)
             return;
 
@@ -238,25 +251,30 @@ public sealed class BottomNavigationBar : ContentView
     private static (string Type, int Id)? GetCurrentRecipient()
     {
         if (TeacherSessionService.CurrentTeacher is { } teacher)
-            return ("Teacher", teacher.TeacherID);
+            return ("Teacher", teacher.Teacher_id);
         if (UserSessionService.CurrentUser is { } user)
-            return ("User", user.UserID);
+            return ("User", user.User_id);
         return null;
     }
 
     private static void SetTabState(
-        Image icon,
-        Label label,
+        TabVisual tab,
         bool selected,
-        string selectedSource,
-        string defaultSource,
         double selectedOffset,
         double defaultOffset)
     {
-        icon.Source = selected ? selectedSource : defaultSource;
-        icon.TranslationY = selected ? selectedOffset : defaultOffset;
-        label.Opacity = selected ? 1 : 0;
+        tab.SelectedIcon.Opacity = selected ? 1 : 0;
+        tab.IdleIcon.Opacity = selected ? 0 : 1;
+        tab.IconHost.TranslationY = selected ? selectedOffset : defaultOffset;
+        tab.Label.Opacity = selected ? 1 : 0;
     }
+
+    private sealed record TabVisual(
+        Image SelectedIcon,
+        Image IdleIcon,
+        Grid IconHost,
+        Label Label,
+        Grid Item);
 
     private static void OnTasksTapped(object? sender, TappedEventArgs e) =>
         DashboardFlyoutPage.Current?.ShowTasks();

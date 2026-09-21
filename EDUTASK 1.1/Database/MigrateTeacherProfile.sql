@@ -9,17 +9,17 @@ IF COL_LENGTH(N'dbo.Teacher', N'Username') IS NULL
     ALTER TABLE dbo.Teacher ADD Username NVARCHAR(50) NULL;
 GO
 
-IF COL_LENGTH(N'dbo.Teacher', N'ProfilePhotoPath') IS NULL
-    ALTER TABLE dbo.Teacher ADD ProfilePhotoPath NVARCHAR(500) NULL;
+IF COL_LENGTH(N'dbo.Teacher', N'Profile_photo') IS NULL
+    ALTER TABLE dbo.Teacher ADD Profile_photo NVARCHAR(500) NULL;
 GO
 
 UPDATE dbo.Teacher
-SET Username = CONCAT('@', LOWER(REPLACE(CONCAT(FirstName, LastName), ' ', '')))
+SET Username = CONCAT('@', LOWER(REPLACE(CONCAT(First_name, Last_name), ' ', '')))
 WHERE NULLIF(LTRIM(RTRIM(Username)), '') IS NULL;
 GO
 
-SELECT TeacherID, FirstName, LastName, Email, ContactNumber,
-       Username, ProfilePhotoPath
+SELECT Teacher_id, First_name, Last_name, Email, Contact_number,
+       Username, Profile_photo
 FROM dbo.Teacher
-ORDER BY TeacherID;
+ORDER BY Teacher_id;
 GO

@@ -18,10 +18,10 @@
         <Grid x:Name="PageHeader" Padding="18,14" ColumnDefinitions="44,*,44"
               BackgroundColor="{StaticResource SurfaceMuted}">
             <ImageButton x:Name="ViewTasksBackButton"
-                         Source="backicon.png" Clicked="OnBackClicked"
+                         Source="whitebackicon.png" Clicked="OnBackClicked"
                          Pressed="OnViewTasksBackPressed" Released="OnViewTasksBackReleased"
                          WidthRequest="42" HeightRequest="42" Padding="10"
-                         CornerRadius="12" BackgroundColor="{StaticResource SurfaceBase}"
+                         CornerRadius="12" BackgroundColor="{StaticResource ActionDismiss}"
                          BorderWidth="0"
                          HorizontalOptions="Start" VerticalOptions="Center"
                          SemanticProperties.Description="Go back"/>

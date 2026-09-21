@@ -56,7 +56,7 @@ public sealed class SecurityAnswersPage : ContentPage
 
             FontAttributes = FontAttributes.Bold,
 
-            BackgroundColor = AppColors.Brand800,
+            BackgroundColor = AppColors.StatusSuccess,
 
             TextColor = AppColors.SurfaceBase,
 
@@ -66,18 +66,54 @@ public sealed class SecurityAnswersPage : ContentPage
 
             MinimumHeightRequest = 50,
 
-            WidthRequest = -1,
-
-            Margin = new Thickness(
-                0,
-                18,
-                0,
-                2),
-
-            HorizontalOptions = LayoutOptions.Center
+            HorizontalOptions = LayoutOptions.Fill
         };
 
         confirmButton.Clicked += OnConfirm;
+
+        var cancelButton = new Button
+        {
+            Text = "Cancel",
+
+            FontSize = AppTypography.Body,
+
+            FontAttributes = FontAttributes.Bold,
+
+            BackgroundColor = AppColors.ActionDismiss,
+
+            TextColor = AppColors.SurfaceBase,
+
+            CornerRadius = 8,
+
+            HeightRequest = 50,
+
+            MinimumHeightRequest = 50,
+
+            HorizontalOptions = LayoutOptions.Fill
+        };
+
+        cancelButton.Clicked += OnCancel;
+
+        var actionButtons = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition(GridLength.Star),
+                new ColumnDefinition(GridLength.Star)
+            },
+
+            ColumnSpacing = 12,
+
+            Margin = new Thickness(0, 18, 0, 2),
+
+            Children =
+            {
+                cancelButton,
+                confirmButton
+            }
+        };
+
+        Grid.SetColumn(confirmButton, 1);
 
         var content = new VerticalStackLayout
         {
@@ -103,7 +139,7 @@ public sealed class SecurityAnswersPage : ContentPage
             _secondAnswerError);
 
         content.Add(
-            confirmButton);
+            actionButtons);
 
         Content = new Grid
         {
@@ -128,10 +164,10 @@ public sealed class SecurityAnswersPage : ContentPage
 
                     Padding =
                         new Thickness(
-                            22,
-                            14,
-                            22,
-                            20),
+                             22,
+                            28,
+                             22,
+                             20),
 
                     VerticalOptions =
                         LayoutOptions.Center,
@@ -350,6 +386,16 @@ public sealed class SecurityAnswersPage : ContentPage
 
         _result.TrySetResult(
             (first, second));
+
+        await Navigation.PopModalAsync(
+            false);
+    }
+
+    private async void OnCancel(
+        object? sender,
+        EventArgs e)
+    {
+        _result.TrySetResult(null);
 
         await Navigation.PopModalAsync(
             false);

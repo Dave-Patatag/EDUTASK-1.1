@@ -7,9 +7,9 @@ public static class UserSessionService
     public const int FixedUserId = 1;
 
     public static User? CurrentUser => SessionStore.CurrentUser;
-    public static int CurrentUserId => CurrentUser?.UserID
+    public static int CurrentUserId => CurrentUser?.User_id
         ?? throw new InvalidOperationException("No Director or Staff account is signed in.");
-    public static string CurrentRole => CurrentUser?.RoleName ?? string.Empty;
+    public static string CurrentRole => CurrentUser?.Role_name ?? string.Empty;
     public static bool IsDirector => CurrentRole == "Director";
     public static bool IsStaff => CurrentRole == "Staff";
     public static bool CanDeleteTasks => IsDirector;
@@ -26,8 +26,8 @@ public static class UserSessionService
             return null;
 
         var database = new DatabaseService();
-        User? refreshed = await database.GetUserByIdAsync(CurrentUser.UserID, cancellationToken);
-        if (refreshed is { IsActive: false })
+        User? refreshed = await database.GetUserByIdAsync(CurrentUser.User_id, cancellationToken);
+        if (refreshed is { Is_active: false })
             refreshed = null;
         if (refreshed is null)
             SessionStore.ClearUser();
@@ -38,7 +38,7 @@ public static class UserSessionService
 
     public static void SetCurrentUser(User user)
     {
-        if (!user.IsActive || user.RoleName is not ("Director" or "Staff"))
+        if (!user.Is_active || user.Role_name is not ("Director" or "Staff"))
             throw new InvalidOperationException("Only an active Director or Staff account can start this session.");
         SessionStore.SetCurrentUser(user);
     }

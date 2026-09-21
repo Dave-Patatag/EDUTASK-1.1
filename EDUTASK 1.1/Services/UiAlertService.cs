@@ -30,7 +30,7 @@ public static class UiAlertService
     {
         var completion = new TaskCompletionSource<string?>();
         var accent = AppColors.StatusDanger;
-        var themePrimary = AppColors.Brand800;
+        var themePrimary = AppColors.ActionPrimary;
 
         var modal = new ContentPage
         {
@@ -279,7 +279,7 @@ public static class UiAlertService
         // A dialog's confirm button is the primary action on screen, so it wears
         // the brand rather than the muted grey it used to. The accent pair is
         // the status token and its own tinted surface.
-        Color themePrimary = AppColors.Brand800;
+        Color themePrimary = AppColors.ActionPrimary;
         Color accent = isSuccess ? AppColors.StatusSuccess
             : isDestructive || isProblem ? AppColors.StatusDanger
             : AppColors.StatusNeutral;
@@ -472,8 +472,11 @@ public static class UiAlertService
 
     private static Button CreateSecondaryButton(string text)
     {
-        var button = CreateButton(text, AppColors.SurfaceBase, AppColors.Brand800);
-        button.BorderColor = AppColors.Brand800;
+        bool isCancel = string.Equals(text, "Cancel", StringComparison.OrdinalIgnoreCase);
+        Color background = isCancel ? AppColors.ActionDismiss : AppColors.SurfaceBase;
+        Color foreground = isCancel ? AppColors.TextInverse : AppColors.Brand800;
+        var button = CreateButton(text, background, foreground);
+        button.BorderColor = isCancel ? AppColors.ActionDismiss : AppColors.Brand800;
         button.BorderWidth = 1;
         return button;
     }
@@ -484,7 +487,6 @@ public static class UiAlertService
         button.MinimumHeightRequest = 50;
         button.CornerRadius = 8;
         button.Padding = new Thickness(18, 0);
-        button.BackgroundColor = AppColors.Brand800;
         button.TextColor = AppColors.TextInverse;
         button.BorderWidth = 0;
         button.HorizontalOptions = LayoutOptions.Fill;
@@ -501,7 +503,7 @@ public static class UiAlertService
         button.MinimumHeightRequest = 50;
         button.CornerRadius = 8;
         button.Padding = new Thickness(18, 0);
-        button.BackgroundColor = AppColors.Brand800;
+        button.BackgroundColor = AppColors.ActionPrimary;
         button.TextColor = AppColors.TextInverse;
         button.BorderWidth = 0;
         button.HorizontalOptions = LayoutOptions.Fill;
@@ -520,6 +522,7 @@ public static class UiAlertService
     private static bool IsDestructive(string title)
     {
         return title.Contains("delete", StringComparison.OrdinalIgnoreCase) ||
+               title.Contains("disable", StringComparison.OrdinalIgnoreCase) ||
                title.Contains("logout", StringComparison.OrdinalIgnoreCase) ||
                title.Contains("remove", StringComparison.OrdinalIgnoreCase) ||
                title.Contains("mark incomplete", StringComparison.OrdinalIgnoreCase);

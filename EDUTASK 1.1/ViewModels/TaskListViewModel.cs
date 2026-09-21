@@ -30,20 +30,20 @@ public sealed class TaskListViewModel
 
             foreach (DataRow row in table.Rows)
             {
-                string completion = row.Field<string>("CompletionStatus") ?? "Pending";
+                string completion = row.Field<string>("Completion_status") ?? "Pending";
                 if (completedFilter == true && completion != "Completed")
                     continue;
                 if (completedFilter == false && completion == "Completed")
                     continue;
 
-                bool acknowledged = !row.IsNull("IsAcknowledged") && row.Field<bool>("IsAcknowledged");
+                bool acknowledged = !row.IsNull("Is_acknowledged") && row.Field<bool>("Is_acknowledged");
                 DateTime? deadline = row.IsNull("Deadline") ? null : row.Field<DateTime>("Deadline");
                 string priority = row.Field<string>("Priority") ?? "Unassigned";
                 string status = completion == "Completed" ? "Completed" : acknowledged ? "Acknowledged" : "Pending";
 
                 Tasks.Add(new AdministratorTaskItem
                 {
-                    TaskID = row.Field<int>("TaskID"),
+                    Task_id = row.Field<int>("Task_id"),
                     Title = row.Field<string>("Title") ?? "Untitled task",
                     TeacherName = string.IsNullOrWhiteSpace(row.Field<string>("TeacherName"))
                         ? "Unassigned"
@@ -75,7 +75,7 @@ public sealed class TaskListViewModel
             if (!confirmed)
                 return false;
 
-            bool deleted = await _database.DeleteTaskAsync(task.TaskID, UserSessionService.CurrentUserId);
+            bool deleted = await _database.DeleteTaskAsync(task.Task_id, UserSessionService.CurrentUserId);
             if (!deleted)
                 throw new InvalidOperationException("The task no longer exists.");
 

@@ -70,6 +70,6 @@ public static class NotificationBadgeState
 }
 
 public sealed record NotificationBadgeChangedEventArgs(
-    string RecipientType,
+    string Recipient_type,
     int RecipientId,
     bool HasNewNotifications);

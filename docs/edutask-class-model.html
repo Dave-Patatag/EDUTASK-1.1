@@ -140,9 +140,9 @@
       every step along the way.
     </p>
     <div class="meta">
-      <span><b>13</b>domain classes</span>
-      <span><b>6</b>application services</span>
-      <span><b>15</b>relationships</span>
+      <span><b>11</b>domain classes</span>
+      <span><b>7</b>application services</span>
+      <span><b>13</b>relationships</span>
       <span><b>.NET MAUI · SQL Server</b>platform</span>
     </div>
   </header>
@@ -160,7 +160,7 @@
     </div>
     <figure>
       <div class="plate">
-        <svg class="uml" viewBox="0 0 1650 1470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="EDUTASK class model: thirteen domain classes across identity, task lifecycle, evidence and audit, with their associations and multiplicities.">
+<svg class="uml" viewBox="0 0 1650 1470" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="EDUTASK class model: eleven domain classes across identity, task lifecycle, evidence and audit, with their associations and multiplicities.">
 <defs><marker id="uarrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="uarrowhead" d="M0,1.5 L9,5 L0,8.5 z"/></marker></defs>
 <g>
 <rect class="ubox" x="40" y="100" width="320" height="137"/>
@@ -171,9 +171,6 @@
 <text class="umk" x="346" y="154" text-anchor="end">«PK»</text>
 <text class="uat" x="54" y="171">+ RoleName : string</text>
 <text class="umk" x="346" y="171" text-anchor="end">«UQ»</text>
-<text class="uat" x="54" y="188">+ Description : string?</text>
-<text class="uat" x="54" y="205">+ IsActive : bool</text>
-<text class="uat" x="54" y="222">+ CreatedAt : DateTime</text>
 </g>
 <g>
 <rect class="ubox" x="40" y="287" width="320" height="154"/>
@@ -208,9 +205,7 @@
 <text class="umk" x="756" y="222" text-anchor="end">«UQ»</text>
 <text class="uat" x="464" y="239">+ Password : string</text>
 <text class="uat" x="464" y="256">+ ContactNumber : string</text>
-<text class="uat" x="464" y="273">+ Birthdate : DateTime?</text>
 <text class="uat" x="464" y="290">+ ProfilePhotoPath : string</text>
-<text class="uat" x="464" y="307">+ Position : string</text>
 <text class="uat" x="464" y="324">+ Bio : string</text>
 <text class="uat" x="464" y="341">+ AccountCreated : DateTime</text>
 <text class="uat" x="464" y="358">+ RoleID : int</text>
@@ -239,9 +234,7 @@
 <text class="umk" x="1166" y="222" text-anchor="end">«UQ»</text>
 <text class="uat" x="874" y="239">+ Password : string</text>
 <text class="uat" x="874" y="256">+ ContactNumber : string</text>
-<text class="uat" x="874" y="273">+ Birthdate : DateTime?</text>
 <text class="uat" x="874" y="290">+ ProfilePhotoPath : string</text>
-<text class="uat" x="874" y="307">+ Position : string</text>
 <text class="uat" x="874" y="324">+ Bio : string</text>
 <text class="uat" x="874" y="341">+ AccountCreated : DateTime</text>
 <text class="uat" x="874" y="358">+ RoleID : int</text>
@@ -255,29 +248,10 @@
 <text class="uat" x="874" y="477">+ SecurityAnswerHash2 : string</text>
 </g>
 <g>
-<rect class="ubox" x="1270" y="100" width="320" height="205"/>
-<rect class="uhd d" x="1270" y="100" width="320" height="34"/>
-<text class="unm d" x="1430" y="122" text-anchor="middle">TaskActivityLog</text>
-<line class="urule" x1="1270" y1="134" x2="1590" y2="134"/>
-<text class="uat" x="1284" y="154">+ ActivityLogID : long</text>
-<text class="umk" x="1576" y="154" text-anchor="end">«PK»</text>
-<text class="uat" x="1284" y="171">+ TaskID : int</text>
-<text class="umk" x="1576" y="171" text-anchor="end">«FK»</text>
-<text class="uat" x="1284" y="188">+ PerformedByUserID : int?</text>
-<text class="umk" x="1576" y="188" text-anchor="end">«FK»</text>
-<text class="uat" x="1284" y="205">+ PerformedByTeacherID : int?</text>
-<text class="umk" x="1576" y="205" text-anchor="end">«FK»</text>
-<text class="uat" x="1284" y="222">+ ActionType : string</text>
-<text class="uat" x="1284" y="239">+ PreviousStatus : string?</text>
-<text class="uat" x="1284" y="256">+ NewStatus : string?</text>
-<text class="uat" x="1284" y="273">+ Details : string?</text>
-<text class="uat" x="1284" y="290">+ CreatedAt : DateTime</text>
-</g>
-<g>
 <rect class="ubox" x="1270" y="355" width="320" height="120"/>
 <rect class="uhd d" x="1270" y="355" width="320" height="34"/>
 <text class="ust" x="1430" y="369" text-anchor="middle">«inbox state»</text>
-<text class="unm d" x="1430" y="383" text-anchor="middle">NotificationRead / Hidden</text>
+<text class="unm d" x="1430" y="383" text-anchor="middle">NotificationState</text>
 <line class="urule" x1="1270" y1="389" x2="1590" y2="389"/>
 <text class="uat" x="1284" y="409">+ RecipientType : string</text>
 <text class="umk" x="1576" y="409" text-anchor="end">«PK»</text>
@@ -285,7 +259,7 @@
 <text class="umk" x="1576" y="426" text-anchor="end">«PK»</text>
 <text class="uat" x="1284" y="443">+ NotificationKey : string</text>
 <text class="umk" x="1576" y="443" text-anchor="end">«PK»</text>
-<text class="uat" x="1284" y="460">+ ReadAt / HiddenAt : DateTime</text>
+<text class="uat" x="1284" y="460">+ ReadAt / HiddenAt : DateTime?</text>
 </g>
 <g>
 <rect class="ubox" x="450" y="560" width="320" height="290"/>
@@ -297,21 +271,11 @@
 <text class="uat" x="464" y="631">+ Title : string</text>
 <text class="uat" x="464" y="648">+ Description : string</text>
 <text class="uat" x="464" y="665">+ CreatedAt : DateTime</text>
-<text class="uat" x="464" y="682">+ UpdatedAt : DateTime</text>
-<text class="uat" x="464" y="699">+ UserID : int</text>
-<text class="umk" x="756" y="699" text-anchor="end">«FK»</text>
 <text class="uat" x="464" y="716">+ isDailyRemind : bool</text>
-<text class="uat" x="464" y="733">+ CreatedByUserID : int?</text>
+<text class="uat" x="464" y="733">+ CreatedByUserID : int</text>
 <text class="umk" x="756" y="733" text-anchor="end">«FK»</text>
-<text class="uat" x="464" y="750">+ LastModifiedByUserID : int?</text>
-<text class="umk" x="756" y="750" text-anchor="end">«FK»</text>
 <text class="uat" x="464" y="767">+ CompletionApprovedByUserID : int?</text>
 <text class="umk" x="756" y="767" text-anchor="end">«FK»</text>
-<text class="uat" x="464" y="784">+ CompletionApprovedAt : DateTime?</text>
-<text class="uat" x="464" y="801">+ RevisionRequestedByUserID : int?</text>
-<text class="umk" x="756" y="801" text-anchor="end">«FK»</text>
-<text class="uat" x="464" y="818">+ RevisionRequestedAt : DateTime?</text>
-<text class="uat" x="464" y="835">+ RevisionReason : string?</text>
 </g>
 <g>
 <rect class="ubox" x="860" y="560" width="320" height="222"/>
@@ -333,7 +297,7 @@
 <text class="uat" x="874" y="767">+ CompletedAt : DateTime?</text>
 </g>
 <g>
-<rect class="ubox" x="450" y="910" width="320" height="137"/>
+<rect class="ubox" x="450" y="910" width="320" height="290"/>
 <rect class="uhd b" x="450" y="910" width="320" height="34"/>
 <text class="unm b" x="610" y="932" text-anchor="middle">Subtask</text>
 <line class="urule" x1="450" y1="944" x2="770" y2="944"/>
@@ -343,14 +307,20 @@
 <text class="umk" x="756" y="981" text-anchor="end">«FK»</text>
 <text class="uat" x="464" y="998">+ Title : string</text>
 <text class="uat" x="464" y="1015">+ IsCompleted : bool</text>
-<text class="uat" x="464" y="1032">+ CreatedAt : DateTime</text>
+<text class="uat" x="464" y="1049">+ ProofFile : byte[]?</text>
+<text class="uat" x="464" y="1066">+ ProofFileName : string?</text>
+<text class="uat" x="464" y="1083">+ ProofContentType : string?</text>
+<text class="uat" x="464" y="1100">+ ProofValidationStatus : string?</text>
+<text class="uat" x="464" y="1117">+ ProofUploadedAt : DateTime?</text>
+<text class="uat" x="464" y="1168">+ ProofSubmittedByTeacherID : int?</text>
+<text class="umk" x="756" y="1168" text-anchor="end">«FK»</text>
 </g>
 <g>
 <rect class="ubox" x="1270" y="910" width="320" height="205"/>
 <rect class="uhd d" x="1270" y="910" width="320" height="34"/>
-<text class="unm d" x="1430" y="932" text-anchor="middle">TaskComment</text>
+<text class="unm d" x="1430" y="932" text-anchor="middle">TaskDiscussion</text>
 <line class="urule" x1="1270" y1="944" x2="1590" y2="944"/>
-<text class="uat" x="1284" y="964">+ CommentID : int</text>
+<text class="uat" x="1284" y="964">+ DiscussionID : int</text>
 <text class="umk" x="1576" y="964" text-anchor="end">«PK»</text>
 <text class="uat" x="1284" y="981">+ TaskID : int</text>
 <text class="umk" x="1576" y="981" text-anchor="end">«FK»</text>
@@ -360,31 +330,11 @@
 <text class="uat" x="1284" y="1032">+ AuthorID : int</text>
 <text class="uat" x="1284" y="1049">+ AuthorName : string</text>
 <text class="uat" x="1284" y="1066">+ MessageType : string</text>
-<text class="uat" x="1284" y="1083">+ CommentText : string</text>
+<text class="uat" x="1284" y="1083">+ DiscussionText : string</text>
 <text class="uat" x="1284" y="1100">+ CreatedAt : DateTime</text>
 </g>
 <g>
-<rect class="ubox" x="450" y="1175" width="320" height="222"/>
-<rect class="uhd c" x="450" y="1175" width="320" height="34"/>
-<text class="ust" x="610" y="1189" text-anchor="middle">«current evidence»</text>
-<text class="unm c" x="610" y="1203" text-anchor="middle">SubtaskProof</text>
-<line class="urule" x1="450" y1="1209" x2="770" y2="1209"/>
-<text class="uat" x="464" y="1229">+ ProofID : int</text>
-<text class="umk" x="756" y="1229" text-anchor="end">«PK»</text>
-<text class="uat" x="464" y="1246">+ SubtaskID : int</text>
-<text class="umk" x="756" y="1246" text-anchor="end">«FK, UQ»</text>
-<text class="uat" x="464" y="1263">+ ImageData : byte[]</text>
-<text class="uat" x="464" y="1280">+ FileName : string</text>
-<text class="uat" x="464" y="1297">+ ContentType : string</text>
-<text class="uat" x="464" y="1314">+ ValidationStatus : string</text>
-<text class="uat" x="464" y="1331">+ UploadedAt : DateTime</text>
-<text class="uat" x="464" y="1348">+ ReviewedAt : DateTime?</text>
-<text class="uat" x="464" y="1365">+ ReviewedByUserID : int?</text>
-<text class="umk" x="756" y="1365" text-anchor="end">«FK»</text>
-<text class="uat" x="464" y="1382">+ AdminRemarks : string?</text>
-</g>
-<g>
-<rect class="ubox" x="860" y="1175" width="320" height="239"/>
+<rect class="ubox" x="860" y="1175" width="320" height="256"/>
 <rect class="uhd c" x="860" y="1175" width="320" height="34"/>
 <text class="ust" x="1020" y="1189" text-anchor="middle">«attempt archive»</text>
 <text class="unm c" x="1020" y="1203" text-anchor="middle">SubtaskProofHistory</text>
@@ -399,15 +349,17 @@
 <text class="uat" x="874" y="1314">+ FileData : byte[]</text>
 <text class="uat" x="874" y="1331">+ ValidationStatus : string</text>
 <text class="uat" x="874" y="1348">+ SubmittedAt : DateTime</text>
-<text class="uat" x="874" y="1365">+ ReviewedAt : DateTime?</text>
-<text class="uat" x="874" y="1382">+ ReviewedByUserID : int?</text>
-<text class="umk" x="1166" y="1382" text-anchor="end">«FK»</text>
-<text class="uat" x="874" y="1399">+ ReturnRemarks : string?</text>
+<text class="uat" x="874" y="1365">+ SubmittedByTeacherID : int?</text>
+<text class="umk" x="1166" y="1365" text-anchor="end">«FK»</text>
+<text class="uat" x="874" y="1382">+ ReviewedAt : DateTime?</text>
+<text class="uat" x="874" y="1399">+ ReviewedByUserID : int?</text>
+<text class="umk" x="1166" y="1399" text-anchor="end">«FK»</text>
+<text class="uat" x="874" y="1416">+ ReturnRemarks : string?</text>
 </g>
 <g>
 <rect class="ubox" x="1270" y="1175" width="320" height="137"/>
 <rect class="uhd d" x="1270" y="1175" width="320" height="34"/>
-<text class="unm d" x="1430" y="1197" text-anchor="middle">TaskCommentRead</text>
+<text class="unm d" x="1430" y="1197" text-anchor="middle">TaskDiscussionRead</text>
 <line class="urule" x1="1270" y1="1209" x2="1590" y2="1209"/>
 <text class="uat" x="1284" y="1229">+ SubtaskID : int</text>
 <text class="umk" x="1576" y="1229" text-anchor="end">«PK, FK»</text>
@@ -415,7 +367,7 @@
 <text class="umk" x="1576" y="1246" text-anchor="end">«PK»</text>
 <text class="uat" x="1284" y="1263">+ ReaderID : int</text>
 <text class="umk" x="1576" y="1263" text-anchor="end">«PK»</text>
-<text class="uat" x="1284" y="1280">+ LastReadCommentID : int</text>
+<text class="uat" x="1284" y="1280">+ LastReadDiscussionID : int</text>
 <text class="uat" x="1284" y="1297">+ ReadAt : DateTime</text>
 </g>
 <polyline class="uln" points="360,150 450,150" marker-end="url(#uarrow)"/>
@@ -426,16 +378,12 @@
 <text class="umult" x="210" y="94">1</text>
 <text class="umult" x="1010" y="94" text-anchor="end">0..*</text>
 <text class="ulbl" x="600" y="50" text-anchor="middle">governs</text>
-<polyline class="uln" points="700,100 700,80 1430,80 1430,100" marker-end="url(#uarrow)"/>
-<text class="ulbl" x="1065" y="72" text-anchor="middle">performed by</text>
 <polyline class="uln" points="200,287 200,237" marker-end="url(#uarrow)"/>
 <text class="ulbl" x="210" y="268">from / to role</text>
 <polyline class="uln" points="360,364 450,364" marker-end="url(#uarrow)"/>
 <text class="umult" x="366" y="358">0..*</text>
 <text class="umult" x="444" y="358" text-anchor="end">1</text>
 <text class="ulbl" x="405" y="380" text-anchor="middle">promotes</text>
-<polyline class="uln" points="1180,250 1270,250" marker-end="url(#uarrow)"/>
-<text class="ulbl" x="1225" y="242" text-anchor="middle">acts</text>
 <polyline class="uln" points="1180,420 1270,420" marker-end="url(#uarrow)"/>
 <text class="ulbl" x="1225" y="412" text-anchor="middle">receives</text>
 <polyline class="uln" points="610,492 610,560" marker-end="url(#uarrow)"/>
@@ -450,9 +398,6 @@
 <text class="umult" x="776" y="644">1</text>
 <text class="umult" x="854" y="644" text-anchor="end">1..*</text>
 <text class="ulbl" x="815" y="668" text-anchor="middle">assigned by</text>
-<polyline class="uln" points="730,560 730,520 1615,520 1615,200 1590,200" marker-end="url(#uarrow)"/>
-<text class="umult" x="738" y="546">1</text>
-<text class="ulbl" x="1180" y="512" text-anchor="middle">records every action</text>
 <polyline class="uln" points="610,850 610,910" marker-end="url(#uarrow)"/>
 <text class="umult" x="602" y="870" text-anchor="end">1</text>
 <text class="umult" x="602" y="902" text-anchor="end">0..*</text>
@@ -548,8 +493,8 @@
           <table>
             <thead><tr><th scope="col">Class</th><th scope="col">Responsibility</th><th scope="col">Defining attributes</th></tr></thead>
             <tbody>
-              <tr><th scope="row" class="cls a">Role</th><td>The three permission levels the system recognises — Director, Staff and Teacher. Roles are seeded and read server-side; an account never supplies its own role.</td><td class="mono">RoleID, RoleName, IsActive</td></tr>
-              <tr><th scope="row" class="cls a">User</th><td>A Director or Staff account: the people who create tasks, review evidence and approve completion. Position and Bio are the person’s own profile text and are separate from RoleName, which governs permissions.</td><td class="mono">UserID, Username, RoleID, IsActive, DisabledAt</td></tr>
+              <tr><th scope="row" class="cls a">Role</th><td>The three permission levels the system recognises — Director, Staff and Teacher. Roles are seeded and read server-side; an account never supplies its own role.</td><td class="mono">RoleID, RoleName</td></tr>
+              <tr><th scope="row" class="cls a">User</th><td>A Director or Staff account: the people who create tasks, review evidence and approve completion. Bio is profile text and is separate from RoleName, which governs permissions.</td><td class="mono">UserID, Username, RoleID, IsActive, DisabledAt</td></tr>
               <tr><th scope="row" class="cls a">Teacher</th><td>An account that receives assignments and submits evidence. Kept in its own table so an assignment can only ever point at a teaching account.</td><td class="mono">TeacherID, Username, RoleID, IsActive</td></tr>
               <tr><th scope="row" class="cls a">AccountRoleChangeLog</th><td>One row each time a Staff account is promoted to Director — the previous role, the new role, and who made the change.</td><td class="mono">UserID, PreviousRoleID, NewRoleID, ChangedByUserID</td></tr>
             </tbody>
@@ -563,9 +508,9 @@
           <table>
             <thead><tr><th scope="col">Class</th><th scope="col">Responsibility</th><th scope="col">Defining attributes</th></tr></thead>
             <tbody>
-              <tr><th scope="row" class="cls b">Task</th><td>The unit of work a Director or Staff creates. Alongside title and description it carries the four stamps that record who approved completion and who sent it back, with the reason.</td><td class="mono">TaskID, Title, CreatedByUserID, CompletionApprovedByUserID, RevisionReason</td></tr>
+              <tr><th scope="row" class="cls b">Task</th><td>The unit of work a Director or Staff creates, with its creator and final approver.</td><td class="mono">TaskID, Title, CreatedByUserID, CompletionApprovedByUserID</td></tr>
               <tr><th scope="row" class="cls b">TaskAssignment</th><td>Joins one task to one teacher with a deadline and a priority. Its CompletionStatus is the field the whole workflow turns on.</td><td class="mono">AssignmentID, TaskID, TeacherID, Deadline, Priority, CompletionStatus</td></tr>
-              <tr><th scope="row" class="cls b">Subtask</th><td>A checklist item under a task — the level at which evidence is uploaded and discussion happens. Deleting the task cascades to its subtasks.</td><td class="mono">SubtaskID, TaskID, Title, IsCompleted</td></tr>
+              <tr><th scope="row" class="cls b">Subtask</th><td>A shared checklist item under a task. It now owns the one current proof file, validation state, submitting teacher, and reviewer details; the first assigned teacher to upload claims that proof slot.</td><td class="mono">SubtaskID, TaskID, Title, ProofFile, ProofValidationStatus, ProofSubmittedByTeacherID</td></tr>
             </tbody>
           </table>
         </div>
@@ -577,8 +522,7 @@
           <table>
             <thead><tr><th scope="col">Class</th><th scope="col">Responsibility</th><th scope="col">Defining attributes</th></tr></thead>
             <tbody>
-              <tr><th scope="row" class="cls c">SubtaskProof</th><td>The one current file standing as proof for a subtask — JPEG, PNG or PDF up to 20 MB — with its validation status and the reviewer’s remarks. A unique constraint keeps it to exactly one per subtask.</td><td class="mono">SubtaskID «UQ», ImageData, ValidationStatus, ReviewedByUserID, AdminRemarks</td></tr>
-              <tr><th scope="row" class="cls c">SubtaskProofHistory</th><td>Every attempt ever submitted for a subtask, numbered in order, so a returned submission is preserved when a new one replaces it.</td><td class="mono">SubtaskID, AttemptNumber, FileData, ValidationStatus, ReturnRemarks</td></tr>
+              <tr><th scope="row" class="cls c">SubtaskProofHistory</th><td>Every confirmed proof attempt for a subtask, numbered in order and stamped with its submitting teacher, so returned and approved submissions remain auditable.</td><td class="mono">SubtaskID, AttemptNumber, SubmittedByTeacherID, FileData, ValidationStatus, ReturnRemarks</td></tr>
             </tbody>
           </table>
         </div>
@@ -590,10 +534,9 @@
           <table>
             <thead><tr><th scope="col">Class</th><th scope="col">Responsibility</th><th scope="col">Defining attributes</th></tr></thead>
             <tbody>
-              <tr><th scope="row" class="cls d">TaskComment</th><td>A message on a task, optionally scoped to one subtask thread. The author is identified by type and id rather than by a foreign key, because it may be either a User or a Teacher.</td><td class="mono">TaskID, SubtaskID, AuthorType, AuthorID, CommentText</td></tr>
-              <tr><th scope="row" class="cls d">TaskCommentRead</th><td>Per reader, the last comment seen in a subtask thread. Unread badges are counted from it rather than stored.</td><td class="mono">SubtaskID, ReaderType, ReaderID, LastReadCommentID</td></tr>
-              <tr><th scope="row" class="cls d">TaskActivityLog</th><td>An append-only record of the ten actions that can change a task, each with its previous and new status. Exactly one actor column is filled — a User or a Teacher, never both.</td><td class="mono">TaskID, PerformedByUserID, PerformedByTeacherID, ActionType</td></tr>
-              <tr><th scope="row" class="cls d">NotificationRead / NotificationHidden</th><td>Inbox rows are assembled by query from assignments, proofs and comments; these two tables store only what each recipient has already read or dismissed.</td><td class="mono">RecipientType, RecipientID, NotificationKey</td></tr>
+              <tr><th scope="row" class="cls d">TaskDiscussion</th><td>A message on a task, optionally scoped to one subtask thread. The author is identified by type and id rather than by a foreign key, because it may be either a User or a Teacher.</td><td class="mono">TaskID, SubtaskID, AuthorType, AuthorID, DiscussionText</td></tr>
+              <tr><th scope="row" class="cls d">TaskDiscussionRead</th><td>Per reader, the last discussion message seen in a subtask thread. Unread badges are counted from it rather than stored.</td><td class="mono">SubtaskID, ReaderType, ReaderID, LastReadDiscussionID</td></tr>
+              <tr><th scope="row" class="cls d">NotificationState</th><td>Inbox rows are assembled by query from assignments, proofs and comments; this table stores when each recipient read or dismissed a generated notification.</td><td class="mono">RecipientType, RecipientID, NotificationKey, ReadAt, HiddenAt</td></tr>
             </tbody>
           </table>
         </div>
@@ -612,18 +555,15 @@
             <tr><td class="mono strong">Role</td><td class="rel">governs</td><td class="mono strong">User</td><td class="mono nums">1 → 0..*</td><td class="src">FK_User_Roles</td></tr>
             <tr><td class="mono strong">Role</td><td class="rel">governs</td><td class="mono strong">Teacher</td><td class="mono nums">1 → 0..*</td><td class="src">FK_Teacher_Roles</td></tr>
             <tr><td class="mono strong">User</td><td class="rel">promotes</td><td class="mono strong">AccountRoleChangeLog</td><td class="mono nums">1 → 0..*</td><td class="src">FK_AccountRoleChangeLog_User, _ChangedBy</td></tr>
-            <tr><td class="mono strong">User</td><td class="rel">creates · approves · returns</td><td class="mono strong">Task</td><td class="mono nums">1 → 0..*</td><td class="src">FK_Task_CreatedByUser, _CompletionApprovedByUser, _RevisionRequestedByUser</td></tr>
+            <tr><td class="mono strong">User</td><td class="rel">creates · approves</td><td class="mono strong">Task</td><td class="mono nums">1 → 0..*</td><td class="src">FK_Task_CreatedByUser, _CompletionApprovedByUser</td></tr>
             <tr><td class="mono strong">Task</td><td class="rel">assigned by</td><td class="mono strong">TaskAssignment</td><td class="mono nums">1 → 1..*</td><td class="src">TaskAssignment.TaskID</td></tr>
             <tr><td class="mono strong">Teacher</td><td class="rel">works on</td><td class="mono strong">TaskAssignment</td><td class="mono nums">1 → 0..*</td><td class="src">TaskAssignment.TeacherID</td></tr>
             <tr><td class="mono strong">Task</td><td class="rel">breaks down into</td><td class="mono strong">Subtask</td><td class="mono nums">1 → 0..*</td><td class="src">FK_Subtask_Task (ON DELETE CASCADE)</td></tr>
-            <tr><td class="mono strong">Subtask</td><td class="rel">has current proof</td><td class="mono strong">SubtaskProof</td><td class="mono nums">1 → 0..1</td><td class="src">FK_SubtaskProof_Subtask + UQ_SubtaskProof_SubtaskID</td></tr>
             <tr><td class="mono strong">Subtask</td><td class="rel">keeps every attempt</td><td class="mono strong">SubtaskProofHistory</td><td class="mono nums">1 → 0..*</td><td class="src">FK_SubtaskProofHistory_Subtask + UQ (SubtaskID, AttemptNumber)</td></tr>
-            <tr><td class="mono strong">User</td><td class="rel">reviews evidence</td><td class="mono strong">SubtaskProof</td><td class="mono nums">1 → 0..*</td><td class="src">SubtaskProof.ReviewedByUserID</td></tr>
-            <tr><td class="mono strong">Task · Subtask</td><td class="rel">discussed in</td><td class="mono strong">TaskComment</td><td class="mono nums">1 → 0..*</td><td class="src">FK_TaskComment_Task (cascade), FK_TaskComment_Subtask</td></tr>
-            <tr><td class="mono strong">Subtask</td><td class="rel">read receipt per reader</td><td class="mono strong">TaskCommentRead</td><td class="mono nums">1 → 0..*</td><td class="src">PK (SubtaskID, ReaderType, ReaderID)</td></tr>
-            <tr><td class="mono strong">Task</td><td class="rel">records every action</td><td class="mono strong">TaskActivityLog</td><td class="mono nums">1 → 0..*</td><td class="src">FK_TaskActivityLog_Task</td></tr>
-            <tr><td class="mono strong">User · Teacher</td><td class="rel">performed by</td><td class="mono strong">TaskActivityLog</td><td class="mono nums">0..1 → 0..*</td><td class="src">CK_TaskActivityLog_OneActor (exclusive or)</td></tr>
-            <tr><td class="mono strong">User · Teacher</td><td class="rel">receives</td><td class="mono strong">NotificationRead / Hidden</td><td class="mono nums">1 → 0..*</td><td class="src">PK (RecipientType, RecipientID, NotificationKey) — no FK</td></tr>
+            <tr><td class="mono strong">Teacher</td><td class="rel">claims current proof</td><td class="mono strong">Subtask</td><td class="mono nums">1 → 0..*</td><td class="src">Subtask.ProofSubmittedByTeacherID</td></tr>
+            <tr><td class="mono strong">Task · Subtask</td><td class="rel">discussed in</td><td class="mono strong">TaskDiscussion</td><td class="mono nums">1 → 0..*</td><td class="src">FK_TaskDiscussion_Task (cascade), FK_TaskDiscussion_Subtask</td></tr>
+            <tr><td class="mono strong">Subtask</td><td class="rel">read receipt per reader</td><td class="mono strong">TaskDiscussionRead</td><td class="mono nums">1 → 0..*</td><td class="src">PK (SubtaskID, ReaderType, ReaderID)</td></tr>
+            <tr><td class="mono strong">User · Teacher</td><td class="rel">has notification state</td><td class="mono strong">NotificationState</td><td class="mono nums">1 → 0..*</td><td class="src">PK (RecipientType, RecipientID, NotificationKey) — no FK</td></tr>
         </tbody>
       </table>
     </div>
@@ -710,7 +650,7 @@
 <text class="uat op" x="734" y="364">+ UploadSubtaskProofAsync() : bool</text>
 <text class="uat op" x="734" y="381">+ ReviewSubtaskProofAsync() : bool</text>
 <text class="uat op" x="734" y="398">+ GetSubtaskProofHistoryAsync() : List</text>
-<text class="uat op" x="734" y="415">+ AddTaskCommentAsync() : bool</text>
+<text class="uat op" x="734" y="415">+ AddTaskDiscussionAsync() : bool</text>
 <text class="uat op" x="734" y="432">+ GetRecentActivityLogAsync() : List</text>
 </g>
 <g>
@@ -789,15 +729,15 @@
       </div>
       <div class="rule-card">
         <h4>Evidence is never overwritten</h4>
-        <p><code>SubtaskProof</code> holds the one current file per subtask; each submission is also copied into <code>SubtaskProofHistory</code> with an attempt number, so a returned attempt survives.</p>
+        <p><code>Subtask</code> holds its one current proof and the teacher who claimed it; each confirmed submission is copied into <code>SubtaskProofHistory</code>, so a returned attempt survives and another teacher cannot overwrite the shared proof.</p>
       </div>
       <div class="rule-card">
         <h4>The inbox is a query, not a table</h4>
         <p>Notifications are assembled from assignments, proofs and comments when the page loads. Only read and hidden state is persisted, keyed by recipient and notification key.</p>
       </div>
       <div class="rule-card">
-        <h4>Audit is append-only</h4>
-        <p><code>TaskActivityLog</code> records ten action types with the previous and new status, and a check constraint requires exactly one actor — a User or a Teacher, never both.</p>
+        <h4>Role changes are audited</h4>
+        <p><code>AccountRoleChangeLog</code> retains each Staff-to-Director promotion, including the previous role, new role, acting Director and change time.</p>
       </div>
     </div>
   </section>

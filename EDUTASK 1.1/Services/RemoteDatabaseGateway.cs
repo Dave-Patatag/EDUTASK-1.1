@@ -10,7 +10,7 @@ internal static class RemoteDatabaseGateway
     private static readonly HttpClient Client = new()
     {
         BaseAddress = new Uri("http://10.0.2.2:5187/"),
-        Timeout = TimeSpan.FromSeconds(30)
+        Timeout = TimeSpan.FromMinutes(2)
     };
 
     public static async Task<DataTable> QueryAsync(string sql, IEnumerable<SqlParameter>? parameters, CancellationToken token)

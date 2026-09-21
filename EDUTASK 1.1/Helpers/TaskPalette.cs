@@ -45,7 +45,9 @@ namespace EDUTASK_1._1.Helpers
             "Completed" => AppColors.StatusSuccess,
             "Overdue" or "Needs Revision" or "Returned" => AppColors.StatusDanger,
             "For Validation" => AppColors.StatusValidation,
-            "Acknowledged" => AppColors.StatusInfo,
+            "Acknowledged" => AppColors.StatusOngoing,
+            "Pending" => AppColors.StatusPending,
+            "Ongoing" => AppColors.StatusOngoing,
             _ => AppColors.StatusWarning
         };
 
@@ -58,7 +60,9 @@ namespace EDUTASK_1._1.Helpers
             "Completed" => AppColors.StatusSuccessSurface,
             "Overdue" or "Needs Revision" or "Returned" => AppColors.StatusDangerSurface,
             "For Validation" => AppColors.StatusValidationSurface,
-            "Acknowledged" => AppColors.StatusInfoSurface,
+            "Acknowledged" => AppColors.StatusOngoingSurface,
+            "Pending" => AppColors.StatusPendingSurface,
+            "Ongoing" => AppColors.StatusOngoingSurface,
             _ => AppColors.StatusWarningSurface
         };
 
@@ -68,7 +72,9 @@ namespace EDUTASK_1._1.Helpers
             "Completed" => AppColors.StatusSuccessBorder,
             "Overdue" or "Needs Revision" or "Returned" => AppColors.StatusDangerBorder,
             "For Validation" => AppColors.StatusValidationBorder,
-            "Acknowledged" => AppColors.StatusInfoBorder,
+            "Acknowledged" => AppColors.StatusOngoingBorder,
+            "Pending" => AppColors.StatusPendingBorder,
+            "Ongoing" => AppColors.StatusOngoingBorder,
             _ => AppColors.StatusWarningBorder
         };
     }

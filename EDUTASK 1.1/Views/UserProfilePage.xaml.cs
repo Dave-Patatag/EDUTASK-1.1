@@ -65,7 +65,7 @@ public partial class UserProfilePage : EduTaskPage
     /// The stored phone number. The card substitutes "No contact number" when
     /// this is blank, and copying that placeholder would be nonsense.
     /// </summary>
-    private string RawContactNumber => _teacher?.ContactNumber ?? _user?.ContactNumber ?? string.Empty;
+    private string RawContactNumber => _teacher?.Contact_number ?? _user?.Contact_number ?? string.Empty;
 
     protected override async void OnAppearing()
     {
@@ -75,25 +75,25 @@ public partial class UserProfilePage : EduTaskPage
         {
             if (_teacher is not null)
             {
-                var teacher = await _database.GetTeacherByIdAsync(_teacher.TeacherID);
+                var teacher = await _database.GetTeacherByIdAsync(_teacher.Teacher_id);
                 if (teacher is not null)
                 {
                     _teacher = teacher;
                     ApplyTeacher(teacher);
                 }
                 if (OverviewSection.IsVisible)
-                    ApplySummary(await _database.GetTeacherProfileTaskSummaryAsync(_teacher.TeacherID));
+                    ApplySummary(await _database.GetTeacherProfileTaskSummaryAsync(_teacher.Teacher_id));
             }
             else if (_user is not null)
             {
-                var user = await _database.GetUserByIdAsync(_user.UserID);
+                var user = await _database.GetUserByIdAsync(_user.User_id);
                 if (user is not null)
                 {
                     _user = user;
                     ApplyUser(user);
                 }
                 if (OverviewSection.IsVisible)
-                    ApplySummary(await _database.GetUserProfileTaskSummaryAsync(_user.UserID));
+                    ApplySummary(await _database.GetUserProfileTaskSummaryAsync(_user.User_id));
             }
         }
         catch (Exception)
@@ -104,17 +104,15 @@ public partial class UserProfilePage : EduTaskPage
 
     private void ApplyUser(User user)
     {
-        _viewModel.AvatarSeed = $"user-{user.UserID}";
-        _viewModel.FullName = $"{user.FirstName} {user.LastName}".Trim();
+        _viewModel.AvatarSeed = $"user-{user.User_id}";
+        _viewModel.FullName = $"{user.First_name} {user.Last_name}".Trim();
         _viewModel.Email = user.Email;
-        _viewModel.ContactNumber = string.IsNullOrWhiteSpace(user.ContactNumber) ? "No contact number" : user.ContactNumber;
+        _viewModel.Contact_number = string.IsNullOrWhiteSpace(user.Contact_number) ? "No contact number" : user.Contact_number;
         _viewModel.Username = user.Username;
-        _viewModel.ProfilePhotoPath = user.ProfilePhotoPath;
-        _viewModel.Role = string.IsNullOrWhiteSpace(user.RoleName) ? "Staff" : user.RoleName;
-        _viewModel.Bio = user.Bio;
-        BioLabel.IsVisible = !_returnToDirectory || !string.IsNullOrWhiteSpace(user.Bio);
-        bool isDirector = string.Equals(user.RoleName, "Director", StringComparison.OrdinalIgnoreCase);
-        bool isStaff = string.Equals(user.RoleName, "Staff", StringComparison.OrdinalIgnoreCase);
+        _viewModel.Profile_photo = user.Profile_photo;
+        _viewModel.Role = string.IsNullOrWhiteSpace(user.Role_name) ? "Staff" : user.Role_name;
+        bool isDirector = string.Equals(user.Role_name, "Director", StringComparison.OrdinalIgnoreCase);
+        bool isStaff = string.Equals(user.Role_name, "Staff", StringComparison.OrdinalIgnoreCase);
         bool isOwnDirectorProfile = !_returnToDirectory && isDirector;
         bool isOwnStaffProfile = !_returnToDirectory && isStaff;
         OverviewSection.IsVisible = !_returnToDirectory && !isDirector && !isStaff;
@@ -125,17 +123,17 @@ public partial class UserProfilePage : EduTaskPage
         if (isOwnDirectorProfile)
         {
             DirectorRoleLabel.Text = "Director";
-            DirectorStatusLabel.Text = user.IsActive ? "Active" : "Inactive";
+            DirectorStatusLabel.Text = user.Is_active ? "Active" : "Inactive";
             DirectorUsernameLabel.Text = $"@{user.Username.TrimStart('@')}";
-            DirectorMemberSinceLabel.Text = user.AccountCreated.ToString("MMM d, yyyy");
+            DirectorMemberSinceLabel.Text = user.Account_created.ToString("MMM d, yyyy");
         }
         if (isOwnStaffProfile)
         {
             StaffRoleLabel.Text = "Staff";
-            StaffStatusLabel.Text = user.IsActive ? "Active" : "Inactive";
-            StaffStatusLabel.TextColor = user.IsActive ? AppColors.StatusSuccess : AppColors.StatusDanger;
+            StaffStatusLabel.Text = user.Is_active ? "Active" : "Inactive";
+            StaffStatusLabel.TextColor = user.Is_active ? AppColors.StatusSuccess : AppColors.StatusDanger;
             StaffUsernameLabel.Text = $"@{user.Username.TrimStart('@')}";
-            StaffMemberSinceLabel.Text = user.AccountCreated.ToString("MMM d, yyyy");
+            StaffMemberSinceLabel.Text = user.Account_created.ToString("MMM d, yyyy");
             StaffLastActivityLabel.Text = "Not available";
         }
         _viewModel.TotalLabel = "Created";
@@ -145,15 +143,13 @@ public partial class UserProfilePage : EduTaskPage
 
     private void ApplyTeacher(Teachers teacher)
     {
-        _viewModel.AvatarSeed = $"teacher-{teacher.TeacherID}";
-        _viewModel.FullName = $"{teacher.FirstName} {teacher.LastName}".Trim();
+        _viewModel.AvatarSeed = $"teacher-{teacher.Teacher_id}";
+        _viewModel.FullName = $"{teacher.First_name} {teacher.Last_name}".Trim();
         _viewModel.Email = teacher.Email;
-        _viewModel.ContactNumber = string.IsNullOrWhiteSpace(teacher.ContactNumber) ? "No contact number" : teacher.ContactNumber;
+        _viewModel.Contact_number = string.IsNullOrWhiteSpace(teacher.Contact_number) ? "No contact number" : teacher.Contact_number;
         _viewModel.Username = teacher.Username;
-        _viewModel.ProfilePhotoPath = teacher.ProfilePhotoPath;
+        _viewModel.Profile_photo = teacher.Profile_photo;
         _viewModel.Role = "Teacher";
-        _viewModel.Bio = teacher.Bio;
-        BioLabel.IsVisible = !_returnToDirectory || !string.IsNullOrWhiteSpace(teacher.Bio);
         bool directorDirectoryView = _returnToDirectory && UserSessionService.IsDirector;
         ProfilePageTitleLabel.Text = directorDirectoryView ? "Teacher Profile" : "Profile";
         InformationHeadingLabel.Text = "Contact";
@@ -166,20 +162,20 @@ public partial class UserProfilePage : EduTaskPage
         {
             string status = _isManagedAccountDisabled
                 ? "Disabled"
-                : teacher.IsActive ? "Active" : "Pending";
+                : teacher.Is_active ? "Active" : "Pending";
             Color statusColor = _isManagedAccountDisabled
                 ? AppColors.StatusDanger
-                : teacher.IsActive ? AppColors.StatusSuccess : AppColors.StatusValidation;
+                : teacher.Is_active ? AppColors.StatusSuccess : AppColors.StatusPending;
             TeacherDirectoryStatusLabel.Text = status;
             TeacherDirectoryStatusLabel.TextColor = statusColor;
             TeacherDirectoryStatusCard.BackgroundColor = _isManagedAccountDisabled
                 ? AppColors.StatusDangerSurface
-                : teacher.IsActive ? AppColors.StatusSuccessSurface : AppColors.StatusValidationSurface;
+                : teacher.Is_active ? AppColors.StatusSuccessSurface : AppColors.StatusPendingSurface;
             TeacherDirectoryStatusCard.Stroke = _isManagedAccountDisabled
                 ? AppColors.StatusDangerBorder
-                : teacher.IsActive ? AppColors.StatusSuccessBorder : AppColors.StatusValidationBorder;
+                : teacher.Is_active ? AppColors.StatusSuccessBorder : AppColors.StatusPendingBorder;
             TeacherDirectoryUsernameLabel.Text = $"@{teacher.Username.TrimStart('@')}";
-            TeacherDirectoryMemberSinceLabel.Text = teacher.AccountCreated.ToString("MMM d, yyyy");
+            TeacherDirectoryMemberSinceLabel.Text = teacher.Account_created.ToString("MMM d, yyyy");
         }
         _viewModel.TotalLabel = "Total";
         _viewModel.PendingLabel = "Ongoing";
@@ -193,28 +189,28 @@ public partial class UserProfilePage : EduTaskPage
         if (!canManage)
             return;
 
-        string role = string.IsNullOrWhiteSpace(user.RoleName) ? "Staff" : user.RoleName;
+        string role = string.IsNullOrWhiteSpace(user.Role_name) ? "Staff" : user.Role_name;
         bool isStaff = string.Equals(role, "Staff", StringComparison.OrdinalIgnoreCase);
-        bool isPending = !user.IsActive && !_isManagedAccountDisabled;
+        bool isPending = !user.Is_active && !_isManagedAccountDisabled;
 
         ManagedRoleLabel.Text = role;
         ManagedStatusLabel.Text = _isManagedAccountDisabled
             ? "Disabled"
-            : user.IsActive ? "Active" : "Pending";
+            : user.Is_active ? "Active" : "Pending";
         ManagedStatusLabel.TextColor = _isManagedAccountDisabled
             ? AppColors.StatusDanger
-            : user.IsActive ? AppColors.StatusSuccess : AppColors.StatusValidation;
+            : user.Is_active ? AppColors.StatusSuccess : AppColors.StatusPending;
         ManagedStatusCard.BackgroundColor = _isManagedAccountDisabled
             ? AppColors.StatusDangerSurface
-            : user.IsActive ? AppColors.StatusSuccessSurface : AppColors.StatusValidationSurface;
+            : user.Is_active ? AppColors.StatusSuccessSurface : AppColors.StatusPendingSurface;
         ManagedStatusCard.Stroke = _isManagedAccountDisabled
             ? AppColors.StatusDangerBorder
-            : user.IsActive ? AppColors.StatusSuccessBorder : AppColors.StatusValidationBorder;
+            : user.Is_active ? AppColors.StatusSuccessBorder : AppColors.StatusPendingBorder;
         ManagedApprovalLabel.Text = isPending
-            ? $"Pending · Requested {user.AccountCreated:MMM d, yyyy}"
-            : $"Approved · Requested {user.AccountCreated:MMM d, yyyy}";
+            ? $"Pending · Requested {user.Account_created:MMM d, yyyy}"
+            : $"Approved · Requested {user.Account_created:MMM d, yyyy}";
 
-        PromoteToDirectorButton.IsVisible = isStaff && user.IsActive && !_isManagedAccountDisabled;
+        PromoteToDirectorButton.IsVisible = isStaff && user.Is_active && !_isManagedAccountDisabled;
         ManagedAccountStateButton.IsVisible = isStaff && !isPending;
         bool showActions = isStaff && !isPending;
         ManagedActionsFooter.IsVisible = showActions;
@@ -226,22 +222,22 @@ public partial class UserProfilePage : EduTaskPage
             : "Disable account";
         ManagedAccountStateButton.BackgroundColor = _isManagedAccountDisabled
             ? AppColors.StatusSuccessSurface
-            : AppColors.StatusDanger;
+            : AppColors.ActionDanger;
         ManagedAccountStateButton.TextColor = _isManagedAccountDisabled
             ? AppColors.StatusSuccess
             : AppColors.TextInverse;
         ManagedAccountStateButton.BorderColor = _isManagedAccountDisabled
             ? AppColors.StatusSuccessBorder
-            : AppColors.StatusDanger;
+            : AppColors.ActionDanger;
     }
 
     private async void OnPromoteToDirectorClicked(object sender, EventArgs e)
     {
         if (_user is null || !UserSessionService.IsDirector ||
-            !string.Equals(_user.RoleName, "Staff", StringComparison.OrdinalIgnoreCase))
+            !string.Equals(_user.Role_name, "Staff", StringComparison.OrdinalIgnoreCase))
             return;
 
-        string fullName = $"{_user.FirstName} {_user.LastName}".Trim();
+        string fullName = $"{_user.First_name} {_user.Last_name}".Trim();
         bool confirmed = await UiAlertService.ConfirmAsync(
             this,
             "Promote to Director",
@@ -255,14 +251,14 @@ public partial class UserProfilePage : EduTaskPage
 
         try
         {
-            if (!await _database.PromoteStaffToDirectorAsync(_user.UserID))
+            if (!await _database.PromoteStaffToDirectorAsync(_user.User_id))
             {
                 await UiAlertService.ShowAsync(this, "Nothing changed",
                     "This account is no longer an active Staff account. Return to the directory and refresh.");
                 return;
             }
 
-            User? refreshed = await _database.GetUserByIdAsync(_user.UserID);
+            User? refreshed = await _database.GetUserByIdAsync(_user.User_id);
             if (refreshed is not null)
             {
                 _user = refreshed;
@@ -282,11 +278,11 @@ public partial class UserProfilePage : EduTaskPage
     private async void OnManagedAccountStateClicked(object sender, EventArgs e)
     {
         if (_user is null || !UserSessionService.IsDirector ||
-            !string.Equals(_user.RoleName, "Staff", StringComparison.OrdinalIgnoreCase))
+            !string.Equals(_user.Role_name, "Staff", StringComparison.OrdinalIgnoreCase))
             return;
 
         bool disabling = !_isManagedAccountDisabled;
-        string fullName = $"{_user.FirstName} {_user.LastName}".Trim();
+        string fullName = $"{_user.First_name} {_user.Last_name}".Trim();
         bool confirmed = await UiAlertService.ConfirmAsync(
             this,
             disabling ? "Disable account" : "Enable account",
@@ -301,7 +297,7 @@ public partial class UserProfilePage : EduTaskPage
 
         try
         {
-            if (!await _database.SetAccountDisabledAsync(_user.UserID, "Staff", disabling))
+            if (!await _database.SetAccountDisabledAsync(_user.User_id, "Staff", disabling))
             {
                 await UiAlertService.ShowAsync(this, "Nothing changed",
                     "This account was already updated somewhere else. Return to the directory and refresh.");
@@ -309,7 +305,7 @@ public partial class UserProfilePage : EduTaskPage
             }
 
             _isManagedAccountDisabled = disabling;
-            _user.IsActive = !disabling;
+            _user.Is_active = !disabling;
             UpdateAccountManagement(_user);
             await UiAlertService.ShowAsync(this,
                 disabling ? "Account disabled" : "Account enabled",

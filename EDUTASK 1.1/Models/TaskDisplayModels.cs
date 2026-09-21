@@ -5,7 +5,7 @@ namespace EDUTASK_1._1.Models;
 
 public sealed class AdministratorTaskItem
 {
-    public int TaskID { get; init; }
+    public int Task_id { get; init; }
     public string Title { get; init; } = string.Empty;
     public string TeacherName { get; init; } = string.Empty;
     public string DeadlineDisplay { get; init; } = string.Empty;
@@ -33,15 +33,15 @@ public sealed class AdministratorTaskItem
     {
         "Completed" => AppColors.StatusSuccessSurface,
         "Overdue" => AppColors.StatusDangerSurface,
-        "Acknowledged" => AppColors.StatusInfoSurface,
-        _ => AppColors.StatusWarningSurface
+        "Acknowledged" => AppColors.StatusOngoingSurface,
+        _ => AppColors.StatusPendingSurface
     };
     public Color CardStatusBorder => CardStatus switch
     {
         "Completed" => AppColors.StatusSuccessBorder,
         "Overdue" => AppColors.StatusDangerBorder,
-        "Acknowledged" => AppColors.StatusInfoBorder,
-        _ => AppColors.StatusWarningBorder
+        "Acknowledged" => AppColors.StatusOngoingBorder,
+        _ => AppColors.StatusPendingBorder
     };
     public Color DueTextColor => IsOverdue ? AppColors.StatusDanger : AppColors.TextSecondary;
 }
@@ -52,22 +52,27 @@ public sealed class DashboardTaskItem : INotifyPropertyChanged
     private int _submittedProgressItems;
     private int _verifiedProgressItems;
     private int _totalProgressItems;
-    public int TaskID { get; set; }
-    public int AssignmentID { get; set; }
-    public int CreatedByUserID { get; set; }
+    public int Task_id { get; set; }
+    public int Assignment_id { get; set; }
+    public int Createdby_user_id { get; set; }
+    public DateTime Created_at { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string TeacherName { get; set; } = string.Empty;
+    public IReadOnlyList<string> TeacherNames { get; set; } = [];
     public string DeadlineDisplay { get; set; } = string.Empty;
     public string Priority { get; set; } = string.Empty;
     public Color PriorityColor { get; set; } = AppColors.StatusNeutral;
     public string Status { get; set; } = string.Empty;
     public Color StatusColor { get; set; } = AppColors.StatusNeutral;
     public DateTime? Deadline { get; set; }
-    public DateTime? CompletedAt { get; set; }
-    public string DeadlineMonth => Deadline?.ToString("MMM").ToUpperInvariant() ?? "â€”";
-    public string DeadlineDay => Deadline?.ToString("dd") ?? "â€”";
-    public bool IsCompleted { get; set; }
+    public DateTime? Completed_at { get; set; }
+    public bool IsOverdue => !Is_completed && Deadline?.Date < DateTime.Today;
+    public string DisplayStatus => IsOverdue ? "Overdue" : Status;
+    public Color DisplayStatusColor => IsOverdue ? AppColors.StatusDanger : StatusColor;
+    public string DeadlineMonth => Deadline?.ToString("MMM").ToUpperInvariant() ?? "Ã¢â‚¬â€";
+    public string DeadlineDay => Deadline?.ToString("dd") ?? "Ã¢â‚¬â€";
+    public bool Is_completed { get; set; }
     public int SubmittedProgressItems { get => _submittedProgressItems; set { if (_submittedProgressItems == value) return; _submittedProgressItems = value; NotifyProgressChanged(); } }
     public int VerifiedProgressItems { get => _verifiedProgressItems; set { if (_verifiedProgressItems == value) return; _verifiedProgressItems = value; NotifyProgressChanged(); } }
     public int TotalProgressItems { get => _totalProgressItems; set { if (_totalProgressItems == value) return; _totalProgressItems = value; NotifyProgressChanged(); } }
@@ -83,8 +88,8 @@ public sealed class DashboardTaskItem : INotifyPropertyChanged
     public bool IsAwaitingValidation { get; set; }
     public bool ShowValidationActions => IsAwaitingValidation;
     public bool CanValidate => EDUTASK_1._1.Services.UserSessionService.CanApproveCompletion &&
-                               !IsCompleted && TotalProgressItems > 0 && VerifiedProgressItems == TotalProgressItems;
-    public bool CanEdit => !IsCompleted;
+                               !Is_completed && TotalProgressItems > 0 && VerifiedProgressItems == TotalProgressItems;
+    public bool CanEdit => !Is_completed;
     public bool ShowAcknowledge { get; set; }
     public bool IsExpanded
     {
@@ -99,6 +104,7 @@ public sealed class DashboardTaskItem : INotifyPropertyChanged
     }
     public List<SubtaskDisplayItem> Subtasks { get; set; } = [];
     public bool HasSubtasks => Subtasks.Count > 0;
+    public bool HasPreviousDiscussion { get; set; }
     public string ViewButtonText => IsExpanded ? "Hide Details" : "View Task";
 
     private void NotifyProgressChanged()
@@ -120,17 +126,16 @@ public sealed class DashboardTaskItem : INotifyPropertyChanged
 
 public sealed class SubtaskDisplayItem : INotifyPropertyChanged
 {
-    private bool _isCompleted;
     private int _unreadDiscussionCount;
-    public int SubtaskID { get; init; }
-    public int TaskID { get; init; }
+    public int Subtask_id { get; init; }
+    public int Task_id { get; init; }
     public string Title { get; init; } = string.Empty;
-    public int? ProofID { get; init; }
-    public string? ProofFileName { get; init; }
+    public string? Proof_file_name { get; init; }
+    public int ProofFileCount { get; init; }
     public string? ProofStatus { get; init; }
-    public DateTime? ProofUploadedAt { get; init; }
-    public string? AdminRemarks { get; init; }
-    public List<SubtaskProofHistoryItem> ProofHistory { get; init; } = [];
+    public DateTime? Proof_uploaded_at { get; init; }
+    public int? Proof_submittedby_teacher_id { get; init; }
+    public List<ProofSubmissionItem> ProofHistory { get; init; } = [];
     public int UnreadDiscussionCount
     {
         get => _unreadDiscussionCount;
@@ -145,7 +150,7 @@ public sealed class SubtaskDisplayItem : INotifyPropertyChanged
     }
     public bool HasUnreadDiscussion => UnreadDiscussionCount > 0;
     public string UnreadDiscussionDisplay => UnreadDiscussionCount > 9 ? "9+" : UnreadDiscussionCount.ToString();
-    public bool HasProof => ProofID.HasValue;
+    public bool HasProof => !string.IsNullOrWhiteSpace(ProofStatus);
     public bool HasProofHistory => ProofHistory.Count > 0;
     public string ProofHistoryButtonText => CanReviewProof ? "Review Submission" : "View Submission History";
     public bool IsProofDraft => ProofStatus == "Draft";
@@ -153,17 +158,17 @@ public sealed class SubtaskDisplayItem : INotifyPropertyChanged
     public bool IsProofApproved => ProofStatus == "Approved";
     public bool IsProofReturned => ProofStatus == "Returned";
     public bool ProofEditingIsAvailable { get; set; } = true;
-    public bool CanUploadProof => !IsCompleted && ProofEditingIsAvailable &&
+    public bool CanUploadProof => !Is_completed && ProofEditingIsAvailable &&
                                   (!HasProof || IsProofDraft || IsProofReturned);
-    public bool CanConfirmProof => HasProof && IsProofDraft && !IsCompleted;
-    public bool CanViewDraft => HasProof && IsProofDraft;
+    public bool CanConfirmProof => HasProof && IsProofDraft && !Is_completed && ProofEditingIsAvailable;
+    public bool CanViewDraft => HasProof && IsProofDraft && ProofEditingIsAvailable;
     public bool ShowTeacherProofButton => CanViewDraft || HasProofHistory;
     public string TeacherProofButtonText => CanViewDraft ? "Review draft" : "View submission history";
     public bool ReviewIsAvailable { get; set; }
     public bool CanReviewProof => ReviewIsAvailable && HasProof && IsProofPending;
-    public bool CanRemoveProof => HasProof && !IsCompleted && ProofEditingIsAvailable && IsProofDraft;
+    public bool CanRemoveProof => HasProof && !Is_completed && ProofEditingIsAvailable && IsProofDraft;
     public bool ShowProofToReviewer => HasProof && !IsProofDraft;
-    public string ProofActionText => HasProof ? "Replace file" : "Upload file";
+    public string ProofActionText => HasProof ? "Replace files" : "Upload files";
     public string ProofStatusText => ProofStatus switch
     {
         "Draft" => "Ready to submit",
@@ -177,27 +182,14 @@ public sealed class SubtaskDisplayItem : INotifyPropertyChanged
         "Approved" => AppColors.StatusSuccess,
         "Returned" => AppColors.StatusDanger,
         "Draft" => AppColors.Accent500,
-        "Pending" => AppColors.StatusWarning,
+        "Pending" => AppColors.StatusPending,
         _ => AppColors.TextTertiary
     };
-    public bool IsCompleted
-    {
-        get => _isCompleted;
-        set
-        {
-            if (_isCompleted == value) return;
-            _isCompleted = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsCompleted)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Marker)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MarkerColor)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TitleColor)));
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TitleDecoration)));
-        }
-    }
-    public string Marker => IsCompleted ? string.Empty : "\u25CB";
-    public Color MarkerColor => IsCompleted ? AppColors.StatusSuccess : AppColors.TextTertiary;
-    public Color TitleColor => IsCompleted ? AppColors.TextTertiary : AppColors.TextSecondary;
-    public TextDecorations TitleDecoration => IsCompleted ? TextDecorations.Strikethrough : TextDecorations.None;
+    public bool Is_completed => IsProofApproved;
+    public string Marker => Is_completed ? string.Empty : "\u25CB";
+    public Color MarkerColor => Is_completed ? AppColors.StatusSuccess : AppColors.TextTertiary;
+    public Color TitleColor => Is_completed ? AppColors.TextTertiary : AppColors.TextSecondary;
+    public TextDecorations TitleDecoration => Is_completed ? TextDecorations.Strikethrough : TextDecorations.None;
     public event PropertyChangedEventHandler? PropertyChanged;
 }
 
@@ -208,7 +200,14 @@ public sealed class DeadlineTaskGroup : INotifyPropertyChanged
     public string TaskTitle { get; init; } = string.Empty;
     public string DeadlineDisplay { get; init; } = string.Empty;
     public string TeacherSummary { get; init; } = string.Empty;
+    public bool ShowSectionHeader { get; init; }
+    public string SectionTitle { get; init; } = string.Empty;
+    public string SectionCountText { get; init; } = string.Empty;
+    public Color SectionColor { get; init; } = AppColors.TextSecondary;
     public List<DashboardTaskItem> Tasks { get; init; } = [];
+    // Several legacy records may belong to the same combined card. Render one
+    // task body in either state; Tasks stays intact for grouped IDs and totals.
+    public IEnumerable<DashboardTaskItem> DisplayTasks => Tasks.Take(1);
     public int UnreadDiscussionCount => Tasks.Sum(task => task.Subtasks.Sum(subtask => subtask.UnreadDiscussionCount));
     public bool HasUnreadDiscussion => UnreadDiscussionCount > 0;
     // Keep the aggregate unread badge visible in the task header even when the
@@ -223,11 +222,11 @@ public sealed class DeadlineTaskGroup : INotifyPropertyChanged
         {
             if (Tasks.Count == 0)
                 return "No tasks";
-            if (Tasks.Count == 1)
-                return Tasks[0].Status;
+            if (Tasks.Count == 1 || Tasks.All(task => task.DisplayStatus == Tasks[0].DisplayStatus))
+                return Tasks[0].DisplayStatus;
 
-            return string.Join(" Â· ", Tasks
-                .GroupBy(task => task.Status)
+            return string.Join(" Ã‚Â· ", Tasks
+                .GroupBy(task => task.DisplayStatus)
                 .Select(group => $"{group.Count()} {group.Key}"));
         }
     }
@@ -235,15 +234,17 @@ public sealed class DeadlineTaskGroup : INotifyPropertyChanged
     {
         get
         {
-            if (Tasks.Count > 0 && Tasks.All(task => task.IsCompleted))
+            if (Tasks.Count > 0 && Tasks.All(task => task.Is_completed))
                 return AppColors.StatusSuccess;
+            if (Tasks.Any(task => task.IsOverdue))
+                return AppColors.StatusDanger;
             if (Tasks.Any(task => task.Status == "Needs Revision"))
                 return AppColors.StatusDanger;
             if (Tasks.Any(task => task.IsAwaitingValidation))
                 return AppColors.StatusValidation;
             if (Tasks.Any(task => task.Status == "Acknowledged"))
-                return AppColors.Accent500;
-            return AppColors.StatusWarning;
+                return AppColors.StatusOngoing;
+            return AppColors.StatusPending;
         }
     }
     public int TotalSubtasks => Tasks.Sum(task => task.TotalProgressItems);
@@ -282,6 +283,11 @@ public sealed class DeadlineTaskGroup : INotifyPropertyChanged
         DateTime currentWeekStart = today.AddDays(-daysSinceMonday);
         DateTime nextWeekStart = currentWeekStart.AddDays(7);
 
+        if (deadline.Date == today)
+            return "Today";
+        if (deadline.Date == today.AddDays(1))
+            return "Tomorrow";
+
         return deadline.Date >= currentWeekStart && deadline.Date < nextWeekStart
             ? deadline.ToString("dddd")
             : deadline.ToString("dddd, MMMM d");
@@ -291,16 +297,17 @@ public sealed class DeadlineTaskGroup : INotifyPropertyChanged
 public sealed class PreparedProofImage
 {
     public required byte[] Data { get; init; }
-    public required string FileName { get; init; }
-    public required string ContentType { get; init; }
+    public required string File_name { get; init; }
+    public required string File_type { get; init; }
 }
 
-public sealed class SubtaskProofHistoryItem
+public sealed class ProofSubmissionItem
 {
-    public int HistoryID { get; init; }
+    public int SubmissionID { get; init; }
     public int AttemptNumber { get; init; }
-    public string FileName { get; init; } = string.Empty;
-    public string ContentType { get; init; } = string.Empty;
+    public string File_name { get; init; } = string.Empty;
+    public string File_type { get; init; } = string.Empty;
+    public int FileCount { get; init; } = 1;
     public string ValidationStatus { get; init; } = string.Empty;
     public DateTime SubmittedAt { get; init; }
     public DateTime? ReviewedAt { get; init; }
@@ -314,7 +321,7 @@ public sealed class SubtaskProofHistoryItem
     {
         "Approved" => AppColors.StatusSuccess,
         "Returned" => AppColors.StatusDanger,
-        "Pending" => AppColors.StatusWarning,
+        "Pending" => AppColors.StatusPending,
         _ => AppColors.TextTertiary
     };
 }

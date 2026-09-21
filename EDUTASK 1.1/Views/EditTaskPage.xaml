@@ -1,162 +1,761 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<base:EduTaskPage xmlns:base="clr-namespace:EDUTASK_1._1.Views.Base" xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="EDUTASK_1._1.Views.EditTaskPage"
-             Transition="Dialog"
-             NavigationPage.HasNavigationBar="False"
-             Shell.NavBarIsVisible="False"
-             BackgroundColor="{StaticResource Scrim}"
-             Padding="18">
+
+<base:EduTaskPage
+    xmlns:base="clr-namespace:EDUTASK_1._1.Views.Base"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="EDUTASK_1._1.Views.EditTaskPage"
+    Transition="Dialog"
+    NavigationPage.HasNavigationBar="False"
+    Shell.NavBarIsVisible="False"
+    BackgroundColor="{StaticResource Scrim}"
+    Padding="12">
 
 
-    <Border MaximumWidthRequest="500" MaximumHeightRequest="850" HorizontalOptions="Center"
-            VerticalOptions="Center" BackgroundColor="{StaticResource SurfaceBase}" Stroke="{StaticResource BorderDefault}"
-            StrokeThickness="1" Padding="0">
-        <Border.StrokeShape><RoundRectangle CornerRadius="14"/></Border.StrokeShape>
-    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="0">
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Padding="16,12">
-            <Label Text="Edit Task" FontSize="{StaticResource FontHeading}" FontAttributes="Bold"
-                   TextColor="{StaticResource TextPrimary}" VerticalOptions="Center"/>
-            <Button Grid.Column="1" Text="&#x00D7;" Clicked="OnBackClicked"
-                    WidthRequest="32" HeightRequest="32" Padding="0" FontSize="{StaticResource FontTitle}"
-                    BackgroundColor="Transparent" TextColor="{StaticResource TextSecondary}"/>
-        </Grid>
+    <!-- ========================================================= -->
+    <!-- EDIT TASK DIALOG                                          -->
+    <!-- ========================================================= -->
 
-        <ScrollView Grid.Row="1">
-            <VerticalStackLayout Padding="16,5,16,12" Spacing="9">
-                <VerticalStackLayout x:Name="ReadOnlySummary" IsVisible="False" Spacing="14">
-                    <VerticalStackLayout Spacing="6">
-                        <Label Text="TASK DETAILS" Style="{StaticResource SectionLabel}"/>
-                        <Border Style="{StaticResource FormCard}">
-                            <VerticalStackLayout Spacing="9">
-                                <Label x:Name="SummaryTitleLabel" FontSize="{StaticResource FontHeading}" FontAttributes="Bold" TextColor="{StaticResource TextPrimary}"/>
-                                <Label x:Name="SummaryDescriptionLabel" FontSize="{StaticResource FontCaption}" TextColor="{StaticResource TextSecondary}" LineBreakMode="WordWrap"/>
-                                <BoxView HeightRequest="1" Color="{StaticResource BorderSubtle}"/>
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <Label Text="Due date" Style="{StaticResource MutedCaption}"/>
-                                    <Label x:Name="SummaryDueDateLabel" Grid.Column="1" FontSize="{StaticResource FontLabel}" FontAttributes="Bold" TextColor="{StaticResource TextSecondary}"/>
-                                </Grid>
-                            </VerticalStackLayout>
-                        </Border>
+    <Border
+        MaximumWidthRequest="440"
+        MaximumHeightRequest="680"
+        HorizontalOptions="Center"
+        VerticalOptions="Center"
+        BackgroundColor="{StaticResource SurfaceBase}"
+        Stroke="{StaticResource BorderDefault}"
+        StrokeThickness="1"
+        Padding="0">
+
+        <Border.StrokeShape>
+            <RoundRectangle CornerRadius="14"/>
+        </Border.StrokeShape>
+
+
+        <Grid
+            RowDefinitions="Auto,*,Auto"
+            RowSpacing="0">
+
+
+            <!-- ================================================= -->
+            <!-- HEADER                                            -->
+            <!-- X BUTTON REMOVED                                  -->
+            <!-- ================================================= -->
+
+            <Grid
+                Grid.Row="0"
+                ColumnDefinitions="*"
+                Padding="16,10">
+
+                <Label
+                    x:Name="DialogTitleLabel"
+                    Text="Edit task"
+                    FontSize="{StaticResource FontHeading}"
+                    FontAttributes="Bold"
+                    TextColor="{StaticResource TextPrimary}"
+                    VerticalOptions="Center"/>
+
+            </Grid>
+
+
+            <!-- ================================================= -->
+            <!-- CONTENT                                           -->
+            <!-- ================================================= -->
+
+            <ScrollView Grid.Row="1">
+
+                <VerticalStackLayout
+                    Padding="16,2,16,8"
+                    Spacing="6">
+
+
+                    <!-- ================================================= -->
+                    <!-- READ ONLY SUMMARY                                  -->
+                    <!-- ================================================= -->
+
+                    <VerticalStackLayout
+                        x:Name="ReadOnlySummary"
+                        IsVisible="False"
+                        Spacing="10">
+
+
+                        <!-- TASK DETAILS -->
+
+                        <VerticalStackLayout Spacing="8">
+
+                            <Border
+                                Style="{StaticResource FormCard}"
+                                Padding="13,12">
+
+                                <VerticalStackLayout Spacing="8">
+
+                                    <Label
+                                        x:Name="SummaryTitleLabel"
+                                        FontSize="{StaticResource FontHeading}"
+                                        FontAttributes="Bold"
+                                        TextColor="{StaticResource TextPrimary}"/>
+
+                                    <Label
+                                        x:Name="SummaryDescriptionLabel"
+                                        FontSize="{StaticResource FontCaption}"
+                                        TextColor="{StaticResource TextSecondary}"
+                                        LineBreakMode="WordWrap"/>
+
+                                    <BoxView
+                                        HeightRequest="1"
+                                        Color="{StaticResource BorderSubtle}"/>
+
+                                    <Grid
+                                        RowDefinitions="Auto,Auto,Auto,Auto"
+                                        ColumnDefinitions="Auto,*"
+                                        RowSpacing="7"
+                                        ColumnSpacing="14">
+
+                                        <Label
+                                            Text="Due"
+                                            Style="{StaticResource MutedCaption}"/>
+
+                                        <Label
+                                            x:Name="SummaryDueDateLabel"
+                                            Grid.Column="1"
+                                            FontSize="{StaticResource FontLabel}"
+                                            FontAttributes="Bold"
+                                            TextColor="{StaticResource TextSecondary}"
+                                            HorizontalTextAlignment="End"/>
+
+                                        <Label
+                                            Grid.Row="1"
+                                            Text="Assigned to"
+                                            Style="{StaticResource MutedCaption}"/>
+
+                                        <Label
+                                            x:Name="SummaryTeacherLabel"
+                                            Grid.Row="1"
+                                            Grid.Column="1"
+                                            FontSize="{StaticResource FontLabel}"
+                                            FontAttributes="Bold"
+                                            TextColor="{StaticResource TextSecondary}"
+                                            LineBreakMode="TailTruncation"
+                                            HorizontalTextAlignment="End"/>
+
+                                        <Label
+                                            Grid.Row="2"
+                                            Text="Priority"
+                                            Style="{StaticResource MutedCaption}"/>
+
+                                        <Label
+                                            x:Name="SummaryPriorityLabel"
+                                            Grid.Row="2"
+                                            Grid.Column="1"
+                                            FontSize="{StaticResource FontLabel}"
+                                            FontAttributes="Bold"
+                                            TextColor="{StaticResource TextSecondary}"
+                                            HorizontalTextAlignment="End"/>
+
+                                        <Label
+                                            Grid.Row="3"
+                                            Text="Last updated"
+                                            Style="{StaticResource MutedCaption}"/>
+
+                                        <Label
+                                            x:Name="SummaryUpdatedAtLabel"
+                                            Grid.Row="3"
+                                            Grid.Column="1"
+                                            FontSize="{StaticResource FontLabel}"
+                                            FontAttributes="Bold"
+                                            TextColor="{StaticResource TextSecondary}"
+                                            HorizontalTextAlignment="End"/>
+
+                                    </Grid>
+
+                                </VerticalStackLayout>
+
+                            </Border>
+
+                        </VerticalStackLayout>
+
+
+                        <!-- SUBTASKS -->
+
+                        <VerticalStackLayout
+                            x:Name="SubtasksSection"
+                            IsVisible="False"
+                            Spacing="6">
+
+                            <Label
+                                Text="Subtasks"
+                                FontSize="{StaticResource FontLabel}"
+                                FontAttributes="Bold"
+                                TextColor="{StaticResource TextSecondary}"/>
+
+                            <VerticalStackLayout
+                                x:Name="SubtasksList"
+                                Spacing="5"/>
+
+                        </VerticalStackLayout>
+
                     </VerticalStackLayout>
 
-                    <VerticalStackLayout x:Name="SubtasksSection" IsVisible="False" Spacing="6">
-                        <Label Text="SUBTASKS" Style="{StaticResource SectionLabel}"/>
-                        <Border Style="{StaticResource FormCard}">
-                            <VerticalStackLayout x:Name="SubtasksList" Spacing="5"/>
-                        </Border>
-                    </VerticalStackLayout>
 
-                    <VerticalStackLayout Spacing="6">
-                        <Label Text="ASSIGNMENT" Style="{StaticResource SectionLabel}"/>
-                        <Border Style="{StaticResource FormCard}">
-                            <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="10">
-                                <Label Text="Priority" Style="{StaticResource MutedCaption}"/>
-                                <Label x:Name="SummaryPriorityLabel" Grid.Column="1" FontSize="{StaticResource FontLabel}" FontAttributes="Bold" TextColor="{StaticResource TextSecondary}"/>
-                                <Label Grid.Row="1" Text="Teacher" Style="{StaticResource MutedCaption}"/>
-                                <Label x:Name="SummaryTeacherLabel" Grid.Row="1" Grid.Column="1" FontSize="{StaticResource FontLabel}" FontAttributes="Bold" TextColor="{StaticResource TextSecondary}"/>
-                                <Label Grid.Row="2" Text="Daily reminder" Style="{StaticResource MutedCaption}"/>
-                                <Label x:Name="SummaryReminderLabel" Grid.Row="2" Grid.Column="1" FontSize="{StaticResource FontLabel}" FontAttributes="Bold" TextColor="{StaticResource TextSecondary}"/>
+                    <!-- ================================================= -->
+                    <!-- EDITABLE FORM                                     -->
+                    <!-- ================================================= -->
+
+                    <VerticalStackLayout
+                        x:Name="EditableDetailsForm"
+                        Spacing="8">
+
+
+                        <!-- ================================================= -->
+                        <!-- TASK TITLE                                        -->
+                        <!-- ================================================= -->
+
+                        <VerticalStackLayout Spacing="4">
+
+                            <Label
+                                Text="Task title"
+                                Style="{StaticResource SectionLabel}"/>
+
+                            <Border
+                                x:Name="TitleBorder"
+                                Style="{StaticResource FormCard}"
+                                HeightRequest="42"
+                                Padding="10,0">
+
+                                <Entry
+                                    x:Name="TitleEntry"
+                                    Placeholder="Enter task title"
+                                    MaxLength="200"
+                                    FontSize="{StaticResource FontCaption}"
+                                    TextColor="{StaticResource TextPrimary}"
+                                    PlaceholderColor="{StaticResource TextDisabled}"
+                                    BackgroundColor="Transparent"
+                                    HeightRequest="32"
+                                    TextChanged="OnTitleChanged"/>
+
+                            </Border>
+
+                            <Label
+                                x:Name="TitleErrorLabel"
+                                FontSize="{StaticResource FontMicro}"
+                                TextColor="{StaticResource StatusDanger}"
+                                Margin="2,-1,0,0"/>
+
+                        </VerticalStackLayout>
+
+
+                        <!-- ================================================= -->
+                        <!-- DESCRIPTION                                       -->
+                        <!-- ================================================= -->
+
+                        <VerticalStackLayout Spacing="4">
+
+                            <Label
+                                Text="Description (optional)"
+                                Style="{StaticResource SectionLabel}"/>
+
+                            <Border
+                                Style="{StaticResource FormCard}"
+                                HeightRequest="68"
+                                Padding="10,4">
+
+                                <Editor
+                                    x:Name="DescriptionEditor"
+                                    Placeholder="Enter task description"
+                                    PlaceholderColor="{StaticResource TextDisabled}"
+                                    TextColor="{StaticResource TextPrimary}"
+                                    FontSize="{StaticResource FontCaption}"
+                                    AutoSize="Disabled"
+                                    HeightRequest="56"
+                                    BackgroundColor="Transparent"/>
+
+                            </Border>
+
+                        </VerticalStackLayout>
+
+
+                        <!-- ================================================= -->
+                        <!-- SUBTASKS                                          -->
+                        <!-- ================================================= -->
+
+                        <VerticalStackLayout Spacing="4">
+
+                            <Grid ColumnDefinitions="*,Auto">
+
+                                <Label
+                                    Text="Subtasks"
+                                    Style="{StaticResource SectionLabel}"
+                                    VerticalOptions="Center"/>
+
+
+                                <!-- ADD SUBTASK -->
+
+                                <Border
+                                    Grid.Column="1"
+                                    WidthRequest="28"
+                                    HeightRequest="28"
+                                    Padding="0"
+                                    BackgroundColor="{StaticResource ActionPrimary}"
+                                    Stroke="Transparent"
+                                    StrokeThickness="0"
+                                    HorizontalOptions="End"
+                                    VerticalOptions="Center">
+
+                                    <Border.StrokeShape>
+                                        <RoundRectangle CornerRadius="10"/>
+                                    </Border.StrokeShape>
+
+                                    <Label
+                                        Text="+"
+                                        FontSize="{StaticResource FontTitle}"
+                                        FontAttributes="Bold"
+                                        TextColor="#FFFFFF"
+                                        HorizontalTextAlignment="Center"
+                                        VerticalTextAlignment="Center"
+                                        HorizontalOptions="Fill"
+                                        VerticalOptions="Fill"/>
+
+                                    <Border.GestureRecognizers>
+
+                                        <TapGestureRecognizer
+                                            Tapped="OnAddSubtaskClicked"/>
+
+                                    </Border.GestureRecognizers>
+
+                                </Border>
+
                             </Grid>
-                        </Border>
+
+
+                            <!-- SUBTASK LIST -->
+
+                            <Border
+                                Style="{StaticResource FormCard}"
+                                Padding="10,2"
+                                MinimumHeightRequest="46">
+
+                                <Grid>
+
+                                    <VerticalStackLayout
+                                        BindableLayout.ItemsSource="{Binding EditableSubtasks}"
+                                        Spacing="2">
+
+                                        <BindableLayout.ItemTemplate>
+
+                                            <DataTemplate>
+
+                                                <Grid
+                                                    ColumnDefinitions="*,Auto"
+                                                    ColumnSpacing="8">
+
+                                                    <Entry
+                                                        Text="{Binding Title}"
+                                                        Placeholder="Subtask title"
+                                                        MaxLength="200"
+                                                        FontSize="{StaticResource FontCaption}"
+                                                        TextColor="{StaticResource TextSecondary}"
+                                                        PlaceholderColor="{StaticResource TextDisabled}"
+                                                        BackgroundColor="Transparent"
+                                                        HeightRequest="32"/>
+
+                                                    <!--
+                                                        THIS X REMAINS.
+                                                        It removes a subtask,
+                                                        not the Edit Task dialog.
+                                                    -->
+
+                                                    <Button
+                                                        Grid.Column="1"
+                                                        Text="&#x00D7;"
+                                                        Clicked="OnRemoveSubtaskClicked"
+                                                        CommandParameter="{Binding .}"
+                                                        FontSize="18"
+                                                        FontAttributes="Bold"
+                                                        Padding="0"
+                                                        WidthRequest="28"
+                                                        HeightRequest="28"
+                                                        CornerRadius="7"
+                                                        BackgroundColor="Transparent"
+                                                        TextColor="{StaticResource StatusDanger}"/>
+
+                                                </Grid>
+
+                                            </DataTemplate>
+
+                                        </BindableLayout.ItemTemplate>
+
+                                    </VerticalStackLayout>
+
+                                    <Label
+                                        x:Name="NoEditableSubtasksLabel"
+                                        Text="No subtasks added"
+                                        FontSize="{StaticResource FontCaption}"
+                                        TextColor="{StaticResource TextDisabled}"
+                                        Padding="13,0"
+                                        VerticalTextAlignment="Center"/>
+
+                                </Grid>
+
+                            </Border>
+
+                        </VerticalStackLayout>
+
+
+                        <!-- ================================================= -->
+                        <!-- DUE DATE                                          -->
+                        <!-- ================================================= -->
+
+                        <Grid
+                            ColumnDefinitions="1.2*,*"
+                            ColumnSpacing="8">
+
+
+                            <!-- EDITABLE -->
+
+                            <VerticalStackLayout
+                                x:Name="EditableSchedule"
+                                Spacing="4">
+
+                                <Label
+                                    Text="Due Date"
+                                    Style="{StaticResource SectionLabel}"/>
+
+                                <Border
+                                    Style="{StaticResource FormCard}"
+                                    HeightRequest="42"
+                                    Padding="8,0">
+
+                                    <Grid ColumnDefinitions="*,Auto">
+
+                                        <Label
+                                            x:Name="DueDateDisplayLabel"
+                                            FontSize="{StaticResource FontCaption}"
+                                            TextColor="{StaticResource TextSecondary}"
+                                            VerticalTextAlignment="Center"
+                                            Margin="8,0,0,0"/>
+
+                                        <Image
+                                            Grid.Column="1"
+                                            Source="calendar.png"
+                                            WidthRequest="17"
+                                            HeightRequest="17"
+                                            Margin="0,0,4,0"
+                                            VerticalOptions="Center"
+                                            InputTransparent="True"/>
+
+                                        <DatePicker
+                                            x:Name="DueDatePicker"
+                                            Grid.ColumnSpan="2"
+                                            Format="MMM dd, yyyy"
+                                            DateSelected="OnDueDateSelected"
+                                            Opacity="0.01"
+                                            BackgroundColor="Transparent"
+                                            HorizontalOptions="Fill"
+                                            VerticalOptions="Fill"/>
+
+                                    </Grid>
+
+                                </Border>
+
+                            </VerticalStackLayout>
+
+
+                            <!-- READ ONLY -->
+
+                            <VerticalStackLayout
+                                x:Name="ReadOnlySchedule"
+                                IsVisible="False"
+                                Spacing="6">
+
+                                <Label
+                                    Text="DUE DATE"
+                                    Style="{StaticResource SectionLabel}"/>
+
+                                <Border
+                                    Style="{StaticResource FormCard}"
+                                    Padding="12,11">
+
+                                    <Label
+                                        x:Name="DueDateLabel"
+                                        FontSize="{StaticResource FontCaption}"
+                                        TextColor="{StaticResource TextSecondary}"/>
+
+                                </Border>
+
+                            </VerticalStackLayout>
+
+                        <!-- ================================================= -->
+                        <!-- PRIORITY                                          -->
+                        <!-- ================================================= -->
+
+                        <VerticalStackLayout
+                            Grid.Column="1"
+                            Spacing="4">
+
+                            <Label
+                                Text="Priority"
+                                Style="{StaticResource SectionLabel}"/>
+
+                            <Border
+                                Style="{StaticResource FormCard}"
+                                HeightRequest="42"
+                                Padding="5,0">
+
+                                <Picker
+                                    x:Name="PriorityPicker"
+                                    SelectedIndexChanged="OnPrioritySelected"
+                                    FontSize="{StaticResource FontCaption}"
+                                    HeightRequest="40"
+                                    TextColor="{StaticResource TextSecondary}"
+                                    BackgroundColor="Transparent">
+
+                                    <Picker.ItemsSource>
+
+                                        <x:Array Type="{x:Type x:String}">
+                                            <x:String>Low</x:String>
+                                            <x:String>Medium</x:String>
+                                            <x:String>High</x:String>
+                                        </x:Array>
+
+                                    </Picker.ItemsSource>
+
+                                </Picker>
+
+                            </Border>
+
+                        </VerticalStackLayout>
+
+                        </Grid>
+
+
+                        <!-- ================================================= -->
+                        <!-- SELECT TEACHER                                    -->
+                        <!-- ================================================= -->
+
+                        <VerticalStackLayout Spacing="4">
+
+                            <Label
+                                Text="Teacher"
+                                Style="{StaticResource SectionLabel}"/>
+
+                            <Border
+                                x:Name="TeacherBorder"
+                                Style="{StaticResource FormCard}"
+                                HeightRequest="42"
+                                Padding="7,0">
+
+                                <Grid
+                                    ColumnDefinitions="*,Auto"
+                                    ColumnSpacing="6">
+
+                                    <Picker
+                                        x:Name="TeacherPicker"
+                                        Grid.Column="0"
+                                        ItemDisplayBinding="{Binding DisplayName}"
+                                        FontSize="{StaticResource FontCaption}"
+                                        HeightRequest="40"
+                                        TextColor="{StaticResource TextPrimary}"
+                                        TitleColor="{StaticResource TextDisabled}"
+                                        BackgroundColor="Transparent"/>
+
+
+                                    <!-- DARK BLUE SELECT BUTTON -->
+
+                                    <Button
+                                        Grid.Column="1"
+                                        Text="Change"
+                                        Clicked="OnSelectTeacherClicked"
+                                        FontSize="{StaticResource FontMicro}"
+                                        FontAttributes="Bold"
+                                        Padding="7,0"
+                                        WidthRequest="58"
+                                        HeightRequest="28"
+                                        MinimumHeightRequest="28"
+                                        CornerRadius="7"
+                                        HorizontalOptions="End"
+                                        VerticalOptions="Center"
+                                        BackgroundColor="{StaticResource ActionPrimary}"
+                                        TextColor="#FFFFFF"/>
+
+                                </Grid>
+
+                            </Border>
+
+                            <Label
+                                x:Name="TeacherErrorLabel"
+                                FontSize="{StaticResource FontMicro}"
+                                TextColor="{StaticResource StatusDanger}"
+                                Margin="2,-1,0,0"/>
+
+                        </VerticalStackLayout>
+
+
+                        <!-- ================================================= -->
+                        <!-- DAILY REMINDER                                    -->
+                        <!-- ================================================= -->
+
+                        <Grid
+                            ColumnDefinitions="*,52"
+                            HeightRequest="36">
+
+                            <Label
+                                Text="Send daily reminders"
+                                Style="{StaticResource SectionLabel}"
+                                VerticalOptions="Center"/>
+
+                            <Switch
+                                x:Name="DailyRemindSwitch"
+                                Grid.Column="1"
+                                OnColor="{StaticResource Slate400}"
+                                ThumbColor="{StaticResource SurfaceBase}"
+                                WidthRequest="52"
+                                VerticalOptions="Center"/>
+
+                        </Grid>
+
                     </VerticalStackLayout>
+
                 </VerticalStackLayout>
 
-                <VerticalStackLayout x:Name="EditableDetailsForm" Spacing="9">
-                    <VerticalStackLayout Spacing="4">
-                        <Label Text="Task title" Style="{StaticResource SectionLabel}"/>
-                        <Border x:Name="TitleBorder" Style="{StaticResource FormCard}" HeightRequest="46" Padding="10,0">
-                            <Entry x:Name="TitleEntry" Placeholder="Enter task title" MaxLength="200" FontSize="{StaticResource FontCaption}" TextColor="{StaticResource TextPrimary}" PlaceholderColor="{StaticResource TextDisabled}" BackgroundColor="Transparent" HeightRequest="34" TextChanged="OnTitleChanged"/>
-                        </Border>
-                        <Label x:Name="TitleErrorLabel" FontSize="{StaticResource FontMicro}" TextColor="{StaticResource StatusDanger}" Margin="2,-1,0,0"/>
-                    </VerticalStackLayout>
-                    <VerticalStackLayout Spacing="4">
-                        <Label Text="Description (optional)" Style="{StaticResource SectionLabel}"/>
-                        <Border Style="{StaticResource FormCard}" HeightRequest="86" Padding="10,4">
-                            <Editor x:Name="DescriptionEditor" Placeholder="Enter task description" PlaceholderColor="{StaticResource TextDisabled}" TextColor="{StaticResource TextPrimary}" FontSize="{StaticResource FontCaption}" AutoSize="Disabled" HeightRequest="74" BackgroundColor="Transparent"/>
-                        </Border>
-                    </VerticalStackLayout>
+            </ScrollView>
 
-                    <VerticalStackLayout Spacing="4">
-                        <Grid ColumnDefinitions="*,Auto">
-                            <Label Text="Subtasks" Style="{StaticResource SectionLabel}" VerticalOptions="Center"/>
-                            <Border Grid.Column="1" WidthRequest="36" HeightRequest="36" Padding="0" BackgroundColor="{StaticResource Slate400}" StrokeThickness="0"><Border.StrokeShape><RoundRectangle CornerRadius="18"/></Border.StrokeShape><Label Text="+" FontSize="{StaticResource FontTitle}" FontAttributes="Bold" TextColor="{StaticResource TextInverse}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/><Border.GestureRecognizers><TapGestureRecognizer Tapped="OnAddSubtaskClicked"/></Border.GestureRecognizers></Border>
-                        </Grid>
-                        <Border Style="{StaticResource FormCard}" Padding="10,2" MinimumHeightRequest="46">
-                            <Grid>
-                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding EditableSubtasks}" Spacing="2">
-                                    <BindableLayout.ItemTemplate>
-                                        <DataTemplate>
-                                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                                <Entry Text="{Binding Title}" Placeholder="Subtask title" MaxLength="200" FontSize="{StaticResource FontCaption}" TextColor="{StaticResource TextSecondary}" PlaceholderColor="{StaticResource TextDisabled}" BackgroundColor="Transparent"/>
-                                                <Button Grid.Column="1" Text="&#x00D7;" Clicked="OnRemoveSubtaskClicked" CommandParameter="{Binding .}" FontSize="18" FontAttributes="Bold" Padding="0" WidthRequest="32" HeightRequest="32" CornerRadius="7" BackgroundColor="Transparent" TextColor="{StaticResource StatusDanger}"/>
-                                            </Grid>
-                                        </DataTemplate>
-                                    </BindableLayout.ItemTemplate>
-                                </VerticalStackLayout>
-                                <Label x:Name="NoEditableSubtasksLabel" Text="No subtasks added" FontSize="{StaticResource FontCaption}" TextColor="{StaticResource TextDisabled}" Padding="13,0" VerticalTextAlignment="Center"/>
-                            </Grid>
-                        </Border>
-                    </VerticalStackLayout>
-                    <Grid>
-                        <VerticalStackLayout x:Name="EditableSchedule" Spacing="4">
-                            <Label Text="Due Date" Style="{StaticResource SectionLabel}"/>
-                            <Border Style="{StaticResource FormCard}" HeightRequest="46" Padding="10,0">
-                                <Grid ColumnDefinitions="*,Auto"><Label x:Name="DueDateDisplayLabel" FontSize="{StaticResource FontCaption}" TextColor="{StaticResource TextSecondary}" VerticalTextAlignment="Center" Margin="13,0,0,0"/><Image Grid.Column="1" Source="calendar.png" WidthRequest="17" HeightRequest="17" Margin="0,0,4,0" VerticalOptions="Center" InputTransparent="True"/><DatePicker x:Name="DueDatePicker" Grid.ColumnSpan="2" Format="MMM dd, yyyy" DateSelected="OnDueDateSelected" Opacity="0.01" BackgroundColor="Transparent" HorizontalOptions="Fill" VerticalOptions="Fill"/></Grid>
-                            </Border>
-                        </VerticalStackLayout>
-                        <VerticalStackLayout x:Name="ReadOnlySchedule" IsVisible="False" Spacing="6">
-                            <Label Text="DUE DATE" Style="{StaticResource SectionLabel}"/>
-                            <Border Style="{StaticResource FormCard}" Padding="12,11">
-                                <Label x:Name="DueDateLabel" FontSize="{StaticResource FontCaption}" TextColor="{StaticResource TextSecondary}"/>
-                            </Border>
-                        </VerticalStackLayout>
+
+            <!-- ================================================= -->
+            <!-- BOTTOM ACTIONS                                    -->
+            <!-- ================================================= -->
+
+            <VerticalStackLayout
+                Grid.Row="2"
+                Padding="16,8,16,10"
+                Spacing="6"
+                BackgroundColor="{StaticResource SurfaceBase}">
+
+
+                <!-- COMPLETION INFO -->
+
+                <Border
+                    x:Name="CompletionInfo"
+                    IsVisible="False"
+                    BackgroundColor="{StaticResource StatusSuccessSurface}"
+                    Stroke="{StaticResource StatusSuccessBorder}"
+                    Padding="12,9">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="8"/>
+                    </Border.StrokeShape>
+
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+
+                        <Label
+                            Text="&#x2713;"
+                            FontSize="{StaticResource FontLabel}"
+                            FontAttributes="Bold"
+                            TextColor="{StaticResource StatusSuccess}"
+                            VerticalTextAlignment="Center"/>
+
+                        <Label
+                            x:Name="CompletedAtLabel"
+                            Grid.Column="1"
+                            FontSize="{StaticResource FontMicro}"
+                            FontAttributes="Bold"
+                            TextColor="{StaticResource StatusSuccess}"
+                            VerticalTextAlignment="Center"/>
+
                     </Grid>
 
-                    <VerticalStackLayout Spacing="4">
-                        <Label Text="Priority" Style="{StaticResource SectionLabel}"/>
-                        <Border Style="{StaticResource FormCard}" HeightRequest="46" Padding="8,0">
-                            <Picker x:Name="PriorityPicker" SelectedIndexChanged="OnPrioritySelected" FontSize="{StaticResource FontCaption}" HeightRequest="44" TextColor="{StaticResource TextSecondary}" BackgroundColor="Transparent"><Picker.ItemsSource><x:Array Type="{x:Type x:String}"><x:String>Low</x:String><x:String>Medium</x:String><x:String>High</x:String></x:Array></Picker.ItemsSource></Picker>
-                        </Border>
-                    </VerticalStackLayout>
+                </Border>
 
-                    <VerticalStackLayout Spacing="4">
-                        <Label Text="Select Teacher" Style="{StaticResource SectionLabel}"/>
-                        <Border x:Name="TeacherBorder" Style="{StaticResource FormCard}" HeightRequest="46" Padding="8,0">
-                            <Grid ColumnDefinitions="*,68" ColumnSpacing="8"><Picker x:Name="TeacherPicker" Grid.Column="0" ItemDisplayBinding="{Binding DisplayName}" FontSize="{StaticResource FontCaption}" HeightRequest="44" TextColor="{StaticResource TextPrimary}" TitleColor="{StaticResource TextDisabled}" BackgroundColor="Transparent"/><Button Grid.Column="1" Text="Select" Clicked="OnSelectTeacherClicked" FontSize="{StaticResource FontMicro}" FontAttributes="Bold" Padding="8,0" WidthRequest="68" HeightRequest="32" MinimumHeightRequest="32" CornerRadius="6" Margin="0,0,2,0" HorizontalOptions="End" VerticalOptions="Center" BackgroundColor="{StaticResource Slate400}" TextColor="{StaticResource TextInverse}"/></Grid>
-                        </Border>
-                        <Label x:Name="TeacherErrorLabel" FontSize="{StaticResource FontMicro}" TextColor="{StaticResource StatusDanger}" Margin="2,-1,0,0"/>
-                    </VerticalStackLayout>
 
-                    <Grid ColumnDefinitions="*,52" HeightRequest="42"><Label Text="Send daily reminders" Style="{StaticResource SectionLabel}" VerticalOptions="Center"/><Switch x:Name="DailyRemindSwitch" Grid.Column="1" OnColor="{StaticResource Slate400}" ThumbColor="{StaticResource SurfaceBase}" WidthRequest="52" VerticalOptions="Center"/></Grid>
-                </VerticalStackLayout>
+                <!-- ================================================= -->
+                <!-- CANCEL + SAVE                                     -->
+                <!-- ================================================= -->
+
+                <Grid
+                    ColumnDefinitions="*,*"
+                    ColumnSpacing="10">
+
+
+                    <!--
+                        CANCEL IS NOW THE MAIN WAY TO CLOSE
+                        THE EDIT TASK DIALOG.
+                    -->
+
+                    <Button
+                        x:Name="CancelButton"
+                        Text="Cancel"
+                        Clicked="OnBackClicked"
+                        FontSize="{StaticResource FontLabel}"
+                        HeightRequest="39"
+                        CornerRadius="7"
+                        BackgroundColor="{StaticResource ActionDismiss}"
+                        TextColor="#FFFFFF"/>
+
+
+                    <!-- SAVE CHANGES -->
+
+                    <Button
+                        x:Name="SaveButton"
+                        Grid.Column="1"
+                        Text="Save Changes"
+                        Clicked="OnSaveClicked"
+                        FontSize="{StaticResource FontLabel}"
+                        FontAttributes="Bold"
+                        HeightRequest="39"
+                        CornerRadius="7"
+                        BackgroundColor="{StaticResource ActionPrimary}"
+                        TextColor="#FFFFFF"/>
+
+
+                    <!-- READ-ONLY CLOSE BUTTON -->
+
+                    <Button
+                        x:Name="BackButton"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Text="Close"
+                        Clicked="OnBackClicked"
+                        IsVisible="False"
+                        FontSize="{StaticResource FontLabel}"
+                        FontAttributes="Bold"
+                        HeightRequest="39"
+                        CornerRadius="7"
+                        BackgroundColor="{StaticResource ActionDismiss}"
+                        TextColor="#FFFFFF"/>
+
+                </Grid>
+
+
+                <!-- ================================================= -->
+                <!-- DELETE TASK                                       -->
+                <!-- ================================================= -->
+
+                <Button
+                    x:Name="DeleteButton"
+                    Text="Delete task"
+                    Clicked="OnDeleteClicked"
+                    FontSize="{StaticResource FontLabel}"
+                    FontAttributes="Bold"
+                    HeightRequest="39"
+                    CornerRadius="7"
+                    BackgroundColor="{StaticResource ActionDanger}"
+                    BorderColor="{StaticResource ActionDanger}"
+                    BorderWidth="0"
+                    TextColor="{StaticResource TextInverse}"/>
+
+
+                <!-- ================================================= -->
+                <!-- LOADING                                           -->
+                <!-- ================================================= -->
+
+                <ActivityIndicator
+                    x:Name="LoadingIndicator"
+                    IsRunning="False"
+                    IsVisible="False"
+                    Color="{StaticResource Slate400}"/>
+
             </VerticalStackLayout>
-        </ScrollView>
 
-        <VerticalStackLayout Grid.Row="2" Padding="16,10,16,13" Spacing="8" BackgroundColor="{StaticResource SurfaceBase}">
-            <Border x:Name="CompletionInfo" IsVisible="False"
-                    BackgroundColor="{StaticResource StatusSuccessSurface}" Stroke="{StaticResource StatusSuccessBorder}" Padding="12,9">
-                <Border.StrokeShape><RoundRectangle CornerRadius="8"/></Border.StrokeShape>
-                <VerticalStackLayout Spacing="1">
-                    <Label Text="Task completed" FontSize="{StaticResource FontLabel}" FontAttributes="Bold" TextColor="{StaticResource StatusSuccess}"/>
-                    <Label x:Name="CompletedAtLabel" FontSize="{StaticResource FontMicro}" TextColor="{StaticResource StatusSuccess}"/>
-                </VerticalStackLayout>
-            </Border>
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                <Button Text="Cancel" Clicked="OnBackClicked" FontSize="{StaticResource FontLabel}" HeightRequest="39"
-                        CornerRadius="7" BackgroundColor="{StaticResource SurfaceSubtle}" TextColor="{StaticResource TextSecondary}"/>
-                <Button x:Name="SaveButton" Text="Save Changes" Clicked="OnSaveClicked"
-                        Grid.Column="1" FontSize="{StaticResource FontLabel}" FontAttributes="Bold" HeightRequest="39" CornerRadius="7"
-                        BackgroundColor="{StaticResource Accent500}" TextColor="{StaticResource TextInverse}"/>
-                <Button x:Name="BackButton" Text="Go Back" Clicked="OnBackClicked"
-                        Grid.Column="1" IsVisible="False" FontSize="{StaticResource FontLabel}" FontAttributes="Bold" HeightRequest="39" CornerRadius="7"
-                        BackgroundColor="{StaticResource Accent500}" TextColor="{StaticResource TextInverse}"/>
-            </Grid>
-            <Button x:Name="DeleteButton" Text="Delete Task" Clicked="OnDeleteClicked"
-                    FontSize="{StaticResource FontMicro}" HeightRequest="34" CornerRadius="7"
-                    BackgroundColor="{StaticResource StatusDangerSurface}" TextColor="{StaticResource StatusDanger}"/>
-            <ActivityIndicator x:Name="LoadingIndicator" IsRunning="False" IsVisible="False" Color="{StaticResource Slate400}"/>
-        </VerticalStackLayout>
-    </Grid>
+        </Grid>
+
     </Border>
+
 </base:EduTaskPage>

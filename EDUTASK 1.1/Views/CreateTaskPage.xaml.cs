@@ -16,7 +16,6 @@ public partial class CreateTaskPage : EduTaskPage
     private string _selectedPriority = string.Empty;
     private DateTime? _selectedDueDate;
     private List<TeacherOption> _selectedTeachers = [];
-    private bool _createIndividualTasks = true;
     public ObservableCollection<SubtaskDraft> Subtasks { get; } = [];
 
     public CreateTaskPage()
@@ -24,6 +23,8 @@ public partial class CreateTaskPage : EduTaskPage
         InitializeComponent();
         _viewModel = new TaskFormViewModel(this);
         BindingContext = this;
+        PriorityPicker.HandlerChanged += (_, _) =>
+            PriorityPickerStyling.Apply(PriorityPicker, _selectedPriority);
         PriorityPicker.SelectedIndex = 0;
     }
 
@@ -142,6 +143,7 @@ public partial class CreateTaskPage : EduTaskPage
     private void OnPrioritySelected(object sender, EventArgs e)
     {
         _selectedPriority = PriorityPicker.SelectedItem?.ToString() ?? string.Empty;
+        PriorityPickerStyling.Apply(PriorityPicker, _selectedPriority);
     }
 
     private async void OnCreateTaskClicked(object sender, EventArgs e)
@@ -161,11 +163,12 @@ public partial class CreateTaskPage : EduTaskPage
                 Subtasks,
                 deadline,
                 _selectedPriority,
-                _createIndividualTasks);
+                createIndividualTasks: false);
 
             if (!created)
                 return;
-                
+
+            DashboardFlyoutPage.Current?.InvalidateTaskData();
             await UiAlertService.ShowAsync(this, "Task created", "The task is ready and has been assigned.", "OK");
             await ClosePageAsync();
         }

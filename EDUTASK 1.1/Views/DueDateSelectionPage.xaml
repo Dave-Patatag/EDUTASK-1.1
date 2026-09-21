@@ -9,7 +9,7 @@
   <Border.StrokeShape><RoundRectangle CornerRadius="20,20,0,0"/></Border.StrokeShape>
   <VerticalStackLayout Spacing="0">
    <Grid Padding="18,16,18,10" ColumnDefinitions="44,*,44">
-    <Button Text="&#x2039;" Clicked="OnCancelClicked" WidthRequest="42" HeightRequest="42" Padding="0" FontSize="28" BackgroundColor="{StaticResource SurfaceSubtle}" TextColor="{StaticResource TextSecondary}" CornerRadius="12"/>
+    <Button Text="&#x2039;" Clicked="OnCancelClicked" WidthRequest="42" HeightRequest="42" Padding="0" FontSize="28" BackgroundColor="{StaticResource ActionDismiss}" TextColor="{StaticResource TextInverse}" CornerRadius="12"/>
     <Label x:Name="YearLabel" Grid.Column="1" FontSize="{StaticResource FontHeading}" FontAttributes="Bold" TextColor="{StaticResource TextPrimary}" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"/>
     <HorizontalStackLayout Grid.Column="2" Spacing="2" HorizontalOptions="End" VerticalOptions="Center">
      <ImageButton Source="calendarleft.png" Clicked="OnPreviousMonthClicked" WidthRequest="24" HeightRequest="24" Padding="4" BackgroundColor="Transparent"/>
@@ -19,7 +19,7 @@
    <Label x:Name="MonthLabel" FontSize="{StaticResource FontBody}" TextColor="{StaticResource TextSecondary}" HorizontalOptions="Center" Margin="0,0,0,8"/>
    <Grid x:Name="CalendarGrid" Padding="18,0,18,16" ColumnDefinitions="*,*,*,*,*,*,*" RowSpacing="8" ColumnSpacing="0"/>
    <Grid Padding="18,0,18,16">
-    <Button Text="Cancel" Clicked="OnCancelClicked" BackgroundColor="{StaticResource SurfaceSubtle}" TextColor="{StaticResource TextSecondary}" FontSize="{StaticResource FontCaption}" HeightRequest="40" CornerRadius="8"/>
+    <Button Text="Cancel" Clicked="OnCancelClicked" BackgroundColor="{StaticResource ActionDismiss}" TextColor="#FFFFFF" FontSize="{StaticResource FontCaption}" HeightRequest="40" CornerRadius="8"/>
    </Grid>
   </VerticalStackLayout>
  </Border>

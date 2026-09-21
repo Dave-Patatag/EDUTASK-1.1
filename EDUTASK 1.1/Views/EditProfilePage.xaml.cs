@@ -18,28 +18,26 @@ namespace EDUTASK_1._1.Views
         {
             _user = user;
             PopulateForm(
-                user.FirstName,
-                user.LastName,
-                user.ContactNumber,
+                user.First_name,
+                user.Last_name,
+                user.Contact_number,
                 user.Email,
                 user.Username,
-                user.ProfilePhotoPath,
-                $"user-{user.UserID}",
-                user.Bio);
+                user.Profile_photo,
+                $"user-{user.User_id}");
         }
 
         public EditProfilePage(Teachers teacher) : this()
         {
             _teacher = teacher;
             PopulateForm(
-                teacher.FirstName,
-                teacher.LastName,
-                teacher.ContactNumber,
+                teacher.First_name,
+                teacher.Last_name,
+                teacher.Contact_number,
                 teacher.Email,
                 teacher.Username,
-                teacher.ProfilePhotoPath,
-                $"teacher-{teacher.TeacherID}",
-                teacher.Bio);
+                teacher.Profile_photo,
+                $"teacher-{teacher.Teacher_id}");
         }
 
         private EditProfilePage()
@@ -74,16 +72,14 @@ namespace EDUTASK_1._1.Views
             string email,
             string username,
             string profilePhotoPath,
-            string avatarSeed,
-            string bio)
+            string avatarSeed)
         {
             _viewModel.AvatarSeed = avatarSeed;
             _viewModel.FullName = $"{firstName} {lastName}".Trim();
-            _viewModel.ContactNumber = contactNumber;
+            _viewModel.Contact_number = contactNumber;
             _viewModel.Email = email;
             _viewModel.Username = username;
-            _viewModel.ProfilePhotoPath = profilePhotoPath;
-            _viewModel.Bio = bio;
+            _viewModel.Profile_photo = profilePhotoPath;
         }
 
         private void OnEditProfileBackPressed(object sender, EventArgs e)
@@ -119,7 +115,7 @@ namespace EDUTASK_1._1.Views
                 if (string.IsNullOrWhiteSpace(extension))
                     extension = ".jpg";
 
-                int accountID = _teacher?.TeacherID ?? _user?.UserID
+                int accountID = _teacher?.Teacher_id ?? _user?.User_id
                     ?? throw new InvalidOperationException("No account was selected.");
                 string accountType = _teacher is null ? "user" : "teacher";
                 string destination = Path.Combine(
@@ -130,7 +126,7 @@ namespace EDUTASK_1._1.Views
                 await using FileStream target = File.Create(destination);
                 await source.CopyToAsync(target);
 
-                _viewModel.ProfilePhotoPath = destination;
+                _viewModel.Profile_photo = destination;
             }
             catch (PermissionException)
             {
@@ -152,26 +148,24 @@ namespace EDUTASK_1._1.Views
                 if (_teacher is not null)
                 {
                     updated = await _database.UpdateTeacherProfileAsync(
-                        _teacher.TeacherID,
+                        _teacher.Teacher_id,
                         _viewModel.FullName,
-                        _viewModel.ContactNumber,
+                        _viewModel.Contact_number,
                         _viewModel.Email,
                         _viewModel.Username,
-                        _viewModel.ProfilePhotoPath,
-                        _viewModel.Bio);
+                        _viewModel.Profile_photo);
                 }
                 else if (_user is not null)
                 {
                     updated = await _database.UpdateUserProfileAsync(
-                        _user.UserID,
+                        _user.User_id,
                         _viewModel.FullName,
-                        _viewModel.ContactNumber,
+                        _viewModel.Contact_number,
                         _viewModel.Email,
                         _viewModel.Username,
-                        _viewModel.ProfilePhotoPath,
-                        _viewModel.Bio);
+                        _viewModel.Profile_photo);
 
-                    var refreshedUser = await _database.GetUserByIdAsync(_user.UserID);
+                    var refreshedUser = await _database.GetUserByIdAsync(_user.User_id);
                     if (refreshedUser is not null)
                         UserSessionService.SetCurrentUser(refreshedUser);
                 }
@@ -204,9 +198,9 @@ namespace EDUTASK_1._1.Views
         {
             if (string.IsNullOrWhiteSpace(_viewModel.FullName))
                 throw new ArgumentException("Full name is required.");
-            if (string.IsNullOrWhiteSpace(_viewModel.ContactNumber))
+            if (string.IsNullOrWhiteSpace(_viewModel.Contact_number))
                 throw new ArgumentException("Phone number is required.");
-            string phoneNumber = _viewModel.ContactNumber.Trim();
+            string phoneNumber = _viewModel.Contact_number.Trim();
             if (phoneNumber.Length > 11)
                 throw new ArgumentException("Phone number cannot exceed 11 digits.");
             if (phoneNumber.Any(character => !char.IsDigit(character)))

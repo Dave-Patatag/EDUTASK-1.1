@@ -25,9 +25,9 @@ public sealed class TaskFormViewModel
             return table.AsEnumerable()
                 .Select(row => new TeacherOption
                 {
-                    TeacherID = row.Field<int>("TeacherID"),
-                    FirstName = row.Field<string>("FirstName") ?? string.Empty,
-                    LastName = row.Field<string>("LastName") ?? string.Empty
+                    Teacher_id = row.Field<int>("Teacher_id"),
+                    First_name = row.Field<string>("First_name") ?? string.Empty,
+                    Last_name = row.Field<string>("Last_name") ?? string.Empty
                 })
                 .ToList();
         }
@@ -45,24 +45,29 @@ public sealed class TaskFormViewModel
             DataTable table = await _database.GetTaskByIDAsync(taskID);
             if (table.Rows.Count == 0)
             {
-                await UiAlertService.ShowAsync(_page, "Task not found", "This task may have been deleted. Return to the dashboard and refresh the list.", "OK");
+                await UiAlertService.ShowAsync(
+                    _page,
+                    "Task not found",
+                    "This task has already been deleted and will be removed from the list.",
+                    "OK");
                 return null;
             }
 
             DataRow row = table.Rows[0];
             return new TaskEditData
             {
-                TaskID = row.Field<int>("TaskID"),
-                CreatedByUserID = row.IsNull("CreatedByUserID") ? row.Field<int>("UserID") : row.Field<int>("CreatedByUserID"),
-                AssignmentID = row.IsNull("AssignmentID") ? null : row.Field<int>("AssignmentID"),
+                Task_id = row.Field<int>("Task_id"),
+                Createdby_user_id = row.Field<int>("Createdby_user_id"),
+                Assignment_id = row.IsNull("Assignment_id") ? null : row.Field<int>("Assignment_id"),
                 Title = row.Field<string>("Title") ?? string.Empty,
                 Description = row.Field<string>("Description") ?? string.Empty,
-                IsDailyRemind = !row.IsNull("isDailyRemind") && row.Field<bool>("isDailyRemind"),
-                TeacherID = row.IsNull("TeacherID") ? null : row.Field<int>("TeacherID"),
+                IsDailyRemind = !row.IsNull("Is_daily_remind") && row.Field<bool>("Is_daily_remind"),
+                Teacher_id = row.IsNull("Teacher_id") ? null : row.Field<int>("Teacher_id"),
                 Deadline = row.IsNull("Deadline") ? DateTime.Today.AddDays(1).AddHours(17) : row.Field<DateTime>("Deadline"),
                 Priority = row.Field<string>("Priority") ?? string.Empty,
-                CompletionStatus = row.Field<string>("CompletionStatus") ?? "Pending",
-                CompletedAt = row.IsNull("CompletedAt") ? null : row.Field<DateTime>("CompletedAt")
+                Completion_status = row.Field<string>("Completion_status") ?? "Pending",
+                Completed_at = row.IsNull("Completed_at") ? null : row.Field<DateTime>("Completed_at"),
+                Updated_at = row.IsNull("Updated_at") ? null : row.Field<DateTime>("Updated_at")
             };
         }
         catch (Exception ex)
@@ -75,7 +80,7 @@ public sealed class TaskFormViewModel
     public async Task<bool> CreateAsync(
         string title,
         string? description,
-        bool isDailyRemind,
+        bool Is_daily_remind,
         IReadOnlyCollection<TeacherOption> teachers,
         IReadOnlyCollection<SubtaskDraft> subtasks,
         DateTime deadline,
@@ -101,8 +106,8 @@ public sealed class TaskFormViewModel
                 title,
                 description,
                 adminID: UserSessionService.CurrentUserId,
-                isDailyRemind,
-                teachers.Select(teacher => teacher.TeacherID).ToList(),
+                Is_daily_remind,
+                teachers.Select(teacher => teacher.Teacher_id).ToList(),
                 validSubtasks,
                 deadline,
                 priority,
@@ -119,7 +124,7 @@ public sealed class TaskFormViewModel
         TaskEditData task,
         string title,
         string? description,
-        bool isDailyRemind,
+        bool Is_daily_remind,
         TeacherOption? teacher,
         DateTime deadline,
         DateTime originalDeadline,
@@ -129,24 +134,26 @@ public sealed class TaskFormViewModel
         try
         {
             Validate(title, teacher, priority);
-            if (UserSessionService.IsStaff && task.CompletionStatus != "Pending")
+            if (UserSessionService.IsStaff && task.Completion_status != "Pending")
                 throw new UnauthorizedAccessException("Staff can edit pending tasks only.");
+            if (subtasks.Any(s => s.Subtask_id.HasValue && string.IsNullOrWhiteSpace(s.Title)))
+                throw new ArgumentException("Enter a title for each existing subtask, or use Remove to delete it.");
             List<SubtaskDraft> validSubtasks = subtasks.Where(s => !string.IsNullOrWhiteSpace(s.Title)).ToList();
             if (validSubtasks.Any(s => s.Title.Trim().Length > 200))
                 throw new ArgumentException("Subtask titles cannot exceed 200 characters.");
 
-            if (!task.AssignmentID.HasValue)
+            if (!task.Assignment_id.HasValue)
                 throw new InvalidOperationException("This task has no assignment to update.");
 
             TeacherOption selectedTeacher = teacher!;
 
             bool updated = await _database.UpdateTaskWithAssignmentAsync(
-                task.TaskID,
-                task.AssignmentID.Value,
+                task.Task_id,
+                task.Assignment_id.Value,
                 title,
                 description,
-                isDailyRemind,
-                selectedTeacher.TeacherID,
+                Is_daily_remind,
+                selectedTeacher.Teacher_id,
                 deadline,
                 originalDeadline,
                 priority,

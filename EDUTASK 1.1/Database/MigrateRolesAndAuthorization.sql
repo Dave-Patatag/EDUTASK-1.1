@@ -10,144 +10,93 @@ BEGIN TRY
     BEGIN
         CREATE TABLE dbo.Roles
         (
-            RoleID int IDENTITY(1,1) NOT NULL CONSTRAINT PK_Roles PRIMARY KEY,
-            RoleName nvarchar(50) NOT NULL,
-            Description nvarchar(250) NULL,
-            IsActive bit NOT NULL CONSTRAINT DF_Roles_IsActive DEFAULT (1),
-            CreatedAt datetime2 NOT NULL CONSTRAINT DF_Roles_CreatedAt DEFAULT (SYSUTCDATETIME()),
-            CONSTRAINT UQ_Roles_RoleName UNIQUE (RoleName)
+            Role_id int IDENTITY(1,1) NOT NULL CONSTRAINT PK_Roles PRIMARY KEY,
+            Role_name nvarchar(50) NOT NULL,
+            CONSTRAINT UQ_Roles_RoleName UNIQUE (Role_name)
         );
     END;
 
     MERGE dbo.Roles WITH (HOLDLOCK) AS target
     USING (VALUES
-        (N'Director', N'Full administrative and final approval authority.'),
-        (N'Staff',    N'Creates and monitors tasks without final authority.'),
-        (N'Teacher',  N'Works on assigned tasks and submits proof for validation.')
-    ) AS source(RoleName, Description)
-    ON target.RoleName = source.RoleName
-    WHEN MATCHED THEN
-        UPDATE SET Description = source.Description, IsActive = 1
+        (N'Director'),
+        (N'Staff'),
+        (N'Teacher')
+    ) AS source(Role_name)
+    ON target.Role_name = source.Role_name
     WHEN NOT MATCHED THEN
-        INSERT (RoleName, Description) VALUES (source.RoleName, source.Description);
+        INSERT (Role_name) VALUES (source.Role_name);
 
-    IF COL_LENGTH(N'dbo.User', N'RoleID') IS NULL
-        ALTER TABLE dbo.[User] ADD RoleID int NULL;
-    IF COL_LENGTH(N'dbo.User', N'IsActive') IS NULL
-        ALTER TABLE dbo.[User] ADD IsActive bit NOT NULL
+    IF COL_LENGTH(N'dbo.User', N'Role_id') IS NULL
+        ALTER TABLE dbo.[User] ADD Role_id int NULL;
+    IF COL_LENGTH(N'dbo.User', N'Is_active') IS NULL
+        ALTER TABLE dbo.[User] ADD Is_active bit NOT NULL
             CONSTRAINT DF_User_IsActive DEFAULT (1) WITH VALUES;
 
-    EXEC sys.sp_executesql N'UPDATE dbo.[User] SET RoleID = (SELECT RoleID FROM dbo.Roles WHERE RoleName = N''Director'') WHERE RoleID IS NULL;';
+    EXEC sys.sp_executesql N'UPDATE dbo.[User] SET Role_id = (SELECT Role_id FROM dbo.Roles WHERE Role_name = N''Director'') WHERE Role_id IS NULL;';
 
-    EXEC sys.sp_executesql N'IF EXISTS (SELECT 1 FROM dbo.[User] WHERE RoleID IS NULL) THROW 51000, ''One or more User accounts could not be assigned a role.'', 1;';
+    EXEC sys.sp_executesql N'IF EXISTS (SELECT 1 FROM dbo.[User] WHERE Role_id IS NULL) THROW 51000, ''One or more User accounts could not be assigned a role.'', 1;';
 
-    IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'dbo.User') AND name = N'RoleID' AND is_nullable = 1)
-        ALTER TABLE dbo.[User] ALTER COLUMN RoleID int NOT NULL;
+    IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'dbo.User') AND name = N'Role_id' AND is_nullable = 1)
+        ALTER TABLE dbo.[User] ALTER COLUMN Role_id int NOT NULL;
 
     IF OBJECT_ID(N'dbo.FK_User_Roles', N'F') IS NULL
         ALTER TABLE dbo.[User] WITH CHECK ADD CONSTRAINT FK_User_Roles
-            FOREIGN KEY (RoleID) REFERENCES dbo.Roles(RoleID);
+            FOREIGN KEY (Role_id) REFERENCES dbo.Roles(Role_id);
     IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.User') AND name = N'IX_User_RoleID')
-        CREATE INDEX IX_User_RoleID ON dbo.[User](RoleID);
+        CREATE INDEX IX_User_RoleID ON dbo.[User](Role_id);
 
-    IF COL_LENGTH(N'dbo.Teacher', N'RoleID') IS NULL
-        ALTER TABLE dbo.Teacher ADD RoleID int NULL;
-    IF COL_LENGTH(N'dbo.Teacher', N'IsActive') IS NULL
-        ALTER TABLE dbo.Teacher ADD IsActive bit NOT NULL
+    IF COL_LENGTH(N'dbo.Teacher', N'Role_id') IS NULL
+        ALTER TABLE dbo.Teacher ADD Role_id int NULL;
+    IF COL_LENGTH(N'dbo.Teacher', N'Is_active') IS NULL
+        ALTER TABLE dbo.Teacher ADD Is_active bit NOT NULL
             CONSTRAINT DF_Teacher_IsActive DEFAULT (1) WITH VALUES;
 
-    EXEC sys.sp_executesql N'UPDATE dbo.Teacher SET RoleID = (SELECT RoleID FROM dbo.Roles WHERE RoleName = N''Teacher'') WHERE RoleID IS NULL;';
+    EXEC sys.sp_executesql N'UPDATE dbo.Teacher SET Role_id = (SELECT Role_id FROM dbo.Roles WHERE Role_name = N''Teacher'') WHERE Role_id IS NULL;';
 
-    EXEC sys.sp_executesql N'IF EXISTS (SELECT 1 FROM dbo.Teacher WHERE RoleID IS NULL) THROW 51001, ''One or more Teacher accounts could not be assigned a role.'', 1;';
+    EXEC sys.sp_executesql N'IF EXISTS (SELECT 1 FROM dbo.Teacher WHERE Role_id IS NULL) THROW 51001, ''One or more Teacher accounts could not be assigned a role.'', 1;';
 
-    IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'dbo.Teacher') AND name = N'RoleID' AND is_nullable = 1)
-        ALTER TABLE dbo.Teacher ALTER COLUMN RoleID int NOT NULL;
+    IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'dbo.Teacher') AND name = N'Role_id' AND is_nullable = 1)
+        ALTER TABLE dbo.Teacher ALTER COLUMN Role_id int NOT NULL;
 
     IF OBJECT_ID(N'dbo.FK_Teacher_Roles', N'F') IS NULL
         ALTER TABLE dbo.Teacher WITH CHECK ADD CONSTRAINT FK_Teacher_Roles
-            FOREIGN KEY (RoleID) REFERENCES dbo.Roles(RoleID);
+            FOREIGN KEY (Role_id) REFERENCES dbo.Roles(Role_id);
     IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.Teacher') AND name = N'IX_Teacher_RoleID')
-        CREATE INDEX IX_Teacher_RoleID ON dbo.Teacher(RoleID);
+        CREATE INDEX IX_Teacher_RoleID ON dbo.Teacher(Role_id);
 
-    /* Task.UserID is retained for compatibility and remains the original owner. */
-    IF COL_LENGTH(N'dbo.Task', N'CreatedByUserID') IS NULL
-        ALTER TABLE dbo.[Task] ADD CreatedByUserID int NULL;
-    IF COL_LENGTH(N'dbo.Task', N'LastModifiedByUserID') IS NULL
-        ALTER TABLE dbo.[Task] ADD LastModifiedByUserID int NULL;
-    IF COL_LENGTH(N'dbo.Task', N'CompletionApprovedByUserID') IS NULL
-        ALTER TABLE dbo.[Task] ADD CompletionApprovedByUserID int NULL;
-    IF COL_LENGTH(N'dbo.Task', N'CompletionApprovedAt') IS NULL
-        ALTER TABLE dbo.[Task] ADD CompletionApprovedAt datetime2 NULL;
-    IF COL_LENGTH(N'dbo.Task', N'RevisionRequestedByUserID') IS NULL
-        ALTER TABLE dbo.[Task] ADD RevisionRequestedByUserID int NULL;
-    IF COL_LENGTH(N'dbo.Task', N'RevisionRequestedAt') IS NULL
-        ALTER TABLE dbo.[Task] ADD RevisionRequestedAt datetime2 NULL;
-    IF COL_LENGTH(N'dbo.Task', N'RevisionReason') IS NULL
-        ALTER TABLE dbo.[Task] ADD RevisionReason nvarchar(1000) NULL;
+    IF COL_LENGTH(N'dbo.Task', N'Createdby_user_id') IS NULL
+        ALTER TABLE dbo.[Task] ADD Createdby_user_id int NULL;
+    IF COL_LENGTH(N'dbo.Task', N'Completion_approvedby_user_id') IS NULL
+        ALTER TABLE dbo.[Task] ADD Completion_approvedby_user_id int NULL;
 
-    EXEC sys.sp_executesql N'UPDATE dbo.[Task] SET CreatedByUserID = UserID WHERE CreatedByUserID IS NULL;';
+    IF COL_LENGTH(N'dbo.Task', N'User_id') IS NOT NULL
+        EXEC sys.sp_executesql N'UPDATE dbo.[Task] SET Createdby_user_id = User_id WHERE Createdby_user_id IS NULL;';
+
+    IF EXISTS (SELECT 1 FROM dbo.[Task] WHERE Createdby_user_id IS NULL)
+        THROW 51002, 'One or more tasks do not have a creator.', 1;
+    IF EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID(N'dbo.Task') AND name = N'Createdby_user_id' AND is_nullable = 1)
+        ALTER TABLE dbo.[Task] ALTER COLUMN Createdby_user_id int NOT NULL;
 
     IF OBJECT_ID(N'dbo.FK_Task_CreatedByUser', N'F') IS NULL
         ALTER TABLE dbo.[Task] WITH CHECK ADD CONSTRAINT FK_Task_CreatedByUser
-            FOREIGN KEY (CreatedByUserID) REFERENCES dbo.[User](UserID);
-    IF OBJECT_ID(N'dbo.FK_Task_LastModifiedByUser', N'F') IS NULL
-        ALTER TABLE dbo.[Task] WITH CHECK ADD CONSTRAINT FK_Task_LastModifiedByUser
-            FOREIGN KEY (LastModifiedByUserID) REFERENCES dbo.[User](UserID);
+            FOREIGN KEY (Createdby_user_id) REFERENCES dbo.[User](User_id);
     IF OBJECT_ID(N'dbo.FK_Task_CompletionApprovedByUser', N'F') IS NULL
         ALTER TABLE dbo.[Task] WITH CHECK ADD CONSTRAINT FK_Task_CompletionApprovedByUser
-            FOREIGN KEY (CompletionApprovedByUserID) REFERENCES dbo.[User](UserID);
-    IF OBJECT_ID(N'dbo.FK_Task_RevisionRequestedByUser', N'F') IS NULL
-        ALTER TABLE dbo.[Task] WITH CHECK ADD CONSTRAINT FK_Task_RevisionRequestedByUser
-            FOREIGN KEY (RevisionRequestedByUserID) REFERENCES dbo.[User](UserID);
+            FOREIGN KEY (Completion_approvedby_user_id) REFERENCES dbo.[User](User_id);
 
     IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.Task') AND name = N'IX_Task_CreatedByUserID')
-        CREATE INDEX IX_Task_CreatedByUserID ON dbo.[Task](CreatedByUserID);
+        CREATE INDEX IX_Task_CreatedByUserID ON dbo.[Task](Createdby_user_id);
     IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.Task') AND name = N'IX_Task_CompletionApprovedByUserID')
-        CREATE INDEX IX_Task_CompletionApprovedByUserID ON dbo.[Task](CompletionApprovedByUserID);
+        CREATE INDEX IX_Task_CompletionApprovedByUserID ON dbo.[Task](Completion_approvedby_user_id);
 
     /* Normalize the legacy value used for returned work. */
     UPDATE dbo.TaskAssignment
-    SET CompletionStatus = N'Needs Revision'
-    WHERE CompletionStatus = N'Returned';
+    SET Completion_status = N'Needs Revision'
+    WHERE Completion_status = N'Returned';
 
     IF OBJECT_ID(N'dbo.CK_TaskAssignment_CompletionStatus', N'C') IS NULL
         ALTER TABLE dbo.TaskAssignment WITH CHECK ADD CONSTRAINT CK_TaskAssignment_CompletionStatus
-            CHECK (CompletionStatus IN (N'Pending', N'Acknowledged', N'For Validation', N'Needs Revision', N'Completed'));
-
-    IF OBJECT_ID(N'dbo.TaskActivityLog', N'U') IS NULL
-    BEGIN
-        CREATE TABLE dbo.TaskActivityLog
-        (
-            ActivityLogID bigint IDENTITY(1,1) NOT NULL CONSTRAINT PK_TaskActivityLog PRIMARY KEY,
-            TaskID int NOT NULL,
-            PerformedByUserID int NULL,
-            PerformedByTeacherID int NULL,
-            ActionType nvarchar(50) NOT NULL,
-            PreviousStatus nvarchar(50) NULL,
-            NewStatus nvarchar(50) NULL,
-            Details nvarchar(1000) NULL,
-            CreatedAt datetime2 NOT NULL CONSTRAINT DF_TaskActivityLog_CreatedAt DEFAULT (SYSUTCDATETIME()),
-            CONSTRAINT FK_TaskActivityLog_Task FOREIGN KEY (TaskID) REFERENCES dbo.[Task](TaskID),
-            CONSTRAINT FK_TaskActivityLog_User FOREIGN KEY (PerformedByUserID) REFERENCES dbo.[User](UserID),
-            CONSTRAINT FK_TaskActivityLog_Teacher FOREIGN KEY (PerformedByTeacherID) REFERENCES dbo.Teacher(TeacherID),
-            CONSTRAINT CK_TaskActivityLog_OneActor CHECK
-                ((PerformedByUserID IS NOT NULL AND PerformedByTeacherID IS NULL)
-                 OR (PerformedByUserID IS NULL AND PerformedByTeacherID IS NOT NULL)),
-            CONSTRAINT CK_TaskActivityLog_ActionType CHECK (ActionType IN
-                (N'TaskCreated', N'TaskEdited', N'TeacherAssigned', N'TeacherUnassigned',
-                 N'TaskAcknowledged', N'ProofSubmitted', N'RevisionRequested',
-                 N'CompletionApproved', N'TaskReopened', N'TaskDeleted'))
-        );
-    END;
-
-    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.TaskActivityLog') AND name = N'IX_TaskActivityLog_Task_CreatedAt')
-        CREATE INDEX IX_TaskActivityLog_Task_CreatedAt ON dbo.TaskActivityLog(TaskID, CreatedAt DESC);
-    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.TaskActivityLog') AND name = N'IX_TaskActivityLog_User_CreatedAt')
-        CREATE INDEX IX_TaskActivityLog_User_CreatedAt ON dbo.TaskActivityLog(PerformedByUserID, CreatedAt DESC)
-            WHERE PerformedByUserID IS NOT NULL;
-    IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE object_id = OBJECT_ID(N'dbo.TaskActivityLog') AND name = N'IX_TaskActivityLog_Teacher_CreatedAt')
-        CREATE INDEX IX_TaskActivityLog_Teacher_CreatedAt ON dbo.TaskActivityLog(PerformedByTeacherID, CreatedAt DESC)
-            WHERE PerformedByTeacherID IS NOT NULL;
+            CHECK (Completion_status IN (N'Pending', N'Acknowledged', N'For Validation', N'Needs Revision', N'Completed'));
 
     COMMIT TRANSACTION;
 END TRY
@@ -159,74 +108,69 @@ GO
 
 /* Central role lookup. Procedures never accept a client-supplied role. */
 CREATE OR ALTER PROCEDURE dbo.AssertActiveUserRole
-    @ActingUserID int,
+    @Acting_user_id int,
     @AllowDirector bit = 0,
     @AllowStaff bit = 0
 AS
 BEGIN
     SET NOCOUNT ON;
-    DECLARE @RoleName nvarchar(50);
-    SELECT @RoleName = r.RoleName
+    DECLARE @Role_name nvarchar(50);
+    SELECT @Role_name = r.Role_name
     FROM dbo.[User] u
-    INNER JOIN dbo.Roles r ON r.RoleID = u.RoleID
-    WHERE u.UserID = @ActingUserID AND u.IsActive = 1 AND r.IsActive = 1;
+    INNER JOIN dbo.Roles r ON r.Role_id = u.Role_id
+    WHERE u.User_id = @Acting_user_id AND u.Is_active = 1;
 
-    IF @RoleName IS NULL
+    IF @Role_name IS NULL
         THROW 51100, 'The acting account does not exist or is disabled.', 1;
-    IF NOT ((@AllowDirector = 1 AND @RoleName = N'Director') OR
-            (@AllowStaff = 1 AND @RoleName = N'Staff'))
+    IF NOT ((@AllowDirector = 1 AND @Role_name = N'Director') OR
+            (@AllowStaff = 1 AND @Role_name = N'Staff'))
         THROW 51101, 'The acting account is not authorized for this action.', 1;
 END;
 GO
 
+/* The proof merge normally runs before this script. Keep this script safe to
+   rerun independently by ensuring the procedure's referenced column exists. */
+IF COL_LENGTH(N'dbo.Subtask', N'Proof_validation_status') IS NULL
+    ALTER TABLE dbo.Subtask ADD Proof_validation_status nvarchar(20) NULL;
+GO
+
 CREATE OR ALTER PROCEDURE dbo.ApproveTaskCompletion
-    @TaskID int,
-    @ActingUserID int
+    @Task_id int,
+    @Acting_user_id int
 AS
 BEGIN
     SET NOCOUNT ON; SET XACT_ABORT ON;
-    EXEC dbo.AssertActiveUserRole @ActingUserID, @AllowDirector = 1;
+    EXEC dbo.AssertActiveUserRole @Acting_user_id, @AllowDirector = 1;
     BEGIN TRANSACTION;
-    DECLARE @PreviousStatus nvarchar(50);
-    SELECT TOP (1) @PreviousStatus = CompletionStatus FROM dbo.TaskAssignment WITH (UPDLOCK, HOLDLOCK) WHERE TaskID = @TaskID;
-    IF @PreviousStatus IS NULL THROW 51110, 'The task does not exist or has no assignment.', 1;
-    IF EXISTS (SELECT 1 FROM dbo.TaskAssignment WHERE TaskID = @TaskID AND CompletionStatus <> N'For Validation')
+    DECLARE @Previous_status nvarchar(50);
+    SELECT TOP (1) @Previous_status = Completion_status FROM dbo.TaskAssignment WITH (UPDLOCK, HOLDLOCK) WHERE Task_id = @Task_id;
+    IF @Previous_status IS NULL THROW 51110, 'The task does not exist or has no assignment.', 1;
+    IF EXISTS (SELECT 1 FROM dbo.TaskAssignment WHERE Task_id = @Task_id AND Completion_status <> N'For Validation')
         THROW 51111, 'Every assignment must be For Validation before final approval.', 1;
     IF EXISTS
     (
         SELECT 1 FROM dbo.Subtask s
-        WHERE s.TaskID = @TaskID AND NOT EXISTS
-            (SELECT 1 FROM dbo.SubtaskProof p WHERE p.SubtaskID = s.SubtaskID AND p.ValidationStatus = N'Approved')
+        WHERE s.Task_id = @Task_id
+          AND (s.Proof_validation_status IS NULL OR s.Proof_validation_status <> N'Approved')
     ) THROW 51112, 'Every subtask must have approved proof before final completion.', 1;
 
-    UPDATE dbo.TaskAssignment SET CompletionStatus = N'Completed', CompletedAt = GETDATE() WHERE TaskID = @TaskID;
-    UPDATE dbo.[Task] SET CompletionApprovedByUserID = @ActingUserID,
-        CompletionApprovedAt = SYSUTCDATETIME(), LastModifiedByUserID = @ActingUserID,
-        UpdatedAt = SYSUTCDATETIME() WHERE TaskID = @TaskID;
-    INSERT dbo.TaskActivityLog(TaskID, PerformedByUserID, ActionType, PreviousStatus, NewStatus)
-        VALUES (@TaskID, @ActingUserID, N'CompletionApproved', @PreviousStatus, N'Completed');
+    UPDATE dbo.TaskAssignment SET Completion_status = N'Completed', Completed_at = GETDATE() WHERE Task_id = @Task_id;
+    UPDATE dbo.[Task] SET Completion_approvedby_user_id = @Acting_user_id WHERE Task_id = @Task_id;
     COMMIT TRANSACTION;
 END;
 GO
 
 CREATE OR ALTER PROCEDURE dbo.RequestTaskRevision
-    @TaskID int,
-    @ActingUserID int,
-    @Reason nvarchar(1000)
+    @Task_id int,
+    @Acting_user_id int
 AS
 BEGIN
     SET NOCOUNT ON; SET XACT_ABORT ON;
-    IF NULLIF(LTRIM(RTRIM(@Reason)), N'') IS NULL THROW 51120, 'A revision reason is required.', 1;
-    EXEC dbo.AssertActiveUserRole @ActingUserID, @AllowDirector = 1, @AllowStaff = 1;
+    EXEC dbo.AssertActiveUserRole @Acting_user_id, @AllowDirector = 1, @AllowStaff = 1;
     BEGIN TRANSACTION;
-    IF NOT EXISTS (SELECT 1 FROM dbo.TaskAssignment WITH (UPDLOCK, HOLDLOCK) WHERE TaskID = @TaskID AND CompletionStatus = N'For Validation')
+    IF NOT EXISTS (SELECT 1 FROM dbo.TaskAssignment WITH (UPDLOCK, HOLDLOCK) WHERE Task_id = @Task_id AND Completion_status = N'For Validation')
         THROW 51121, 'Only a task that is For Validation can be returned for revision.', 1;
-    UPDATE dbo.TaskAssignment SET CompletionStatus = N'Needs Revision', CompletedAt = NULL WHERE TaskID = @TaskID;
-    UPDATE dbo.[Task] SET RevisionRequestedByUserID = @ActingUserID,
-        RevisionRequestedAt = SYSUTCDATETIME(), RevisionReason = @Reason,
-        LastModifiedByUserID = @ActingUserID, UpdatedAt = SYSUTCDATETIME() WHERE TaskID = @TaskID;
-    INSERT dbo.TaskActivityLog(TaskID, PerformedByUserID, ActionType, PreviousStatus, NewStatus, Details)
-        VALUES (@TaskID, @ActingUserID, N'RevisionRequested', N'For Validation', N'Needs Revision', @Reason);
+    UPDATE dbo.TaskAssignment SET Completion_status = N'Needs Revision', Completed_at = NULL WHERE Task_id = @Task_id;
     COMMIT TRANSACTION;
 END;
 GO
@@ -236,11 +180,11 @@ DROP PROCEDURE IF EXISTS dbo.ReopenTask;
 GO
 
 /* Validation: all result sets should show healthy mappings and zero invalid rows. */
-SELECT RoleID, RoleName, IsActive FROM dbo.Roles ORDER BY RoleID;
-SELECT r.RoleName, COUNT(*) AS AccountCount FROM dbo.[User] u JOIN dbo.Roles r ON r.RoleID = u.RoleID GROUP BY r.RoleName;
-SELECT r.RoleName, COUNT(*) AS AccountCount FROM dbo.Teacher t JOIN dbo.Roles r ON r.RoleID = t.RoleID GROUP BY r.RoleName;
-SELECT COUNT(*) AS TasksWithoutCreator FROM dbo.[Task] WHERE CreatedByUserID IS NULL;
-SELECT CompletionStatus, COUNT(*) AS AssignmentCount FROM dbo.TaskAssignment GROUP BY CompletionStatus;
+SELECT Role_id, Role_name FROM dbo.Roles ORDER BY Role_id;
+SELECT r.Role_name, COUNT(*) AS AccountCount FROM dbo.[User] u JOIN dbo.Roles r ON r.Role_id = u.Role_id GROUP BY r.Role_name;
+SELECT r.Role_name, COUNT(*) AS AccountCount FROM dbo.Teacher t JOIN dbo.Roles r ON r.Role_id = t.Role_id GROUP BY r.Role_name;
+SELECT COUNT(*) AS TasksWithoutCreator FROM dbo.[Task] WHERE Createdby_user_id IS NULL;
+SELECT Completion_status, COUNT(*) AS AssignmentCount FROM dbo.TaskAssignment GROUP BY Completion_status;
 SELECT name AS InstalledProcedure FROM sys.procedures
 WHERE name IN (N'AssertActiveUserRole', N'ApproveTaskCompletion', N'RequestTaskRevision')
 ORDER BY name;

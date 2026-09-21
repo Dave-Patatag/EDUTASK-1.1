@@ -553,7 +553,7 @@
 
     <!-- The single most important action on a screen. At most one per view. -->
     <Style x:Key="PrimaryButton" TargetType="Button">
-        <Setter Property="BackgroundColor" Value="{StaticResource Brand800}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource ActionPrimary}" />
         <Setter Property="TextColor" Value="{StaticResource TextInverse}" />
         <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="FontSize" Value="{StaticResource FontBody}" />
@@ -580,8 +580,8 @@
 
     <!-- Cancel / dismiss. Deliberately quieter than the action beside it. -->
     <Style x:Key="TertiaryButton" TargetType="Button">
-        <Setter Property="BackgroundColor" Value="{StaticResource SurfaceSubtle}" />
-        <Setter Property="TextColor" Value="{StaticResource TextSecondary}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource ActionDismiss}" />
+        <Setter Property="TextColor" Value="{StaticResource TextInverse}" />
         <Setter Property="FontSize" Value="{StaticResource FontBody}" />
         <Setter Property="CornerRadius" Value="8" />
         <Setter Property="HeightRequest" Value="44" />
@@ -590,7 +590,7 @@
 
     <!-- Destructive. Never the default focus of a dialog. -->
     <Style x:Key="DangerButton" TargetType="Button">
-        <Setter Property="BackgroundColor" Value="{StaticResource StatusDanger}" />
+        <Setter Property="BackgroundColor" Value="{StaticResource ActionDanger}" />
         <Setter Property="TextColor" Value="{StaticResource TextInverse}" />
         <Setter Property="FontAttributes" Value="Bold" />
         <Setter Property="FontSize" Value="{StaticResource FontBody}" />
@@ -692,7 +692,7 @@
     </Style>
 
     <!--
-        The repeating record card in a list — a person on Teachers & Staff, an
+        The repeating record card in a list — a person in User Management, an
         entry on Activity Log, a day's task on the calendar.
 
         Distinct from Card, which is a one-off container laid out by hand and

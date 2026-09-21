@@ -1,7 +1,7 @@
 using EDUTASK_1._1.Services;
 using EDUTASK_1._1.Views.Base;
 using System.Data;
-using TaskCommentItem = EDUTASK_1._1.Models.TaskCommentItem;
+using TaskDiscussionItem = EDUTASK_1._1.Models.TaskDiscussionItem;
 using SubtaskDisplayItem = EDUTASK_1._1.Models.SubtaskDisplayItem;
 
 namespace EDUTASK_1._1.Views;
@@ -10,29 +10,41 @@ public partial class TaskDiscussionPage : EduTaskPage
 {
     private readonly DatabaseService _database = new();
     private readonly int _taskID;
-    private readonly int _subtaskID;
-    private readonly string _authorType;
-    private readonly int _authorID;
-    private readonly string _authorName;
+    private readonly int? _subtaskID;
+    private readonly int? _userID;
+    private readonly int? _teacherID;
+    private readonly string _senderType;
+    private readonly int _senderID;
+    private readonly string _readerType;
+    private readonly int _readerID;
     private readonly bool _isReadOnly;
 
     public TaskDiscussionPage(
         int taskID,
-        int subtaskID,
-        string authorType,
-        int authorID,
-        string authorName,
+        int? subtaskID,
+        int? userID,
+        int? teacherID,
         bool isReadOnly = false)
     {
+        if (userID.HasValue == teacherID.HasValue
+            || (userID.HasValue && userID.Value <= 0)
+            || (teacherID.HasValue && teacherID.Value <= 0))
+            throw new ArgumentException("A discussion participant must be either a user or a teacher.");
+
         InitializeComponent();
         _taskID = taskID;
         _subtaskID = subtaskID;
-        _authorType = authorType;
-        _authorID = authorID;
-        _authorName = string.IsNullOrWhiteSpace(authorName) ? authorType : authorName;
-        _isReadOnly = isReadOnly;
-        CommentComposer.IsVisible = !_isReadOnly;
+        _userID = userID;
+        _teacherID = teacherID;
+        _readerType = teacherID.HasValue ? "Teacher" : "User";
+        _readerID = teacherID ?? userID!.Value;
+        _senderType = _readerType;
+        _senderID = _readerID;
+        _isReadOnly = isReadOnly || !subtaskID.HasValue;
+        DiscussionComposer.IsVisible = !_isReadOnly;
         ReadOnlyNotice.IsVisible = _isReadOnly;
+        if (!subtaskID.HasValue)
+            ReadOnlyNoticeLabel.Text = "Previous task discussion is read-only.";
         BackButton.IsVisible = true;
     }
 
@@ -56,7 +68,7 @@ public partial class TaskDiscussionPage : EduTaskPage
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .Cast<string>()
                 .ToArray();
-            bool teacherView = string.Equals(_authorType, "Teacher", StringComparison.OrdinalIgnoreCase);
+            bool teacherView = _teacherID.HasValue;
             DataRow? firstTaskRow = taskTable.Rows.Count > 0 ? taskTable.Rows[0] : null;
             string participantName;
 
@@ -76,20 +88,26 @@ public partial class TaskDiscussionPage : EduTaskPage
                 };
             }
 
-            ParticipantNameLabel.Text = participantName;
-            await _database.MarkTaskCommentsReadAsync(_subtaskID, _authorType, _authorID);
-            var comments = await _database.GetTaskCommentsAsync(_taskID, _subtaskID);
-            int returnSequence = 0;
-            foreach (var comment in comments)
+            ParticipantNameLabel.Text = _subtaskID.HasValue ? participantName : "Previous task discussion";
+            List<TaskDiscussionItem> discussions;
+            if (_subtaskID is int subtaskID)
             {
-                comment.IsMine =
-                    comment.AuthorID == _authorID &&
-                    string.Equals(comment.AuthorType, _authorType, StringComparison.OrdinalIgnoreCase);
-                if (comment.IsProofReturn)
-                    comment.ReturnSequence = ++returnSequence;
+                await _database.MarkTaskDiscussionsReadAsync(subtaskID, _readerType, _readerID);
+                discussions = await _database.GetTaskDiscussionsAsync(_taskID, subtaskID);
+            }
+            else
+            {
+                discussions = await _database.GetPreviousTaskDiscussionsAsync(_taskID);
+            }
+            int returnSequence = 0;
+            foreach (var discussion in discussions)
+            {
+                discussion.IsMine = discussion.Sender_type == _senderType && discussion.Sender_id == _senderID;
+                if (discussion.IsProofReturn)
+                    discussion.ReturnSequence = ++returnSequence;
             }
 
-            CommentsView.ItemsSource = comments;
+            DiscussionView.ItemsSource = discussions;
         }
         catch
         {
@@ -97,7 +115,7 @@ public partial class TaskDiscussionPage : EduTaskPage
         }
         finally
         {
-            CommentsRefreshView.IsRefreshing = false;
+            DiscussionRefreshView.IsRefreshing = false;
         }
     }
 
@@ -106,14 +124,14 @@ public partial class TaskDiscussionPage : EduTaskPage
     private async void OnBackClicked(object sender, EventArgs e) =>
         await Navigation.PopModalAsync(false);
 
-    private async void OnCommentTapped(object sender, TappedEventArgs e)
+    private async void OnDiscussionTapped(object sender, TappedEventArgs e)
     {
-        if (e.Parameter is not TaskCommentItem { IsProofReturn: true })
+        if (!_subtaskID.HasValue || e.Parameter is not TaskDiscussionItem { IsProofReturn: true })
             return;
         try
         {
             List<SubtaskDisplayItem> subtasks = await _database.GetTaskSubtasksAsync(_taskID);
-            SubtaskDisplayItem? subtask = subtasks.FirstOrDefault(item => item.SubtaskID == _subtaskID);
+            SubtaskDisplayItem? subtask = subtasks.FirstOrDefault(item => item.Subtask_id == _subtaskID);
             if (subtask is null || !subtask.HasProofHistory)
             {
                 await UiAlertService.ShowAsync(this, "History unavailable", "No proof submission history was found.");
@@ -121,7 +139,7 @@ public partial class TaskDiscussionPage : EduTaskPage
             }
             await Navigation.PushModalAsync(new SubtaskProofHistoryPage(
                 subtask,
-                _authorType == "User" && subtask.IsProofPending,
+                _userID.HasValue && subtask.IsProofPending,
                 LoadAsync));
         }
         catch
@@ -132,27 +150,26 @@ public partial class TaskDiscussionPage : EduTaskPage
 
     private async void OnSendClicked(object sender, EventArgs e)
     {
-        if (_isReadOnly)
+        if (_isReadOnly || !_subtaskID.HasValue)
             return;
 
-        string commentText = CommentEditor.Text?.Trim() ?? string.Empty;
-        if (commentText.Length == 0)
+        string messageText = DiscussionEditor.Text?.Trim() ?? string.Empty;
+        if (messageText.Length == 0)
             return;
 
         SendButton.IsEnabled = false;
         try
         {
-            bool added = await _database.AddTaskCommentAsync(
+            bool added = await _database.AddTaskDiscussionAsync(
                 _taskID,
-                _subtaskID,
-                _authorType,
-                _authorID,
-                _authorName,
-                commentText);
+                _subtaskID.Value,
+                _senderType,
+                _senderID,
+                messageText);
             if (!added)
                 return;
 
-            CommentEditor.Text = string.Empty;
+            DiscussionEditor.Text = string.Empty;
             await LoadAsync();
         }
         catch (ArgumentException ex)

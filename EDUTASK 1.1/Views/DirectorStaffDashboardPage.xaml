@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 
 <base:EduTaskPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -66,11 +66,11 @@
 
                                 <Setter
                                     Property="BackgroundColor"
-                                    Value="#F3E8FF"/>
+                                    Value="{StaticResource StatusDangerSurface}"/>
 
                                 <Setter
                                     Property="Stroke"
-                                    Value="#7C3AED"/>
+                                    Value="{StaticResource PriorityHigh}"/>
 
                             </DataTrigger>
 
@@ -88,7 +88,7 @@
 
                                 <Setter
                                     Property="Stroke"
-                                    Value="#D97706"/>
+                                    Value="{StaticResource PriorityMedium}"/>
 
                             </DataTrigger>
 
@@ -106,7 +106,7 @@
 
                                 <Setter
                                     Property="Stroke"
-                                    Value="#059669"/>
+                                    Value="{StaticResource PriorityLow}"/>
 
                             </DataTrigger>
 
@@ -128,9 +128,9 @@
                                     Binding="{Binding Priority}"
                                     Value="High">
 
-                                    <Setter
-                                        Property="TextColor"
-                                        Value="#7C3AED"/>
+                                <Setter
+                                    Property="TextColor"
+                                    Value="#DC2626"/>
 
                                 </DataTrigger>
 
@@ -140,9 +140,9 @@
                                     Binding="{Binding Priority}"
                                     Value="Medium">
 
-                                    <Setter
-                                        Property="TextColor"
-                                        Value="#B45309"/>
+                                <Setter
+                                    Property="TextColor"
+                                    Value="#F97316"/>
 
                                 </DataTrigger>
 
@@ -152,9 +152,9 @@
                                     Binding="{Binding Priority}"
                                     Value="Low">
 
-                                    <Setter
-                                        Property="TextColor"
-                                        Value="#047857"/>
+                                <Setter
+                                    Property="TextColor"
+                                    Value="#16A34A"/>
 
                                 </DataTrigger>
 
@@ -173,7 +173,7 @@
                         MinimumWidthRequest="52"
                         Padding="7,1"
                         BackgroundColor="Transparent"
-                        Stroke="{Binding StatusColor}"
+                        Stroke="{Binding DisplayStatusColor}"
                         StrokeThickness="1"
                         VerticalOptions="Center">
 
@@ -187,16 +187,16 @@
 
                             <DataTrigger
                                 TargetType="Border"
-                                Binding="{Binding Status}"
+                                Binding="{Binding DisplayStatus}"
                                 Value="Pending">
 
                                 <Setter
                                     Property="BackgroundColor"
-                                    Value="#FFE3D0"/>
+                                    Value="{StaticResource StatusPendingSurface}"/>
 
                                 <Setter
                                     Property="Stroke"
-                                    Value="#FF9A5A"/>
+                                    Value="{StaticResource StatusPending}"/>
 
                             </DataTrigger>
 
@@ -205,7 +205,7 @@
 
                             <DataTrigger
                                 TargetType="Border"
-                                Binding="{Binding Status}"
+                                Binding="{Binding DisplayStatus}"
                                 Value="Acknowledged">
 
                                 <Setter
@@ -218,39 +218,65 @@
 
                             </DataTrigger>
 
+                            <DataTrigger
+                                TargetType="Border"
+                                Binding="{Binding DisplayStatus}"
+                                Value="Overdue">
+
+                                <Setter
+                                    Property="BackgroundColor"
+                                    Value="{StaticResource StatusDangerSurface}"/>
+
+                                <Setter
+                                    Property="Stroke"
+                                    Value="{StaticResource StatusDanger}"/>
+
+                            </DataTrigger>
+
                         </Border.Triggers>
 
 
                         <Label
-                            Text="{Binding Status}"
+                            Text="{Binding DisplayStatus}"
                             FontSize="9"
                             FontAttributes="Bold"
                             HorizontalTextAlignment="Center"
                             VerticalTextAlignment="Center"
-                            TextColor="{Binding StatusColor}">
+                            TextColor="{Binding DisplayStatusColor}">
 
                             <Label.Triggers>
 
                                 <DataTrigger
                                     TargetType="Label"
-                                    Binding="{Binding Status}"
+                                    Binding="{Binding DisplayStatus}"
                                     Value="Pending">
 
                                     <Setter
                                         Property="TextColor"
-                                        Value="#F07818"/>
+                                        Value="{StaticResource StatusPending}"/>
 
                                 </DataTrigger>
 
 
                                 <DataTrigger
                                     TargetType="Label"
-                                    Binding="{Binding Status}"
+                                    Binding="{Binding DisplayStatus}"
                                     Value="Acknowledged">
 
                                     <Setter
                                         Property="TextColor"
                                         Value="#2D74D8"/>
+
+                                </DataTrigger>
+
+                                <DataTrigger
+                                    TargetType="Label"
+                                    Binding="{Binding DisplayStatus}"
+                                    Value="Overdue">
+
+                                    <Setter
+                                        Property="TextColor"
+                                        Value="{StaticResource StatusDanger}"/>
 
                                 </DataTrigger>
 
@@ -287,6 +313,11 @@
                 <!-- ================================================= -->
                 <!-- SUBTASKS                                          -->
                 <!-- ================================================= -->
+
+                <Button Text="Previous task discussion" IsVisible="{Binding HasPreviousDiscussion}"
+                        CommandParameter="{Binding .}" Clicked="OnPreviousDiscussionClicked"
+                        BackgroundColor="Transparent" TextColor="{StaticResource TextPrimary}"
+                        FontSize="{StaticResource FontLabel}" HorizontalOptions="Start"/>
 
                 <VerticalStackLayout
                     IsVisible="{Binding HasSubtasks}"
@@ -442,7 +473,7 @@
                                             <!-- PROOF HISTORY -->
 
                                             <ImageButton
-                                                Source="viewproof.png"
+                                                Source="file.png"
                                                 Aspect="AspectFit"
                                                 Padding="5"
                                                 WidthRequest="27"
@@ -471,42 +502,48 @@
 
 
                 <!-- ================================================= -->
-                <!-- PROGRESS - THICK + CENTERED                       -->
+                <!-- PROGRESS                                           -->
                 <!-- ================================================= -->
 
                 <Grid
-                    ColumnDefinitions="Auto,*,Auto"
-                    ColumnSpacing="7"
+                    RowDefinitions="Auto,Auto"
+                    ColumnDefinitions="*,Auto"
+                    RowSpacing="4"
                     Margin="0,8,0,0"
-                    HeightRequest="22"
                     VerticalOptions="Center">
 
                     <Label
+                        Grid.Row="0"
                         Grid.Column="0"
                         Text="Progress"
-                        FontSize="9"
+                        FontSize="12"
+                        FontAttributes="Bold"
                         TextColor="{StaticResource TextSecondary}"
                         VerticalOptions="Center"
                         VerticalTextAlignment="Center"/>
 
-                    <ProgressBar
+                    <Label
+                        Grid.Row="0"
                         Grid.Column="1"
+                        Text="{Binding ProgressPercentText}"
+                        FontSize="11"
+                        FontAttributes="Bold"
+                        TextColor="{StaticResource TextPrimary}"
+                        HorizontalTextAlignment="End"
+                        VerticalOptions="Center"
+                        VerticalTextAlignment="Center"/>
+
+                    <ProgressBar
+                        Grid.Row="1"
+                        Grid.ColumnSpan="2"
                         Progress="{Binding ProgressValue}"
-                        HeightRequest="7"
-                        ScaleY="1.7"
+                        HeightRequest="8"
+                        ScaleY="2.1"
                         TranslationY="0"
                         VerticalOptions="Center"
                         HorizontalOptions="Fill"
                         ProgressColor="{StaticResource Accent500}"
                         BackgroundColor="#CFCFCF"/>
-
-                    <Label
-                        Grid.Column="2"
-                        Text="{Binding ProgressPercentText}"
-                        FontSize="9"
-                        TextColor="{StaticResource TextPrimary}"
-                        VerticalOptions="Center"
-                        VerticalTextAlignment="Center"/>
 
                 </Grid>
 
@@ -526,7 +563,7 @@
                     <Border
                         HeightRequest="29"
                         Padding="11,0"
-                        BackgroundColor="{StaticResource Brand800}"
+                        BackgroundColor="{StaticResource ActionPrimary}"
                         StrokeThickness="0"
                         IsVisible="{Binding CanEdit}"
                         VerticalOptions="Center">
@@ -566,7 +603,7 @@
                         IsVisible="{Binding CanValidate}"
                         BackgroundColor="{StaticResource StatusSuccess}"
                         TextColor="{StaticResource TextInverse}"
-                        CommandParameter="{Binding AssignmentID}"
+                        CommandParameter="{Binding Assignment_id}"
                         Clicked="OnValidateClicked"/>
 
                 </HorizontalStackLayout>
@@ -581,6 +618,38 @@
         <!-- ===================================================== -->
 
         <DataTemplate x:Key="AdminDeadlineGroupTemplate">
+
+            <VerticalStackLayout Spacing="0">
+
+                <Grid
+                    IsVisible="{Binding ShowSectionHeader}"
+                    ColumnDefinitions="Auto,*,Auto"
+                    ColumnSpacing="7"
+                    Padding="16,11,16,2">
+
+                    <BoxView
+                        WidthRequest="7"
+                        HeightRequest="7"
+                        CornerRadius="4"
+                        Color="{Binding SectionColor}"
+                        VerticalOptions="Center"/>
+
+                    <Label
+                        Grid.Column="1"
+                        Text="{Binding SectionTitle}"
+                        FontSize="{StaticResource FontLabel}"
+                        FontAttributes="Bold"
+                        TextColor="{Binding SectionColor}"
+                        VerticalOptions="Center"/>
+
+                    <Label
+                        Grid.Column="2"
+                        Text="{Binding SectionCountText}"
+                        FontSize="{StaticResource FontMicro}"
+                        TextColor="{StaticResource TextTertiary}"
+                        VerticalOptions="Center"/>
+
+                </Grid>
 
             <Border
                 Margin="12,5"
@@ -646,9 +715,9 @@
 
                                     <Image
                                         Grid.Column="0"
-                                        Source="date.png"
-                                        WidthRequest="14"
-                                        HeightRequest="14"
+                                        Source="schedule.png"
+                                        WidthRequest="18"
+                                        HeightRequest="18"
                                         Aspect="AspectFit"
                                         Opacity="1"
                                         HorizontalOptions="Center"
@@ -675,9 +744,9 @@
 
                                     <Image
                                         Grid.Column="0"
-                                        Source="profileuser.png"
-                                        WidthRequest="12"
-                                        HeightRequest="12"
+                                        Source="person.png"
+                                        WidthRequest="16"
+                                        HeightRequest="16"
                                         Aspect="AspectFit"
                                         Opacity="1"
                                         HorizontalOptions="Center"
@@ -769,7 +838,7 @@
 
                         <VerticalStackLayout
                             IsVisible="{Binding IsCollapsed}"
-                            BindableLayout.ItemsSource="{Binding Tasks}"
+                            BindableLayout.ItemsSource="{Binding DisplayTasks}"
                             Spacing="2"
                             Margin="0,7,0,0">
 
@@ -803,7 +872,7 @@
                                             MinimumWidthRequest="52"
                                             Padding="7,1"
                                             BackgroundColor="Transparent"
-                                            Stroke="{Binding StatusColor}"
+                                            Stroke="{Binding DisplayStatusColor}"
                                             StrokeThickness="1"
                                             VerticalOptions="Center">
 
@@ -817,16 +886,16 @@
 
                                                 <DataTrigger
                                                     TargetType="Border"
-                                                    Binding="{Binding Status}"
+                                                    Binding="{Binding DisplayStatus}"
                                                     Value="Pending">
 
                                                     <Setter
                                                         Property="BackgroundColor"
-                                                        Value="#FFE3D0"/>
+                                                        Value="{StaticResource StatusPendingSurface}"/>
 
                                                     <Setter
                                                         Property="Stroke"
-                                                        Value="#FF9A5A"/>
+                                                        Value="{StaticResource StatusPending}"/>
 
                                                 </DataTrigger>
 
@@ -835,7 +904,7 @@
 
                                                 <DataTrigger
                                                     TargetType="Border"
-                                                    Binding="{Binding Status}"
+                                                    Binding="{Binding DisplayStatus}"
                                                     Value="Acknowledged">
 
                                                     <Setter
@@ -848,16 +917,31 @@
 
                                                 </DataTrigger>
 
+                                                <DataTrigger
+                                                    TargetType="Border"
+                                                    Binding="{Binding DisplayStatus}"
+                                                    Value="Overdue">
+
+                                                    <Setter
+                                                        Property="BackgroundColor"
+                                                        Value="{StaticResource StatusDangerSurface}"/>
+
+                                                    <Setter
+                                                        Property="Stroke"
+                                                        Value="{StaticResource StatusDanger}"/>
+
+                                                </DataTrigger>
+
                                             </Border.Triggers>
 
 
                                             <Label
-                                                Text="{Binding Status}"
+                                                Text="{Binding DisplayStatus}"
                                                 FontSize="9"
                                                 FontAttributes="Bold"
                                                 HorizontalTextAlignment="Center"
                                                 VerticalTextAlignment="Center"
-                                                TextColor="{Binding StatusColor}">
+                                                TextColor="{Binding DisplayStatusColor}">
 
                                                 <Label.Triggers>
 
@@ -865,12 +949,12 @@
 
                                                     <DataTrigger
                                                         TargetType="Label"
-                                                        Binding="{Binding Status}"
+                                                        Binding="{Binding DisplayStatus}"
                                                         Value="Pending">
 
                                                         <Setter
                                                             Property="TextColor"
-                                                            Value="#F07818"/>
+                                                            Value="{StaticResource StatusPending}"/>
 
                                                     </DataTrigger>
 
@@ -879,12 +963,23 @@
 
                                                     <DataTrigger
                                                         TargetType="Label"
-                                                        Binding="{Binding Status}"
+                                                        Binding="{Binding DisplayStatus}"
                                                         Value="Acknowledged">
 
                                                         <Setter
                                                             Property="TextColor"
                                                             Value="#2D74D8"/>
+
+                                                    </DataTrigger>
+
+                                                    <DataTrigger
+                                                        TargetType="Label"
+                                                        Binding="{Binding DisplayStatus}"
+                                                        Value="Overdue">
+
+                                                        <Setter
+                                                            Property="TextColor"
+                                                            Value="{StaticResource StatusDanger}"/>
 
                                                     </DataTrigger>
 
@@ -952,7 +1047,7 @@
 
                         <VerticalStackLayout
                             IsVisible="{Binding IsExpanded}"
-                            BindableLayout.ItemsSource="{Binding Tasks}"
+                            BindableLayout.ItemsSource="{Binding DisplayTasks}"
                             BindableLayout.ItemTemplate="{StaticResource AdminTaskCardTemplate}"
                             Spacing="0"/>
 
@@ -961,6 +1056,8 @@
                 </Grid>
 
             </Border>
+
+            </VerticalStackLayout>
 
         </DataTemplate>
 
@@ -997,45 +1094,7 @@
 
                 <!-- MENU -->
 
-                <Border
-                    WidthRequest="38"
-                    HeightRequest="38"
-                    BackgroundColor="{StaticResource SurfaceBase}"
-                    Stroke="{StaticResource BorderSubtle}"
-                    StrokeThickness="1"
-                    HorizontalOptions="Start"
-                    VerticalOptions="Center"
-                    SemanticProperties.Description="Open navigation menu">
-
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="8"/>
-                    </Border.StrokeShape>
-
-                    <Border.Shadow>
-
-                        <Shadow
-                            Brush="Black"
-                            Offset="0,1"
-                            Radius="3"
-                            Opacity="0.07"/>
-
-                    </Border.Shadow>
-
-                    <Image
-                        Source="menubar.png"
-                        WidthRequest="19"
-                        HeightRequest="19"
-                        HorizontalOptions="Center"
-                        VerticalOptions="Center"/>
-
-                    <Border.GestureRecognizers>
-
-                        <TapGestureRecognizer
-                            Tapped="OnMenuBarClicked"/>
-
-                    </Border.GestureRecognizers>
-
-                </Border>
+                <local:FlyoutMenuButton/>
 
 
                 <!-- USER -->
@@ -1351,7 +1410,7 @@
                             <Label
                                 x:Name="TodayHeaderLabel"
                                 Text="Active Tasks (0)"
-                                FontSize="{StaticResource FontMicro}"
+                                FontSize="{StaticResource FontBodySmall}"
                                 FontAttributes="Bold"
                                 TextColor="{StaticResource TextPrimary}"
                                 VerticalOptions="Center"/>
@@ -1360,10 +1419,11 @@
                                 x:Name="TodayToggleArrow"
                                 Grid.Column="1"
                                 Source="collapse.png"
-                                WidthRequest="14"
-                                HeightRequest="14"
+                                WidthRequest="16"
+                                HeightRequest="16"
                                 Aspect="AspectFit"
-                                Margin="8,0,2,0"
+                                Margin="8,0,8,0"
+                                TranslationX="-4.5"
                                 VerticalOptions="Center">
 
                                 <Image.GestureRecognizers>
@@ -1404,7 +1464,7 @@
                             <Label
                                 x:Name="CompletedTodayHeaderLabel"
                                 Text="Completed Today (0)"
-                                FontSize="{StaticResource FontMicro}"
+                                FontSize="{StaticResource FontBodySmall}"
                                 FontAttributes="Bold"
                                 TextColor="{StaticResource TextPrimary}"
                                 VerticalOptions="Center"/>
@@ -1413,10 +1473,11 @@
                                 x:Name="CompletedTodayToggleArrow"
                                 Grid.Column="1"
                                 Source="collapse.png"
-                                WidthRequest="14"
-                                HeightRequest="14"
+                                WidthRequest="16"
+                                HeightRequest="16"
                                 Aspect="AspectFit"
-                                Margin="8,0,2,0"
+                                Margin="8,0,8,0"
+                                TranslationX="-4.5"
                                 VerticalOptions="Center">
 
                                 <Image.GestureRecognizers>

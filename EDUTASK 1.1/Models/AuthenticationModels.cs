@@ -4,7 +4,7 @@ public sealed record AuthenticationResult(bool Success, string Message, string R
 public sealed record PendingAccountItem(int AccountID, string AccountType, string FullName, string Email, DateTime RequestedAt);
 public sealed record DirectoryAccountItem(
     int AccountID, string AccountType, string FullName, string Username,
-    string Email, string ContactNumber, bool IsDisabled);
+    string Email, string Contact_number, bool IsDisabled);
 
 public static class SecurityQuestions
 {

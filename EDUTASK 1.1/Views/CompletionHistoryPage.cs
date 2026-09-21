@@ -16,36 +16,7 @@ public sealed class CompletionHistoryPage : ContentPage
         NavigationPage.SetHasNavigationBar(this, false);
 
         string selectedTeacher = "All teachers";
-        var backButton = new ImageButton
-        {
-            Source = "backicon.png",
-            BackgroundColor = AppColors.SurfaceBase,
-            Padding = 10,
-            WidthRequest = 42,
-            HeightRequest = 42,
-            CornerRadius = 12,
-            BorderWidth = 0,
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Center
-        };
-        SemanticProperties.SetDescription(backButton, "Go back");
-        backButton.Pressed += (_, _) =>
-        {
-            backButton.BackgroundColor = AppColors.TextSecondary;
-            backButton.Source = "whitebackicon.png";
-        };
-        backButton.Released += (_, _) =>
-        {
-            backButton.BackgroundColor = AppColors.SurfaceBase;
-            backButton.Source = "backicon.png";
-        };
-        backButton.Clicked += async (_, _) =>
-        {
-            if (Navigation.ModalStack.Contains(this))
-                await Navigation.PopModalAsync(false);
-            else
-                DashboardFlyoutPage.Current?.ShowTasks();
-        };
+        var menuButton = new FlyoutMenuButton();
 
         var headerText = new VerticalStackLayout
         {
@@ -68,25 +39,25 @@ public sealed class CompletionHistoryPage : ContentPage
         };
         var header = new Grid
         {
-            Padding = new Thickness(18, 14),
+            Padding = new Thickness(15, 13),
             BackgroundColor = AppColors.SurfaceMuted,
             ColumnDefinitions =
             {
-                new ColumnDefinition(new GridLength(44)),
+                new ColumnDefinition(new GridLength(42)),
                 new ColumnDefinition(GridLength.Star),
-                new ColumnDefinition(new GridLength(44))
+                new ColumnDefinition(new GridLength(42))
             }
         };
-        header.Add(backButton);
+        header.Add(menuButton);
         header.Add(headerText, 1);
 
-        var completedTasks = tasks.Where(task => task.CompletedAt.HasValue).ToList();
+        var completedTasks = tasks.Where(task => task.Completed_at.HasValue).ToList();
         var teachers = completedTasks
             .SelectMany(task => TeacherNames(task.TeacherName))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .OrderBy(name => name)
             .ToList();
-        var timeline = new VerticalStackLayout { Padding = new Thickness(18, 6, 18, showTeacherFilter ? 80 : 28), Spacing = 0 };
+        var timeline = new VerticalStackLayout { Padding = new Thickness(18, 6, 18, 28), Spacing = 0 };
 
         void RenderTimeline()
         {
@@ -109,7 +80,7 @@ public sealed class CompletionHistoryPage : ContentPage
                 return;
             }
 
-            foreach (var dateGroup in filteredTasks.GroupBy(task => task.CompletedAt!.Value.Date).OrderByDescending(group => group.Key))
+            foreach (var dateGroup in filteredTasks.GroupBy(task => task.Completed_at!.Value.Date).OrderByDescending(group => group.Key))
             {
                 var groupGrid = new Grid
                 {
@@ -147,13 +118,13 @@ public sealed class CompletionHistoryPage : ContentPage
                     TextColor = Accent
                 });
 
-                foreach (DashboardTaskItem task in dateGroup.OrderByDescending(item => item.CompletedAt))
+                foreach (DashboardTaskItem task in dateGroup.OrderByDescending(item => item.Completed_at))
                 {
                     var check = new Border
                     {
                         WidthRequest = 22,
                         HeightRequest = 22,
-                        BackgroundColor = AppColors.Slate100,
+                        BackgroundColor = AppColors.StatusSuccess,
                         StrokeThickness = 0,
                         VerticalOptions = LayoutOptions.Center,
                         StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 11 },
@@ -170,7 +141,7 @@ public sealed class CompletionHistoryPage : ContentPage
                     labels.Children.Add(new Label { Text = task.Title, FontSize = AppTypography.BodySmall, TextColor = AppColors.TextSecondary, TextDecorations = TextDecorations.Strikethrough });
                     if (showTeacherFilter && allTeachers)
                         labels.Children.Add(new Label { Text = task.TeacherName, FontSize = AppTypography.Micro, TextColor = Accent });
-                    labels.Children.Add(new Label { Text = task.CompletedAt!.Value.ToString("h:mm tt"), FontSize = AppTypography.Micro, TextColor = AppColors.TextDisabled });
+                    labels.Children.Add(new Label { Text = task.Completed_at!.Value.ToString("h:mm tt"), FontSize = AppTypography.Micro, TextColor = AppColors.TextDisabled });
 
                     var row = new Grid
                     {
@@ -188,10 +159,17 @@ public sealed class CompletionHistoryPage : ContentPage
                         StrokeThickness = 1,
                         Padding = new Thickness(12, 10),
                         StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 8 },
+                        Shadow = new Shadow
+                        {
+                            Brush = Colors.Black,
+                            Offset = new Point(0, 2),
+                            Radius = 5,
+                            Opacity = 0.09f
+                        },
                         Content = row
                     };
                     var tap = new TapGestureRecognizer();
-                    tap.Tapped += async (_, _) => await Navigation.PushModalAsync(new EditTaskPage(task.TaskID, true), false);
+                    tap.Tapped += async (_, _) => await Navigation.PushModalAsync(new EditTaskPage(task.Task_id, true), false);
                     card.GestureRecognizers.Add(tap);
                     groupContent.Children.Add(card);
                 }
@@ -202,48 +180,79 @@ public sealed class CompletionHistoryPage : ContentPage
 
         var main = new Grid
         {
-            RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star) }
+            RowDefinitions =
+            {
+                new RowDefinition(GridLength.Auto),
+                new RowDefinition(GridLength.Auto),
+                new RowDefinition(GridLength.Star)
+            }
         };
         main.Add(header);
-        main.Add(new ScrollView { Content = timeline }, 0, 1);
+        main.Add(new ScrollView { Content = timeline }, 0, 2);
 
         var pageRoot = new Grid();
         pageRoot.Add(main);
 
         var selectorContent = new Label
         {
-            Text = "Select a Teacher",
+            Text = selectedTeacher,
             FontSize = AppTypography.Caption,
-            TextColor = AppColors.Brand800,
+            TextColor = AppColors.TextInverse,
             VerticalTextAlignment = TextAlignment.Center,
-            HorizontalTextAlignment = TextAlignment.Center
+            HorizontalTextAlignment = TextAlignment.Center,
+            LineBreakMode = LineBreakMode.TailTruncation
         };
+        var selectorButtonContent = new Grid
+        {
+            ColumnDefinitions =
+            {
+                new ColumnDefinition(new GridLength(16)),
+                new ColumnDefinition(GridLength.Star)
+            },
+            ColumnSpacing = 7,
+            Children =
+            {
+                new Image
+                {
+                    Source = "whitefiltericon.png",
+                    WidthRequest = 14,
+                    HeightRequest = 14,
+                    VerticalOptions = LayoutOptions.Center,
+                    HorizontalOptions = LayoutOptions.Center
+                },
+                selectorContent
+            }
+        };
+        Grid.SetColumn(selectorContent, 1);
         var selector = new Border
         {
             IsVisible = showTeacherFilter,
-            Margin = new Thickness(0, 0, 16, 14),
-            Padding = new Thickness(14, 0),
-            HeightRequest = 38,
-            MinimumHeightRequest = 38,
-            BackgroundColor = AppColors.SurfaceSunken,
+            Margin = new Thickness(18, 0, 18, 10),
+            Padding = new Thickness(12, 0),
+            HeightRequest = 36,
+            MinimumHeightRequest = 36,
+            MinimumWidthRequest = 124,
+            MaximumWidthRequest = 210,
+            BackgroundColor = AppColors.Brand800,
             Stroke = Colors.Transparent,
             StrokeThickness = 0,
             HorizontalOptions = LayoutOptions.End,
-            VerticalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Center,
             StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = 9 },
-            Content = selectorContent
+            Content = selectorButtonContent
         };
 
         void ApplySelectorState(bool active)
         {
-            selector.BackgroundColor = active ? AppColors.Brand800 : AppColors.SurfaceSunken;
+            selector.BackgroundColor = AppColors.Brand800;
             selector.Stroke = Colors.Transparent;
-            selectorContent.TextColor = active ? AppColors.TextInverse : AppColors.TextPrimary;
+            selectorContent.TextColor = AppColors.TextInverse;
+            selectorContent.Text = selectedTeacher;
             selectorContent.FontAttributes = active ? FontAttributes.Bold : FontAttributes.None;
         }
 
         ApplySelectorState(active: false);
-        pageRoot.Add(selector);
+        main.Add(selector, 0, 1);
         var results = new VerticalStackLayout { Spacing = 2 };
         var search = new Entry
         {
@@ -378,7 +387,7 @@ public sealed class CompletionHistoryPage : ContentPage
 
         var dialogTitle = new Label
         {
-            Text = "Select a Teacher",
+            Text = "Filter by teacher",
             FontSize = AppTypography.Body,
             FontAttributes = FontAttributes.None,
             TextColor = Text,

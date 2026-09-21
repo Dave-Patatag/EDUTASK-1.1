@@ -10,28 +10,17 @@ public sealed class EditProfileViewModel : INotifyPropertyChanged
     private string _contactNumber = string.Empty;
     private string _email = string.Empty;
     private string _username = string.Empty;
-    private string _bio = string.Empty;
     private string _profilePhotoPath = string.Empty;
     private string _avatarSeed = string.Empty;
 
     public string FullName { get => _fullName; set { _fullName = value; OnPropertyChanged(); RefreshAvatar(); } }
-    public string ContactNumber { get => _contactNumber; set { _contactNumber = value; OnPropertyChanged(); } }
+    public string Contact_number { get => _contactNumber; set { _contactNumber = value; OnPropertyChanged(); } }
     public string Email { get => _email; set { _email = value; OnPropertyChanged(); } }
     public string Username { get => _username; set { _username = value; OnPropertyChanged(); } }
-    public string Bio { get => _bio; set { _bio = value; OnPropertyChanged(); OnPropertyChanged(nameof(BioLengthDisplay)); } }
-
-    /// <summary>
-    /// Longest bio the column will hold. dbo.[User].Bio is nvarchar(300), so
-    /// this is a storage fact rather than a style choice — keep the two in step.
-    /// </summary>
-    public const int BioMaxLength = 300;
-
-    /// <summary>Live "used / limit" counter shown under the bio box.</summary>
-    public string BioLengthDisplay => $"{_bio.Length}/{BioMaxLength}";
 
     public string AvatarSeed { get => _avatarSeed; set { _avatarSeed = value; OnPropertyChanged(); OnPropertyChanged(nameof(AvatarColor)); } }
-    public string ProfilePhotoPath { get => _profilePhotoPath; set { _profilePhotoPath = LocalProfilePhoto.ExistingOrEmpty(value); OnPropertyChanged(); OnPropertyChanged(nameof(HasProfilePhoto)); OnPropertyChanged(nameof(ShowInitials)); } }
-    public bool HasProfilePhoto => !string.IsNullOrWhiteSpace(ProfilePhotoPath);
+    public string Profile_photo { get => _profilePhotoPath; set { _profilePhotoPath = LocalProfilePhoto.ExistingOrEmpty(value); OnPropertyChanged(); OnPropertyChanged(nameof(HasProfilePhoto)); OnPropertyChanged(nameof(ShowInitials)); } }
+    public bool HasProfilePhoto => !string.IsNullOrWhiteSpace(Profile_photo);
     public bool ShowInitials => !HasProfilePhoto;
     public string AvatarInitials
     {

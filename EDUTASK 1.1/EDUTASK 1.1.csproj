@@ -71,6 +71,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<EmbeddedResource Include="Database\MigrateTaskDiscussions.sql" LogicalName="EDUTASK.TaskDiscussionMigration.sql" />
+		<EmbeddedResource Include="Database\MigrateConsistentColumnNames.sql" LogicalName="EDUTASK.ConsistentColumnNamesMigration.sql" />
+		<EmbeddedResource Include="Database\MigrateNormalizeSubtaskProof.sql" LogicalName="EDUTASK.NormalizeSubtaskProofMigration.sql" />
+		<EmbeddedResource Include="Database\MigrateCleanConsistentSchema.sql" LogicalName="EDUTASK.CleanConsistentSchemaMigration.sql" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <!-- Explicit nesting for pages that Visual Studio does not infer automatically. -->
 	  <Compile Update="Views\TeacherDashboardPage.xaml.cs">
 	    <DependentUpon>TeacherDashboardPage.xaml</DependentUpon>

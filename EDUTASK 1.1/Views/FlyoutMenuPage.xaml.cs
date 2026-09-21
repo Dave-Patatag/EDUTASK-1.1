@@ -11,10 +11,10 @@ namespace EDUTASK_1._1.Views
             InitializeComponent();
 
             bool isDirector = UserSessionService.IsDirector;
+            CreateTaskItemBorder.IsVisible = isDirectorOrStaff;
             TaskSummaryItemBorder.IsVisible = isDirectorOrStaff;
             TeachersStaffItemBorder.IsVisible = isDirectorOrStaff;
-            CompletionHistoryItemBorder.IsVisible = true;
-            TeachersStaffMenuLabel.Text = isDirector ? "Teachers & Staff" : "Teachers";
+            TeachersStaffMenuLabel.Text = isDirector ? "Manage Teachers and Staff" : "View Teachers";
         }
 
         private static readonly Color PressedItemBackground = AppColors.SurfaceMuted;
@@ -34,6 +34,25 @@ namespace EDUTASK_1._1.Views
 
             if (!Motion.ReduceMotion)
                 _ = border.ScaleTo(pressed ? 0.98 : 1.0, Motion.Instant, pressed ? Motion.Exit : Motion.Enter);
+        }
+
+        private void OnTaskMenuTapped(object sender, EventArgs e)
+        {
+            bool isExpanded = !TaskSubmenu.IsVisible;
+            TaskSubmenu.IsVisible = isExpanded;
+
+            _ = TaskMenuChevron.RotateChevronAsync(isExpanded);
+        }
+
+        private async void OnCreateTaskTapped(object sender, EventArgs e)
+        {
+            if (DashboardFlyoutPage.Current is { } flyout)
+                await flyout.ShowCreateTaskAsync();
+        }
+
+        private void OnActiveTaskTapped(object sender, EventArgs e)
+        {
+            DashboardFlyoutPage.Current?.ShowTasks();
         }
 
         private void OnTaskSummaryTapped(object sender, EventArgs e)

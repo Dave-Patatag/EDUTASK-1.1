@@ -10,7 +10,8 @@ namespace EDUTASK_1._1.Services;
 
 public static class ProofImageService
 {
-    public const int MaximumBytes = 20 * 1024 * 1024;
+    public const int MaximumFiles = 3;
+    public const int MaximumBytes = 10 * 1024 * 1024;
     private const int MaximumDimension = 2048;
 
     public static async Task<PreparedProofImage> PrepareAsync(FileResult file, CancellationToken cancellationToken = default)
@@ -26,7 +27,7 @@ public static class ProofImageService
             await input.CopyToAsync(pdfOutput, cancellationToken);
             byte[] pdfData = pdfOutput.ToArray();
             if (pdfData.Length == 0 || pdfData.Length > MaximumBytes)
-                throw new InvalidOperationException("PDF files must be no larger than 20 MB.");
+                throw new InvalidOperationException("Each PDF must be no larger than 10 MB.");
             if (pdfData.Length < 5 || pdfData[0] != (byte)'%' || pdfData[1] != (byte)'P' ||
                 pdfData[2] != (byte)'D' || pdfData[3] != (byte)'F' || pdfData[4] != (byte)'-')
                 throw new InvalidOperationException("The selected file is not a valid PDF.");
@@ -34,8 +35,8 @@ public static class ProofImageService
             return new PreparedProofImage
             {
                 Data = pdfData,
-                FileName = $"{Path.GetFileNameWithoutExtension(file.FileName)}.pdf",
-                ContentType = "application/pdf"
+                File_name = $"{Path.GetFileNameWithoutExtension(file.FileName)}.pdf",
+                File_type = "application/pdf"
             };
         }
 
@@ -68,9 +69,9 @@ public static class ProofImageService
         }
 
         if (encoded.Length == 0 || encoded.Length > MaximumBytes)
-            throw new InvalidOperationException("This image could not be compressed below 20 MB. Select a smaller image.");
+            throw new InvalidOperationException("This image could not be compressed below 10 MB. Select a smaller image.");
 
-        return new PreparedProofImage { Data = encoded, FileName = $"{baseName}{outputExtension}", ContentType = contentType };
+        return new PreparedProofImage { Data = encoded, File_name = $"{baseName}{outputExtension}", File_type = contentType };
     }
 
     private static async Task<byte[]> EncodePngAsync(SharpImage image, CancellationToken cancellationToken)

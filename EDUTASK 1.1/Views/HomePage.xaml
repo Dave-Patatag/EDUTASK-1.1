@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<base:EduTaskPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:base="clr-namespace:EDUTASK_1._1.Views.Base"
+    xmlns:local="clr-namespace:EDUTASK_1._1.Views"
+    x:Class="EDUTASK_1._1.Views.HomePage"
+    NavigationPage.HasNavigationBar="False"
+    Shell.NavBarIsVisible="False"
+    BackgroundColor="{StaticResource SurfaceMuted}">
+
+    <Grid RowDefinitions="*,Auto" RowSpacing="0">
+
+        <!-- Keep navigation overlaid so the welcome block is centered in the
+             full usable area instead of being pushed down by a header row. -->
+        <local:FlyoutMenuButton Grid.Row="0"
+                                Margin="15,13,0,0"
+                                VerticalOptions="Start"
+                                ZIndex="1"/>
+
+        <VerticalStackLayout x:Name="HeroContent"
+                             Grid.Row="0"
+                             Margin="24,0"
+                             Padding="0"
+                             Spacing="3"
+                             HorizontalOptions="Fill"
+                             VerticalOptions="Center">
+            <Image Source="edutasklogo.png"
+                   MaximumWidthRequest="300"
+                   HeightRequest="112"
+                   Margin="0,0,0,10"
+                   Aspect="AspectFit"
+                   HorizontalOptions="Center"
+                   SemanticProperties.Description="EduTask"/>
+
+            <Label x:Name="GreetingLabel"
+                   Text="Welcome"
+                   FontFamily="OpenSansRegular"
+                   FontSize="16"
+                   TextColor="{StaticResource TextSecondary}"
+                   HorizontalOptions="Fill"
+                   HorizontalTextAlignment="Center"/>
+
+            <Label x:Name="UserNameLabel"
+                   Text="Director!"
+                   FontFamily="OpenSansSemibold"
+                   FontSize="24"
+                   FontAttributes="Bold"
+                   TextColor="{StaticResource TextPrimary}"
+                   Margin="0,1,0,0"
+                   HorizontalOptions="Fill"
+                   HorizontalTextAlignment="Center"
+                   MaxLines="1"
+                   LineBreakMode="TailTruncation"/>
+        </VerticalStackLayout>
+
+        <local:BottomNavigationBar Grid.Row="1" ActiveTab="None"/>
+    </Grid>
+</base:EduTaskPage>

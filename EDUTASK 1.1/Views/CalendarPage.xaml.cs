@@ -1,5 +1,6 @@
 using System.Data;
 using EDUTASK_1._1.Helpers;
+using EDUTASK_1._1.Models;
 using EDUTASK_1._1.Services;
 using EDUTASK_1._1.Views.Base;
 using Microsoft.Maui.Controls.Shapes;
@@ -64,20 +65,43 @@ public partial class CalendarPage : EduTaskPage
             var currentTeacher = TeacherSessionService.CurrentTeacher;
             bool isTeacher = currentTeacher is not null;
             if (currentTeacher is not null)
-                table = await _database.GetTeacherTasksAsync(currentTeacher.TeacherID);
+                table = await _database.GetTeacherTasksAsync(currentTeacher.Teacher_id);
             else
                 table = await _database.GetAllTasksWithTeachersAsync();
 
             _tasksByDate.Clear();
-            IEnumerable<DataRow> datedRows = table.AsEnumerable()
-                .Where(row => !row.IsNull("Deadline"));
+            DataRow[] datedRows = table.AsEnumerable()
+                .Where(row => !row.IsNull("Deadline"))
+                .ToArray();
 
-            foreach (IGrouping<(int TaskID, DateTime Date), DataRow> group in datedRows.GroupBy(row =>
-                         (row.Field<int>("TaskID"), row.Field<DateTime>("Deadline").Date)))
+            // Older cooperative assignments can be stored as one matching task
+            // copy per teacher. Use the same identifying details as the Tasks
+            // dashboard so those copies remain one calendar event as well.
+            Dictionary<int, string> subtaskKeys = [];
+            if (!isTeacher)
+            {
+                int[] taskIDs = datedRows
+                    .Select(row => row.Field<int>("Task_id"))
+                    .Distinct()
+                    .ToArray();
+                Dictionary<int, Task<List<SubtaskDisplayItem>>> subtaskLoads = taskIDs
+                    .ToDictionary(taskID => taskID, taskID => _database.GetTaskSubtasksAsync(taskID));
+                await Task.WhenAll(subtaskLoads.Values);
+                subtaskKeys = subtaskLoads.ToDictionary(
+                    pair => pair.Key,
+                    pair => string.Join("\u001e", pair.Value.Result.Select(subtask => NormalizeKeyPart(subtask.Title))));
+            }
+
+            IEnumerable<IGrouping<string, DataRow>> calendarGroups = datedRows.GroupBy(row =>
+                isTeacher
+                    ? $"TASK\u001f{row.Field<int>("Task_id")}\u001f{row.Field<DateTime>("Deadline"):yyyyMMdd}"
+                    : BuildCooperativeTaskKey(row, subtaskKeys));
+
+            foreach (IGrouping<string, DataRow> group in calendarGroups)
             {
                 DataRow first = group.First();
                 string status = AggregateStatus(group);
-                DateTime deadline = group.Key.Date;
+                DateTime deadline = first.Field<DateTime>("Deadline").Date;
                 // Priority owns the left edge; overdue is a separate status.
                 // Surface it explicitly so directors do not have to infer it
                 // from the date or confuse it with the priority indicator.
@@ -95,17 +119,17 @@ public partial class CalendarPage : EduTaskPage
 
                 var item = new CalendarTaskItem
                 {
-                    TaskID = group.Key.TaskID,
+                    Task_id = first.Field<int>("Task_id"),
                     Title = first.Field<string>("Title") ?? "Untitled task",
                     OwnerDisplay = ownerDisplay,
                     Priority = priority,
                     Status = status
                 };
 
-                if (!_tasksByDate.TryGetValue(group.Key.Date, out List<CalendarTaskItem>? tasks))
+                if (!_tasksByDate.TryGetValue(deadline, out List<CalendarTaskItem>? tasks))
                 {
                     tasks = [];
-                    _tasksByDate[group.Key.Date] = tasks;
+                    _tasksByDate[deadline] = tasks;
                 }
                 tasks.Add(item);
             }
@@ -339,18 +363,12 @@ public partial class CalendarPage : EduTaskPage
             EmptyState.IsVisible = false;
     }
 
-    private void OnMenuClicked(object sender, EventArgs e)
-    {
-        if (DashboardFlyoutPage.Current is { } flyout)
-            flyout.IsPresented = true;
-    }
-
     private async void OnTaskTapped(object sender, TappedEventArgs e)
     {
         int? taskID = e.Parameter is int parameter ? parameter : null;
         if (!taskID.HasValue && sender is Border card &&
             card.BindingContext is CalendarTaskItem item)
-            taskID = item.TaskID;
+            taskID = item.Task_id;
 
         if (taskID.HasValue)
             await Navigation.PushModalAsync(new EditTaskPage(taskID.Value, true), false);
@@ -360,10 +378,10 @@ public partial class CalendarPage : EduTaskPage
     {
         DataRow[] assignments = rows.ToArray();
         string[] statuses = assignments
-            .Select(row => row.Field<string>("CompletionStatus") ?? "Pending")
+            .Select(row => row.Field<string>("Completion_status") ?? "Pending")
             .ToArray();
         bool acknowledged = assignments.Any(row =>
-            !row.IsNull("IsAcknowledged") && row.Field<bool>("IsAcknowledged"));
+            !row.IsNull("Is_acknowledged") && row.Field<bool>("Is_acknowledged"));
 
         if (statuses.Length > 0 && statuses.All(status => status == "Completed"))
             return "Completed";
@@ -374,9 +392,29 @@ public partial class CalendarPage : EduTaskPage
         return acknowledged ? "Acknowledged" : "Pending";
     }
 
+    private static string BuildCooperativeTaskKey(
+        DataRow row,
+        IReadOnlyDictionary<int, string> subtaskKeys)
+    {
+        int taskID = row.Field<int>("Task_id");
+        int creatorID = row.Field<int>("Createdby_user_id");
+
+        return string.Join("\u001f",
+            creatorID,
+            row.Field<DateTime>("Created_at").Date.ToString("yyyyMMdd"),
+            NormalizeKeyPart(row.Field<string>("Title")),
+            NormalizeKeyPart(row.Field<string>("Description")),
+            row.Field<DateTime>("Deadline").Date.ToString("yyyyMMdd"),
+            NormalizeKeyPart(row.Field<string>("Priority")),
+            subtaskKeys.GetValueOrDefault(taskID, string.Empty));
+    }
+
+    private static string NormalizeKeyPart(string? value) =>
+        value?.Trim().ToUpperInvariant() ?? string.Empty;
+
     private sealed class CalendarTaskItem
     {
-        public int TaskID { get; init; }
+        public int Task_id { get; init; }
         public string Title { get; init; } = string.Empty;
         public string OwnerDisplay { get; init; } = string.Empty;
         public bool HasOwnerDisplay => !string.IsNullOrWhiteSpace(OwnerDisplay);

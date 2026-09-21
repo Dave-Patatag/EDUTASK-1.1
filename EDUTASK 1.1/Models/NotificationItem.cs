@@ -12,13 +12,13 @@ public sealed class NotificationItem : INotifyPropertyChanged
     private bool _isSelectionMode;
     private bool _isSelected;
 
-    public required string NotificationKey { get; init; }
+    public required string Notification_key { get; init; }
     public required string Title { get; init; }
     public string TitleDisplay => CultureInfo.CurrentCulture.TextInfo.ToTitleCase(Title.ToLower());
     public required string Message { get; init; }
     public required string Category { get; init; }
-    public int? TaskID { get; init; }
-    public DateTime CreatedAt { get; init; }
+    public int? Task_id { get; init; }
+    public DateTime Created_at { get; init; }
     public bool IsRead
     {
         get => _isRead;
@@ -54,8 +54,8 @@ public sealed class NotificationItem : INotifyPropertyChanged
         ? NotificationPalette.ToneSurface(Category)
         : AppColors.SurfaceSunken;
 
-    public bool HasTime => CreatedAt.TimeOfDay != TimeSpan.Zero;
-    public string TimeDisplay => HasTime ? CreatedAt.ToString("h:mm tt") : string.Empty;
+    public bool HasTime => Created_at.TimeOfDay != TimeSpan.Zero;
+    public string TimeDisplay => HasTime ? Created_at.ToString("h:mm tt") : string.Empty;
     public bool ShowTime => HasTime && !IsSelectionMode;
     public bool IsSelectionMode
     {
